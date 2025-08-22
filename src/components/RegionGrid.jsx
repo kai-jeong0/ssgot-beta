@@ -35,15 +35,13 @@ const svgStyles = `
   /* SVG 컨테이너 스타일 */
   .svg-container {
     width: 100%;
-    height: auto;
-    max-height: 400px;
+    height: 400px;
     overflow: visible;
   }
   
   .svg-container svg {
     width: 100%;
-    height: auto;
-    max-height: 400px;
+    height: 100%;
     display: block;
   }
 `;
@@ -150,6 +148,57 @@ const RegionGrid = ({ onCitySelect }) => {
       });
   }, []);
 
+  // SVG 렌더링 후 이벤트 핸들러 추가
+  useEffect(() => {
+    if (svgContent && regions.length > 0) {
+      // DOM이 렌더링된 후 이벤트 핸들러 추가
+      const timer = setTimeout(() => {
+        regions.forEach(region => {
+          const pathId = region.id;
+          let path = null;
+          
+          // getElementById로 시도
+          path = document.getElementById(pathId);
+          
+          if (path) {
+            // 기본 스타일 설정
+            path.style.cursor = 'pointer';
+            path.style.transition = 'all 0.3s ease';
+            path.style.fill = '#F3F4F6';
+            path.style.stroke = '#D1D5DB';
+            path.style.strokeWidth = '1.5';
+            
+            // 클릭 이벤트
+            path.onclick = () => handleRegionClick(region);
+            
+            // 호버 이벤트
+            path.onmouseenter = () => {
+              if (selectedRegion?.id !== region.id) {
+                path.style.fill = '#FF7419';
+                path.style.stroke = '#EA580C';
+                path.style.strokeWidth = '2';
+                path.style.filter = 'drop-shadow(0 4px 8px rgba(255, 116, 25, 0.3))';
+                handleRegionHover(region);
+              }
+            };
+            
+            path.onmouseleave = () => {
+              if (selectedRegion?.id !== region.id) {
+                path.style.fill = '#F3F4F6';
+                path.style.stroke = '#D1D5DB';
+                path.style.strokeWidth = '1.5';
+                path.style.filter = 'none';
+                handleRegionLeave();
+              }
+            };
+          }
+        });
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [svgContent, regions, selectedRegion]);
+
   const handleRegionClick = (region) => {
     setSelectedRegion(region);
     onCitySelect(region.name);
@@ -165,128 +214,60 @@ const RegionGrid = ({ onCitySelect }) => {
     setHoveredRegion(null);
   };
 
-  // SVG 내용을 dangerouslySetInnerHTML로 렌더링하고 이벤트 핸들러 추가
-  const renderSvgWithInteractivity = () => {
-    try {
-      if (!svgContent) {
-        // SVG 로드 실패 시 대체 UI
-        return `
-          <div style="display: flex; align-items: center; justify-content: center; height: 400px; background: #f9fafb; border-radius: 8px;">
-            <div style="text-align: center; color: #6b7280;">
-              <div style="font-size: 16px; margin-bottom: 8px;">지도 로딩 중...</div>
-              <div style="font-size: 14px;">잠시만 기다려주세요</div>
-            </div>
+  // SVG를 React 컴포넌트로 렌더링
+  const renderSvgComponent = () => {
+    if (!svgContent) {
+      return (
+        <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg">
+          <div className="text-center text-gray-600">
+            <div className="text-base font-medium mb-2">지도 로딩 중...</div>
+            <div className="text-sm">잠시만 기다려주세요</div>
           </div>
-        `;
-      }
+        </div>
+      );
+    }
 
+    try {
       const parser = new DOMParser();
       const svgDoc = parser.parseFromString(svgContent, 'image/svg+xml');
       const svgElement = svgDoc.querySelector('svg');
       
       if (!svgElement) {
-        return `
-          <div style="display: flex; align-items: center; justify-content: center; height: 400px; background: #f9fafb; border-radius: 8px;">
-            <div style="text-align: center; color: #6b7280;">
-              <div style="font-size: 16px; margin-bottom: 8px;">지도 표시 오류</div>
-              <div style="font-size: 14px;">페이지를 새로고침해주세요</div>
+        return (
+          <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg">
+            <div className="text-center text-gray-600">
+              <div className="text-base font-medium mb-2">지도 표시 오류</div>
+              <div className="text-sm">페이지를 새로고침해주세요</div>
             </div>
           </div>
-        `;
+        );
       }
 
-      // SVG 크기 조정 - CSS로 크기 제어
-      svgElement.setAttribute('width', '800');
-      svgElement.setAttribute('height', '437');
-      svgElement.setAttribute('viewBox', '0 0 800 437');
-      svgElement.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-      svgElement.style.width = '100%';
-      svgElement.style.height = 'auto';
-      svgElement.style.maxHeight = '400px';
-      
-      // 각 지역에 이벤트 핸들러 추가
-      regions.forEach(region => {
-        // ID가 유효한지 확인 (숫자로 시작하는 ID는 CSS 선택자로 문제가 될 수 있음)
-        const pathId = region.id;
-        let path = null;
-        
-        // 먼저 getElementById로 시도
-        if (svgElement.getElementById) {
-          path = svgElement.getElementById(pathId);
-        }
-        
-        // getElementById가 실패하면 querySelector로 시도 (ID를 이스케이프)
-        if (!path && svgElement.querySelector) {
-          try {
-            // CSS 선택자에서 ID를 이스케이프
-            const escapedId = CSS.escape(pathId);
-            path = svgElement.querySelector(`#${escapedId}`);
-          } catch (e) {
-            console.warn(`ID ${pathId}를 선택할 수 없습니다:`, e);
-            return;
-          }
-        }
-        
-        if (path) {
-          // 기본 스타일 설정
-          path.style.cursor = 'pointer';
-          path.style.transition = 'all 0.3s ease';
-          
-          // 선택된 지역인지 확인하여 스타일 적용
-          if (selectedRegion?.id === region.id) {
-            path.style.fill = '#FF7419';
-            path.style.stroke = '#EA580C';
-            path.style.strokeWidth = '2.5';
-            path.style.filter = 'drop-shadow(0 6px 12px rgba(255, 116, 25, 0.4))';
-            path.classList.add('selected');
-          } else {
-            path.style.fill = '#F3F4F6';
-            path.style.stroke = '#D1D5DB';
-            path.style.strokeWidth = '1.5';
-            path.style.filter = 'none';
-            path.classList.remove('selected');
-          }
-          
-          // 호버 효과를 위한 CSS 클래스 추가
-          path.classList.add('region-path');
-          
-          // 클릭 이벤트
-          path.onclick = () => handleRegionClick(region);
-          
-          // 호버 이벤트 (선택되지 않은 지역만)
-          if (selectedRegion?.id !== region.id) {
-            path.onmouseenter = () => {
-              path.style.fill = '#FF7419';
-              path.style.stroke = '#EA580C';
-              path.style.strokeWidth = '2';
-              path.style.filter = 'drop-shadow(0 4px 8px rgba(255, 116, 25, 0.3))';
-              handleRegionHover(region);
-            };
-            
-            path.onmouseleave = () => {
-              path.style.fill = '#F3F4F6';
-              path.style.stroke = '#D1D5DB';
-              path.style.strokeWidth = '1.5';
-              path.style.filter = 'none';
-              handleRegionLeave();
-            };
-          }
-        } else {
-          console.warn(`지역 ${region.name} (ID: ${pathId})의 SVG 요소를 찾을 수 없습니다.`);
-        }
-      });
+      // SVG 속성 설정
+      const svgProps = {
+        width: '100%',
+        height: '400',
+        viewBox: '0 0 800 437',
+        preserveAspectRatio: 'xMidYMid meet',
+        className: 'w-full h-full'
+      };
 
-      return svgElement.outerHTML;
+      // SVG 내용을 문자열로 추출
+      const svgInnerHTML = svgElement.innerHTML;
+      
+      return (
+        <svg {...svgProps} dangerouslySetInnerHTML={{ __html: svgInnerHTML }} />
+      );
     } catch (error) {
       console.error('SVG 렌더링 중 오류 발생:', error);
-      return `
-        <div style="display: flex; align-items: center; justify-content: center; height: 400px; background: #f9fafb; border-radius: 8px;">
-          <div style="text-align: center; color: #6b7280;">
-            <div style="font-size: 16px; margin-bottom: 8px;">지도 렌더링 오류</div>
-            <div style="font-size: 14px;">오류: ${error.message}</div>
+      return (
+        <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg">
+          <div className="text-center text-gray-600">
+            <div className="text-base font-medium mb-2">지도 렌더링 오류</div>
+            <div className="text-sm">오류: {error.message}</div>
           </div>
         </div>
-      `;
+      );
     }
   };
 
@@ -312,11 +293,7 @@ const RegionGrid = ({ onCitySelect }) => {
         {/* SVG 경기도 지도 */}
         <div className="relative">
           <style>{svgStyles}</style>
-          <div 
-            className="svg-container"
-            style={{ minHeight: '400px' }}
-            dangerouslySetInnerHTML={{ __html: renderSvgWithInteractivity() }}
-          />
+          {renderSvgComponent()}
           
           {/* 호버된 지역 정보 표시 */}
           {hoveredRegion && !selectedRegion && (
