@@ -1,53 +1,191 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
+// SVG 지역 스타일을 위한 CSS
+const svgStyles = `
+  .region-path {
+    transition: all 0.3s ease;
+  }
+  
+  .region-path:hover {
+    fill: #FF7419 !important;
+    stroke: #EA580C !important;
+    stroke-width: 2 !important;
+    filter: drop-shadow(0 4px 8px rgba(255, 116, 25, 0.3)) !important;
+  }
+  
+  .region-path.selected {
+    fill: #FF7419 !important;
+    stroke: #EA580C !important;
+    stroke-width: 2.5 !important;
+    filter: drop-shadow(0 6px 12px rgba(255, 116, 25, 0.4)) !important;
+  }
+`;
 
 const RegionGrid = ({ onCitySelect }) => {
   const [hoveredRegion, setHoveredRegion] = useState(null);
+  const [selectedRegion, setSelectedRegion] = useState(null);
+  const [svgContent, setSvgContent] = useState('');
+  const [regions, setRegions] = useState([]);
 
-  // 경기도 주요 도시들의 간단한 좌표 (SVG 내에서의 상대적 위치)
-  const regions = [
-    { id: 'suwon', name: '수원시', x: 50, y: 60, color: '#FF6B6B' },
-    { id: 'seongnam', name: '성남시', x: 45, y: 45, color: '#4ECDC4' },
-    { id: 'goyang', name: '고양시', x: 25, y: 25, color: '#45B7D1' },
-    { id: 'yongin', name: '용인시', x: 55, y: 50, color: '#96CEB4' },
-    { id: 'bucheon', name: '부천시', x: 30, y: 35, color: '#FFEAA7' },
-    { id: 'ansan', name: '안산시', x: 35, y: 70, color: '#DDA0DD' },
-    { id: 'anyang', name: '안양시', x: 40, y: 55, color: '#98D8C8' },
-    { id: 'namyangju', name: '남양주시', x: 60, y: 30, color: '#F7DC6F' },
-    { id: 'hwaseong', name: '화성시', x: 45, y: 75, color: '#BB8FCE' },
-    { id: 'pyeongtaek', name: '평택시', x: 40, y: 80, color: '#85C1E9' },
-    { id: 'uijeongbu', name: '의정부시', x: 55, y: 20, color: '#F8C471' },
-    { id: 'siheung', name: '시흥시', x: 35, y: 65, color: '#82E0AA' },
-    { id: 'gimpo', name: '김포시', x: 20, y: 40, color: '#F1948A' },
-    { id: 'gwangmyeong', name: '광명시', x: 30, y: 60, color: '#85C1E9' },
-    { id: 'gwangju', name: '광주시', x: 65, y: 45, color: '#D7BDE2' },
-    { id: 'gunpo', name: '군포시', x: 35, y: 50, color: '#F9E79F' },
-    { id: 'uiwang', name: '의왕시', x: 40, y: 50, color: '#A9DFBF' },
-    { id: 'hanam', name: '하남시', x: 50, y: 35, color: '#D5A6BD' },
-    { id: 'osan', name: '오산시', x: 45, y: 65, color: '#AED6F1' },
-    { id: 'icheon', name: '이천시', x: 70, y: 55, color: '#FAD7A0' },
-    { id: 'anseong', name: '안성시', x: 65, y: 65, color: '#D2B4DE' },
-    { id: 'paju', name: '파주시', x: 15, y: 15, color: '#A3E4D7' },
-    { id: 'yangju', name: '양주시', x: 45, y: 20, color: '#F8C471' },
-    { id: 'pocheon', name: '포천시', x: 55, y: 15, color: '#D7BDE2' },
-    { id: 'yeoju', name: '여주시', x: 75, y: 60, color: '#FAD7A0' },
-    { id: 'dongducheon', name: '동두천시', x: 50, y: 15, color: '#BB8FCE' },
-    { id: 'guri', name: '구리시', x: 55, y: 35, color: '#85C1E9' },
-    { id: 'gwacheon', name: '과천시', x: 35, y: 45, color: '#F7DC6F' },
-    { id: 'gapyeong', name: '가평군', x: 65, y: 25, color: '#A9DFBF' },
-    { id: 'yangpyeong', name: '양평군', x: 70, y: 40, color: '#D5A6BD' },
-    { id: 'yeoncheon', name: '연천군', x: 40, y: 10, color: '#F1948A' }
-  ];
+  // 경기도 시군구 정보 (코드와 이름 매핑)
+  const regionNames = {
+    '41111': '수원시 장안구',
+    '41113': '수원시 권선구', 
+    '41115': '수원시 팔달구',
+    '41117': '수원시 영통구',
+    '41131': '성남시 수정구',
+    '41133': '성남시 중원구',
+    '41135': '성남시 분당구',
+    '41150': '의정부시',
+    '41170': '안양시 만안구',
+    '41171': '안양시 동안구',
+    '41190': '부천시',
+    '41210': '광명시',
+    '41220': '평택시',
+    '41250': '동두천시',
+    '41270': '안산시 상록구',
+    '41271': '안산시 단원구',
+    '41280': '고양시 덕양구',
+    '41281': '고양시 일산동구',
+    '41282': '고양시 일산서구',
+    '41285': '과천시',
+    '41287': '구리시',
+    '41290': '남양주시',
+    '41310': '오산시',
+    '41360': '시흥시',
+    '41370': '군포시',
+    '41390': '의왕시',
+    '41410': '하남시',
+    '41430': '용인시 기흥구',
+    '41450': '용인시 수지구',
+    '41461': '용인시 처인구',
+    '41463': '용인시 처인구',
+    '41465': '용인시 처인구',
+    '41480': '파주시',
+    '41500': '이천시',
+    '41550': '안성시',
+    '41570': '김포시',
+    '41590': '화성시',
+    '41610': '광주시',
+    '41630': '여주시',
+    '41650': '양평군',
+    '41670': '고양시',
+    '41690': '연천군',
+    '41730': '포천시',
+    '41750': '가평군',
+    '41790': '양주시',
+    '41800': '동두천시',
+    '41810': '연천군',
+    '41820': '포천시',
+    '41830': '가평군'
+  };
+
+  useEffect(() => {
+    // SVG 파일 로드
+    fetch('/gyeonggi.svg')
+      .then(response => response.text())
+      .then(svgText => {
+        setSvgContent(svgText);
+        
+        // SVG에서 지역 정보 추출
+        const parser = new DOMParser();
+        const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+        const paths = svgDoc.querySelectorAll('path[id]');
+        
+        const extractedRegions = Array.from(paths).map(path => {
+          const id = path.getAttribute('id');
+          const name = regionNames[id] || `지역 ${id}`;
+          return { id, name, element: path };
+        });
+        
+        setRegions(extractedRegions);
+      })
+      .catch(error => {
+        console.error('SVG 로드 실패:', error);
+      });
+  }, []);
 
   const handleRegionClick = (region) => {
+    setSelectedRegion(region);
     onCitySelect(region.name);
   };
 
   const handleRegionHover = (region) => {
-    setHoveredRegion(region);
+    if (selectedRegion?.id !== region.id) {
+      setHoveredRegion(region);
+    }
   };
 
   const handleRegionLeave = () => {
     setHoveredRegion(null);
+  };
+
+  // SVG 내용을 dangerouslySetInnerHTML로 렌더링하고 이벤트 핸들러 추가
+  const renderSvgWithInteractivity = () => {
+    if (!svgContent) return null;
+
+    const parser = new DOMParser();
+    const svgDoc = parser.parseFromString(svgContent, 'image/svg+xml');
+    const svgElement = svgDoc.querySelector('svg');
+    
+    if (!svgElement) return null;
+
+    // SVG 크기 조정
+    svgElement.setAttribute('width', '100%');
+    svgElement.setAttribute('height', 'auto');
+    svgElement.setAttribute('viewBox', '0 0 800 437');
+    
+    // 각 지역에 이벤트 핸들러 추가
+    regions.forEach(region => {
+      const path = svgElement.querySelector(`#${region.id}`);
+      if (path) {
+        // 기본 스타일 설정
+        path.style.cursor = 'pointer';
+        path.style.transition = 'all 0.3s ease';
+        
+        // 선택된 지역인지 확인하여 스타일 적용
+        if (selectedRegion?.id === region.id) {
+          path.style.fill = '#FF7419';
+          path.style.stroke = '#EA580C';
+          path.style.strokeWidth = '2.5';
+          path.style.filter = 'drop-shadow(0 6px 12px rgba(255, 116, 25, 0.4))';
+          path.classList.add('selected');
+        } else {
+          path.style.fill = '#F3F4F6';
+          path.style.stroke = '#D1D5DB';
+          path.style.strokeWidth = '1.5';
+          path.style.filter = 'none';
+          path.classList.remove('selected');
+        }
+        
+        // 호버 효과를 위한 CSS 클래스 추가
+        path.classList.add('region-path');
+        
+        // 클릭 이벤트
+        path.onclick = () => handleRegionClick(region);
+        
+        // 호버 이벤트 (선택되지 않은 지역만)
+        if (selectedRegion?.id !== region.id) {
+          path.onmouseenter = () => {
+            path.style.fill = '#FF7419';
+            path.style.stroke = '#EA580C';
+            path.style.strokeWidth = '2';
+            path.style.filter = 'drop-shadow(0 4px 8px rgba(255, 116, 25, 0.3))';
+            handleRegionHover(region);
+          };
+          
+          path.onmouseleave = () => {
+            path.style.fill = '#F3F4F6';
+            path.style.stroke = '#D1D5DB';
+            path.style.strokeWidth = '1.5';
+            path.style.filter = 'none';
+            handleRegionLeave();
+          };
+        }
+      }
+    });
+
+    return svgElement.outerHTML;
   };
 
   return (
@@ -63,7 +201,7 @@ const RegionGrid = ({ onCitySelect }) => {
       </div>
 
       {/* 경기도 지도 컨테이너 */}
-      <div className="relative bg-white rounded-2xl shadow-lg border border-gray-200 p-6 max-w-md w-full mb-6">
+      <div className="relative bg-white rounded-2xl shadow-lg border border-gray-200 p-6 max-w-4xl w-full mb-6">
         <div className="text-center mb-4">
           <h2 className="text-lg font-semibold text-gray-800">경기도</h2>
           <p className="text-sm text-gray-500">31개 시·군</p>
@@ -71,70 +209,47 @@ const RegionGrid = ({ onCitySelect }) => {
         
         {/* SVG 경기도 지도 */}
         <div className="relative">
-          <svg 
-            viewBox="0 0 100 100" 
+          <style>{svgStyles}</style>
+          <div 
             className="w-full h-auto"
-            style={{ minHeight: '300px' }}
-          >
-            {/* 경기도 외곽선 (간단한 직사각형) */}
-            <rect 
-              x="10" y="8" 
-              width="80" height="85" 
-              fill="none" 
-              stroke="#E5E7EB" 
-              strokeWidth="2"
-              rx="3"
-            />
-            
-            {/* 지역별 원형 마커 */}
-            {regions.map((region) => (
-              <g key={region.id}>
-                <circle
-                  cx={region.x}
-                  cy={region.y}
-                  r="3"
-                  fill={hoveredRegion?.id === region.id ? '#FF7419' : region.color}
-                  stroke="#FFFFFF"
-                  strokeWidth="1"
-                  style={{ 
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    filter: hoveredRegion?.id === region.id ? 'drop-shadow(0 0 8px rgba(255, 116, 25, 0.6))' : 'none'
-                  }}
-                  onClick={() => handleRegionClick(region)}
-                  onMouseEnter={() => handleRegionHover(region)}
-                  onMouseLeave={handleRegionLeave}
-                />
-                
-                {/* 지역명 라벨 */}
-                <text
-                  x={region.x}
-                  y={region.y + 8}
-                  textAnchor="middle"
-                  fontSize="2.5"
-                  fill={hoveredRegion?.id === region.id ? '#FF7419' : '#6B7280'}
-                  fontWeight={hoveredRegion?.id === region.id ? 'bold' : 'normal'}
-                  style={{ 
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    pointerEvents: 'none'
-                  }}
-                >
-                  {region.name}
-                </text>
-              </g>
-            ))}
-            
-            {/* 서울 표시 (참고용) */}
-            <circle cx="35" cy="35" r="2" fill="#FFD700" stroke="#FFFFFF" strokeWidth="0.5" />
-            <text x="35" y="42" textAnchor="middle" fontSize="2" fill="#FFD700" fontWeight="bold">서울</text>
-            
-            {/* 인천 표시 (참고용) */}
-            <circle cx="25" cy="55" r="2" fill="#FFD700" stroke="#FFFFFF" strokeWidth="0.5" />
-            <text x="25" y="62" textAnchor="middle" fontSize="2" fill="#FFD700" fontWeight="bold">인천</text>
-          </svg>
+            style={{ minHeight: '400px' }}
+            dangerouslySetInnerHTML={{ __html: renderSvgWithInteractivity() }}
+          />
           
+          {/* 호버된 지역 정보 표시 */}
+          {hoveredRegion && !selectedRegion && (
+            <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-3 border border-gray-200">
+              <div className="text-sm font-medium text-gray-800">{hoveredRegion.name}</div>
+              <div className="text-xs text-gray-500">클릭하여 선택</div>
+            </div>
+          )}
+          
+          {/* 선택된 지역 정보 표시 */}
+          {selectedRegion && (
+            <div className="absolute top-4 right-4 bg-orange-500 text-white rounded-lg shadow-lg p-4 border border-orange-600">
+              <div className="text-sm font-bold mb-1">선택된 지역</div>
+              <div className="text-base font-medium">{selectedRegion.name}</div>
+              <button 
+                onClick={() => setSelectedRegion(null)}
+                className="mt-2 text-xs bg-white text-orange-500 px-2 py-1 rounded hover:bg-orange-50 transition-colors"
+              >
+                선택 해제
+              </button>
+            </div>
+          )}
         </div>
+        
+        {/* 다음 단계 버튼 */}
+        {selectedRegion && (
+          <div className="text-center mt-6">
+            <button 
+              onClick={() => onCitySelect(selectedRegion.name)}
+              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+            >
+              {selectedRegion.name}에서 지역화폐 사용하기 →
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 푸터 */}
