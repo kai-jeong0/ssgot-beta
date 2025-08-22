@@ -107,9 +107,15 @@ const RegionGrid = ({ onCitySelect }) => {
 
   useEffect(() => {
     // SVG 파일 로드
-    fetch('./gyeonggi.svg')
-      .then(response => response.text())
+    fetch('/gyeonggi.svg')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.text();
+      })
       .then(svgText => {
+        console.log('SVG 로드 성공, 길이:', svgText.length);
         setSvgContent(svgText);
         
         // SVG에서 지역 정보 추출
@@ -217,11 +223,13 @@ const RegionGrid = ({ onCitySelect }) => {
   // SVG를 React 컴포넌트로 렌더링
   const renderSvgComponent = () => {
     if (!svgContent) {
+      // SVG 로드 실패 시 대체 UI
       return (
         <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg">
           <div className="text-center text-gray-600">
             <div className="text-base font-medium mb-2">지도 로딩 중...</div>
             <div className="text-sm">잠시만 기다려주세요</div>
+            <div className="text-xs mt-2 text-gray-400">SVG 파일을 불러오는 중입니다</div>
           </div>
         </div>
       );
@@ -237,7 +245,8 @@ const RegionGrid = ({ onCitySelect }) => {
           <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg">
             <div className="text-center text-gray-600">
               <div className="text-base font-medium mb-2">지도 표시 오류</div>
-              <div className="text-sm">페이지를 새로고침해주세요</div>
+              <div className="text-sm">SVG 요소를 찾을 수 없습니다</div>
+              <div className="text-xs mt-2 text-gray-400">페이지를 새로고침해주세요</div>
             </div>
           </div>
         );
@@ -246,14 +255,16 @@ const RegionGrid = ({ onCitySelect }) => {
       // SVG 속성 설정
       const svgProps = {
         width: '100%',
-        height: '400',
-        viewBox: '0 0 800 437',
+        height: '600',
+        viewBox: '0 0 800 600',
         preserveAspectRatio: 'xMidYMid meet',
         className: 'w-full h-full'
       };
 
       // SVG 내용을 문자열로 추출
       const svgInnerHTML = svgElement.innerHTML;
+      
+      console.log('SVG 렌더링 성공, 내부 요소 수:', svgInnerHTML.split('<path').length - 1);
       
       return (
         <svg {...svgProps} dangerouslySetInnerHTML={{ __html: svgInnerHTML }} />
@@ -265,6 +276,7 @@ const RegionGrid = ({ onCitySelect }) => {
           <div className="text-center text-gray-600">
             <div className="text-base font-medium mb-2">지도 렌더링 오류</div>
             <div className="text-sm">오류: {error.message}</div>
+            <div className="text-xs mt-2 text-gray-400">콘솔을 확인해주세요</div>
           </div>
         </div>
       );

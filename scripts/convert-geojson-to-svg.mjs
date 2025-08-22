@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-// 경기도 시군구 정보
+// 경기도 시군구 정보 (실제 GeoJSON에 있는 모든 지역)
 const regionNames = {
     '41111': '수원시 장안구',
     '41113': '수원시 권선구', 
@@ -77,16 +77,21 @@ function convertGeoJSONToSVG(geoJSONPath, outputPath) {
             }
         });
         
+        console.log(`좌표 범위: X(${minX} ~ ${maxX}), Y(${minY} ~ ${maxY})`);
+        
         const rangeX = maxX - minX;
         const rangeY = maxY - minY;
         const scale = Math.min((width - 40) / rangeX, (height - 40) / rangeY);
         const offsetX = (width - rangeX * scale) / 2;
         const offsetY = (height - rangeY * scale) / 2;
         
+        console.log(`변환 스케일: ${scale}, 오프셋: (${offsetX}, ${offsetY})`);
+        
         let svgContent = `<?xml version="1.0"?>
 <svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny" width="100%" height="900" viewBox="0 0 ${width} ${height}" stroke-linecap="round" stroke-linejoin="round">
 <g id="gyeonggi-regions">`;
         
+        let processedCount = 0;
         geoData.features.forEach(feature => {
             if (feature.geometry && feature.geometry.coordinates && feature.geometry.coordinates[0]) {
                 const id = feature.id;
@@ -101,6 +106,7 @@ function convertGeoJSONToSVG(geoJSONPath, outputPath) {
                 
                 svgContent += `
 <path id="${id}" d="M ${coords} Z" data-name="${name}" />`;
+                processedCount++;
             }
         });
         
@@ -111,10 +117,11 @@ function convertGeoJSONToSVG(geoJSONPath, outputPath) {
         // SVG 파일 저장
         fs.writeFileSync(outputPath, svgContent, 'utf8');
         console.log(`SVG 파일 생성 완료: ${outputPath}`);
+        console.log(`처리된 지역 수: ${processedCount}개`);
         
         // 생성된 지역 수 확인
         const pathCount = (svgContent.match(/<path/g) || []).length;
-        console.log(`생성된 지역 수: ${pathCount}개`);
+        console.log(`생성된 path 요소 수: ${pathCount}개`);
         
     } catch (error) {
         console.error('변환 중 오류 발생:', error);
