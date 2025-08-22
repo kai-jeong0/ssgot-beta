@@ -7,8 +7,8 @@ const RegionGrid = ({ onCitySelect }) => {
   const [selectedRegion, setSelectedRegion] = useState(null);
 
   useEffect(() => {
-    // 새로 생성된 정확한 SVG 파일을 public/gyeonggi-accurate.svg에서 불러오기
-    fetch('/gyeonggi-accurate.svg')
+    // 새로 생성된 31개 도시 SVG 파일을 public/gyeonggi-31-cities.svg에서 불러오기
+    fetch('/gyeonggi-31-cities.svg')
       .then(response => {
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -29,9 +29,20 @@ const RegionGrid = ({ onCitySelect }) => {
 
   // SVG 클릭 이벤트 핸들러
   const handleSvgClick = (event) => {
-    if (event.target.tagName === 'path') {
-      const regionId = event.target.parentElement.getAttribute('data-region-id');
-      const regionName = event.target.parentElement.getAttribute('data-name');
+    // rect 요소나 g 요소를 클릭했을 때 처리
+    if (event.target.tagName === 'rect' || event.target.tagName === 'g') {
+      let regionId, regionName;
+      
+      if (event.target.tagName === 'rect') {
+        // rect를 클릭한 경우 부모 g 요소에서 정보 가져오기
+        const parentGroup = event.target.parentElement;
+        regionId = parentGroup.getAttribute('data-region-id');
+        regionName = parentGroup.getAttribute('data-name');
+      } else {
+        // g 요소를 직접 클릭한 경우
+        regionId = event.target.getAttribute('data-region-id');
+        regionName = event.target.getAttribute('data-name');
+      }
       
       if (regionId && regionName) {
         setSelectedRegion({ id: regionId, name: regionName });
@@ -90,7 +101,7 @@ const RegionGrid = ({ onCitySelect }) => {
       <div className="relative bg-white rounded-2xl shadow-lg border border-gray-200 p-6 max-w-6xl w-full mb-6">
         <div className="text-center mb-4">
           <h2 className="text-lg font-semibold text-gray-800">경기도</h2>
-          <p className="text-sm text-gray-500">40개 시·군</p>
+          <p className="text-sm text-gray-500">31개 도시</p>
         </div>
         
         {/* SVG 경기도 지도 */}
@@ -101,22 +112,22 @@ const RegionGrid = ({ onCitySelect }) => {
               height: auto;
               min-width: 800px;
             }
-            .gyeonggi-svg path {
+            .gyeonggi-svg rect {
               cursor: pointer;
               transition: all 0.3s ease;
             }
-            .gyeonggi-svg path:hover {
+            .gyeonggi-svg rect:hover {
               filter: brightness(1.1);
               stroke-width: 3;
               stroke: #ff7419;
             }
-            .gyeonggi-svg .region-text {
-              font-size: 10px;
+            .gyeonggi-svg .city-text {
+              font-size: 11px;
               font-weight: bold;
               fill: #333;
               pointer-events: none;
             }
-            .gyeonggi-svg .region-text:hover {
+            .gyeonggi-svg .city-text:hover {
               fill: #ff7419;
             }
           `}</style>
