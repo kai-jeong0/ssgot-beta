@@ -31,6 +31,21 @@ const svgStyles = `
     stroke-width: 2 !important;
     filter: drop-shadow(0 4px 8px rgba(255, 116, 25, 0.3)) !important;
   }
+  
+  /* SVG 컨테이너 스타일 */
+  .svg-container {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    overflow: visible;
+  }
+  
+  .svg-container svg {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    display: block;
+  }
 `;
 
 const RegionGrid = ({ onCitySelect }) => {
@@ -180,10 +195,14 @@ const RegionGrid = ({ onCitySelect }) => {
         `;
       }
 
-      // SVG 크기 조정
-      svgElement.setAttribute('width', '100%');
-      svgElement.setAttribute('height', 'auto');
+      // SVG 크기 조정 - CSS로 크기 제어
+      svgElement.setAttribute('width', '800');
+      svgElement.setAttribute('height', '437');
       svgElement.setAttribute('viewBox', '0 0 800 437');
+      svgElement.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      svgElement.style.width = '100%';
+      svgElement.style.height = 'auto';
+      svgElement.style.maxHeight = '400px';
       
       // 각 지역에 이벤트 핸들러 추가
       regions.forEach(region => {
@@ -294,7 +313,7 @@ const RegionGrid = ({ onCitySelect }) => {
         <div className="relative">
           <style>{svgStyles}</style>
           <div 
-            className="w-full h-auto"
+            className="svg-container"
             style={{ minHeight: '400px' }}
             dangerouslySetInnerHTML={{ __html: renderSvgWithInteractivity() }}
           />
