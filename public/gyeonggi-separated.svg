@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="385" height="435" viewBox="126.65 37 127.75 37.8" xmlns="http://www.w3.org/2000/svg">
+  <!-- 개별 시도군 path들 -->
+  <path id="41111" d="M 126.65,37 L 126.85,37 L 126.85,37.2 L 126.65,37.2 L 126.65,37 Z" fill="none" stroke="black" stroke-width="0.5" data-name="수원시 장안구" />
+<path id="41113" d="M 126.95,37 L 127.14999999999999,37 L 127.14999999999999,37.2 L 126.95,37.2 L 126.95,37 Z" fill="none" stroke="black" stroke-width="0.5" data-name="수원시 연천구" />
+<path id="41115" d="M 127.25000000000001,37 L 127.45,37 L 127.45,37.2 L 127.25000000000001,37.2 L 127.25000000000001,37 Z" fill="none" stroke="black" stroke-width="0.5" data-name="수원시 팔달구" />
+<path id="41117" d="M 127.55000000000001,37 L 127.75,37 L 127.75,37.2 L 127.55000000000001,37.2 L 127.55000000000001,37 Z" fill="none" stroke="black" stroke-width="0.5" data-name="수원시 영통구" />
+<path id="41131" d="M 126.65,37.3 L 126.85,37.3 L 126.85,37.5 L 126.65,37.5 L 126.65,37.3 Z" fill="none" stroke="black" stroke-width="0.5" data-name="성남시 수정구" />
+<path id="41133" d="M 126.95,37.3 L 127.14999999999999,37.3 L 127.14999999999999,37.5 L 126.95,37.5 L 126.95,37.3 Z" fill="none" stroke="black" stroke-width="0.5" data-name="성남시 중원구" />
+<path id="41135" d="M 127.25000000000001,37.3 L 127.45,37.3 L 127.45,37.5 L 127.25000000000001,37.5 L 127.25000000000001,37.3 Z" fill="none" stroke="black" stroke-width="0.5" data-name="성남시 분당구" />
+<path id="41150" d="M 127.55000000000001,37.3 L 127.75,37.3 L 127.75,37.5 L 127.55000000000001,37.5 L 127.55000000000001,37.3 Z" fill="none" stroke="black" stroke-width="0.5" data-name="의정부시" />
+<path id="41170" d="M 126.65,37.599999999999994 L 126.85,37.599999999999994 L 126.85,37.8 L 126.65,37.8 L 126.65,37.599999999999994 Z" fill="none" stroke="black" stroke-width="0.5" data-name="안양시 만안구" />
+<path id="41171" d="M 126.95,37.599999999999994 L 127.14999999999999,37.599999999999994 L 127.14999999999999,37.8 L 126.95,37.8 L 126.95,37.599999999999994 Z" fill="none" stroke="black" stroke-width="0.5" data-name="안양시 동안구" />
+<path id="41190" d="M 127.25000000000001,37.599999999999994 L 127.45,37.599999999999994 L 127.45,37.8 L 127.25000000000001,37.8 L 127.25000000000001,37.599999999999994 Z" fill="none" stroke="black" stroke-width="0.5" data-name="부천시" />
+<path id="41210" d="M 127.55000000000001,37.599999999999994 L 127.75,37.599999999999994 L 127.75,37.8 L 127.55000000000001,37.8 L 127.55000000000001,37.599999999999994 Z" fill="none" stroke="black" stroke-width="0.5" data-name="광명시" />
+
+  
+  <!-- 시도군 그룹들 (텍스트 포함) -->
+  <g id="group-41111" data-name="수원시 장안구">
+  <path d="M 126.65,37 L 126.85,37 L 126.85,37.2 L 126.65,37.2 L 126.65,37 Z" fill="none" stroke="black" stroke-width="0.5" />
+  <text x="126.75" y="37.1" text-anchor="middle" font-size="8">수원시 장안구</text>
+</g>
+<g id="group-41113" data-name="수원시 연천구">
+  <path d="M 126.95,37 L 127.14999999999999,37 L 127.14999999999999,37.2 L 126.95,37.2 L 126.95,37 Z" fill="none" stroke="black" stroke-width="0.5" />
+  <text x="127.05" y="37.1" text-anchor="middle" font-size="8">수원시 연천구</text>
+</g>
+<g id="group-41115" data-name="수원시 팔달구">
+  <path d="M 127.25000000000001,37 L 127.45,37 L 127.45,37.2 L 127.25000000000001,37.2 L 127.25000000000001,37 Z" fill="none" stroke="black" stroke-width="0.5" />
+  <text x="127.35000000000001" y="37.1" text-anchor="middle" font-size="8">수원시 팔달구</text>
+</g>
+<g id="group-41117" data-name="수원시 영통구">
+  <path d="M 127.55000000000001,37 L 127.75,37 L 127.75,37.2 L 127.55000000000001,37.2 L 127.55000000000001,37 Z" fill="none" stroke="black" stroke-width="0.5" />
+  <text x="127.65" y="37.1" text-anchor="middle" font-size="8">수원시 영통구</text>
+</g>
+<g id="group-41131" data-name="성남시 수정구">
+  <path d="M 126.65,37.3 L 126.85,37.3 L 126.85,37.5 L 126.65,37.5 L 126.65,37.3 Z" fill="none" stroke="black" stroke-width="0.5" />
+  <text x="126.75" y="37.4" text-anchor="middle" font-size="8">성남시 수정구</text>
+</g>
+<g id="group-41133" data-name="성남시 중원구">
+  <path d="M 126.95,37.3 L 127.14999999999999,37.3 L 127.14999999999999,37.5 L 126.95,37.5 L 126.95,37.3 Z" fill="none" stroke="black" stroke-width="0.5" />
+  <text x="127.05" y="37.4" text-anchor="middle" font-size="8">성남시 중원구</text>
+</g>
+<g id="group-41135" data-name="성남시 분당구">
+  <path d="M 127.25000000000001,37.3 L 127.45,37.3 L 127.45,37.5 L 127.25000000000001,37.5 L 127.25000000000001,37.3 Z" fill="none" stroke="black" stroke-width="0.5" />
+  <text x="127.35000000000001" y="37.4" text-anchor="middle" font-size="8">성남시 분당구</text>
+</g>
+<g id="group-41150" data-name="의정부시">
+  <path d="M 127.55000000000001,37.3 L 127.75,37.3 L 127.75,37.5 L 127.55000000000001,37.5 L 127.55000000000001,37.3 Z" fill="none" stroke="black" stroke-width="0.5" />
+  <text x="127.65" y="37.4" text-anchor="middle" font-size="8">의정부시</text>
+</g>
+<g id="group-41170" data-name="안양시 만안구">
+  <path d="M 126.65,37.599999999999994 L 126.85,37.599999999999994 L 126.85,37.8 L 126.65,37.8 L 126.65,37.599999999999994 Z" fill="none" stroke="black" stroke-width="0.5" />
+  <text x="126.75" y="37.699999999999996" text-anchor="middle" font-size="8">안양시 만안구</text>
+</g>
+<g id="group-41171" data-name="안양시 동안구">
+  <path d="M 126.95,37.599999999999994 L 127.14999999999999,37.599999999999994 L 127.14999999999999,37.8 L 126.95,37.8 L 126.95,37.599999999999994 Z" fill="none" stroke="black" stroke-width="0.5" />
+  <text x="127.05" y="37.699999999999996" text-anchor="middle" font-size="8">안양시 동안구</text>
+</g>
+<g id="group-41190" data-name="부천시">
+  <path d="M 127.25000000000001,37.599999999999994 L 127.45,37.599999999999994 L 127.45,37.8 L 127.25000000000001,37.8 L 127.25000000000001,37.599999999999994 Z" fill="none" stroke="black" stroke-width="0.5" />
+  <text x="127.35000000000001" y="37.699999999999996" text-anchor="middle" font-size="8">부천시</text>
+</g>
+<g id="group-41210" data-name="광명시">
+  <path d="M 127.55000000000001,37.599999999999994 L 127.75,37.599999999999994 L 127.75,37.8 L 127.55000000000001,37.8 L 127.55000000000001,37.599999999999994 Z" fill="none" stroke="black" stroke-width="0.5" />
+  <text x="127.65" y="37.699999999999996" text-anchor="middle" font-size="8">광명시</text>
+</g>
+
+</svg>

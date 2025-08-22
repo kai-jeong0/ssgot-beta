@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="385" height="435" viewBox="0 0 385 435" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .region { cursor: pointer; transition: fill 0.3s ease; }
+      .region:hover { fill-opacity: 0.8; }
+      .region-text { font-size: 10px; text-anchor: middle; pointer-events: none; }
+    </style>
+  </defs>
+  
+  <!-- 배경 -->
+  <rect width="100%" height="100%" fill="#f8f9fa"/>
+  
+  <!-- 시도군별 영역 (테스트용 격자) -->
+  <!-- 수원시 장안구 -->
+  <g id="41111" class="region" data-name="수원시 장안구">
+    <rect x="0" y="0" width="96.25" height="108.75" 
+          fill="#FFE4E1" stroke="#333" stroke-width="1" 
+          data-region-id="41111" />
+    <text x="48.125" y="54.375" 
+          class="region-text" fill="#333">수원시 장안구</text>
+  </g>
+  <!-- 수원시 권선구 -->
+  <g id="41113" class="region" data-name="수원시 권선구">
+    <rect x="96.25" y="0" width="96.25" height="108.75" 
+          fill="#E6E6FA" stroke="#333" stroke-width="1" 
+          data-region-id="41113" />
+    <text x="144.375" y="54.375" 
+          class="region-text" fill="#333">수원시 권선구</text>
+  </g>
+  <!-- 수원시 팔달구 -->
+  <g id="41115" class="region" data-name="수원시 팔달구">
+    <rect x="192.5" y="0" width="96.25" height="108.75" 
+          fill="#F0F8FF" stroke="#333" stroke-width="1" 
+          data-region-id="41115" />
+    <text x="240.625" y="54.375" 
+          class="region-text" fill="#333">수원시 팔달구</text>
+  </g>
+  <!-- 수원시 영통구 -->
+  <g id="41117" class="region" data-name="수원시 영통구">
+    <rect x="288.75" y="0" width="96.25" height="108.75" 
+          fill="#F5F5DC" stroke="#333" stroke-width="1" 
+          data-region-id="41117" />
+    <text x="336.875" y="54.375" 
+          class="region-text" fill="#333">수원시 영통구</text>
+  </g>
+  <!-- 성남시 수정구 -->
+  <g id="41131" class="region" data-name="성남시 수정구">
+    <rect x="0" y="108.75" width="96.25" height="108.75" 
+          fill="#FFE4B5" stroke="#333" stroke-width="1" 
+          data-region-id="41131" />
+    <text x="48.125" y="163.125" 
+          class="region-text" fill="#333">성남시 수정구</text>
+  </g>
+  <!-- 성남시 중원구 -->
+  <g id="41133" class="region" data-name="성남시 중원구">
+    <rect x="96.25" y="108.75" width="96.25" height="108.75" 
+          fill="#E0FFFF" stroke="#333" stroke-width="1" 
+          data-region-id="41133" />
+    <text x="144.375" y="163.125" 
+          class="region-text" fill="#333">성남시 중원구</text>
+  </g>
+  <!-- 성남시 분당구 -->
+  <g id="41135" class="region" data-name="성남시 분당구">
+    <rect x="192.5" y="108.75" width="96.25" height="108.75" 
+          fill="#FFF0F5" stroke="#333" stroke-width="1" 
+          data-region-id="41135" />
+    <text x="240.625" y="163.125" 
+          class="region-text" fill="#333">성남시 분당구</text>
+  </g>
+  <!-- 의정부시 -->
+  <g id="41150" class="region" data-name="의정부시">
+    <rect x="288.75" y="108.75" width="96.25" height="108.75" 
+          fill="#F0FFF0" stroke="#333" stroke-width="1" 
+          data-region-id="41150" />
+    <text x="336.875" y="163.125" 
+          class="region-text" fill="#333">의정부시</text>
+  </g>
+  <!-- 안양시 만안구 -->
+  <g id="41170" class="region" data-name="안양시 만안구">
+    <rect x="0" y="217.5" width="96.25" height="108.75" 
+          fill="#FFF8DC" stroke="#333" stroke-width="1" 
+          data-region-id="41170" />
+    <text x="48.125" y="271.875" 
+          class="region-text" fill="#333">안양시 만안구</text>
+  </g>
+  <!-- 안양시 동안구 -->
+  <g id="41171" class="region" data-name="안양시 동안구">
+    <rect x="96.25" y="217.5" width="96.25" height="108.75" 
+          fill="#FDF5E6" stroke="#333" stroke-width="1" 
+          data-region-id="41171" />
+    <text x="144.375" y="271.875" 
+          class="region-text" fill="#333">안양시 동안구</text>
+  </g>
+  <!-- 부천시 -->
+  <g id="41190" class="region" data-name="부천시">
+    <rect x="192.5" y="217.5" width="96.25" height="108.75" 
+          fill="#F5F5F5" stroke="#333" stroke-width="1" 
+          data-region-id="41190" />
+    <text x="240.625" y="271.875" 
+          class="region-text" fill="#333">부천시</text>
+  </g>
+  <!-- 광명시 -->
+  <g id="41210" class="region" data-name="광명시">
+    <rect x="288.75" y="217.5" width="96.25" height="108.75" 
+          fill="#FFEFD5" stroke="#333" stroke-width="1" 
+          data-region-id="41210" />
+    <text x="336.875" y="271.875" 
+          class="region-text" fill="#333">광명시</text>
+  </g>
+  <!-- 평택시 -->
+  <g id="41220" class="region" data-name="평택시">
+    <rect x="0" y="326.25" width="96.25" height="108.75" 
+          fill="#F0F8FF" stroke="#333" stroke-width="1" 
+          data-region-id="41220" />
+    <text x="48.125" y="380.625" 
+          class="region-text" fill="#333">평택시</text>
+  </g>
+  <!-- 동두천시 -->
+  <g id="41250" class="region" data-name="동두천시">
+    <rect x="96.25" y="326.25" width="96.25" height="108.75" 
+          fill="#FFF0F5" stroke="#333" stroke-width="1" 
+          data-region-id="41250" />
+    <text x="144.375" y="380.625" 
+          class="region-text" fill="#333">동두천시</text>
+  </g>
+  <!-- 안산시 -->
+  <g id="41270" class="region" data-name="안산시">
+    <rect x="192.5" y="326.25" width="96.25" height="108.75" 
+          fill="#F0FFF0" stroke="#333" stroke-width="1" 
+          data-region-id="41270" />
+    <text x="240.625" y="380.625" 
+          class="region-text" fill="#333">안산시</text>
+  </g>
+  <!-- 고양시 -->
+  <g id="41280" class="region" data-name="고양시">
+    <rect x="288.75" y="326.25" width="96.25" height="108.75" 
+          fill="#FFF8DC" stroke="#333" stroke-width="1" 
+          data-region-id="41280" />
+    <text x="336.875" y="380.625" 
+          class="region-text" fill="#333">고양시</text>
+  </g>
+</svg>

@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .region { 
+        cursor: pointer; 
+        transition: all 0.3s ease; 
+        stroke: #333; 
+        stroke-width: 2;
+      }
+      .region:hover { 
+        fill-opacity: 0.8; 
+        stroke-width: 3;
+        stroke: #ff7419;
+      }
+      .region-text { 
+        font-size: 10px; 
+        text-anchor: middle; 
+        pointer-events: none; 
+        font-family: 'Noto Sans KR', Arial, sans-serif;
+        font-weight: bold;
+        fill: #333;
+      }
+      .region-text:hover {
+        fill: #ff7419;
+      }
+      .title {
+        font-size: 24px;
+        font-weight: bold;
+        text-anchor: middle;
+        fill: #333;
+        font-family: 'Noto Sans KR', Arial, sans-serif;
+      }
+      .subtitle {
+        font-size: 14px;
+        text-anchor: middle;
+        fill: #666;
+        font-family: 'Noto Sans KR', Arial, sans-serif;
+      }
+    </style>
+  </defs>
+  
+  <!-- 제목 -->
+  <text x="400" y="30" class="title">경기도</text>
+  <text x="400" y="50" class="subtitle">31개 시·군</text>
+  
+  <!-- 배경 -->
+  <rect width="100%" height="100%" fill="#f8f9fa"/>
+  
+  <!-- 경기도 전체 윤곽선 (간단한 사각형) -->
+  <rect x="50" y="70" width="700" height="480" 
+        fill="none" stroke="#333" stroke-width="3" stroke-dasharray="5,5"/>
+  
+  <!-- 각 시도군 영역 -->
+  <!-- 수원시 장안구 -->
+  <g id="41111" class="region" data-name="수원시 장안구" data-region-id="41111">
+    <path d="M 200 150 L 280 150 L 280 210 L 200 210 Z" fill="#FFE4E1" />
+    <text x="240" y="183" class="region-text">수원시 장안구</text>
+  </g>
+  <!-- 수원시 권선구 -->
+  <g id="41113" class="region" data-name="수원시 권선구" data-region-id="41113">
+    <path d="M 280 150 L 360 150 L 360 210 L 280 210 Z" fill="#E6E6FA" />
+    <text x="320" y="183" class="region-text">수원시 권선구</text>
+  </g>
+  <!-- 수원시 팔달구 -->
+  <g id="41115" class="region" data-name="수원시 팔달구" data-region-id="41115">
+    <path d="M 200 210 L 280 210 L 280 270 L 200 270 Z" fill="#F0F8FF" />
+    <text x="240" y="243" class="region-text">수원시 팔달구</text>
+  </g>
+  <!-- 수원시 영통구 -->
+  <g id="41117" class="region" data-name="수원시 영통구" data-region-id="41117">
+    <path d="M 280 210 L 360 210 L 360 270 L 280 270 Z" fill="#F5F5DC" />
+    <text x="320" y="243" class="region-text">수원시 영통구</text>
+  </g>
+  <!-- 성남시 수정구 -->
+  <g id="41131" class="region" data-name="성남시 수정구" data-region-id="41131">
+    <path d="M 150 280 L 230 280 L 230 340 L 150 340 Z" fill="#FFE4B5" />
+    <text x="190" y="313" class="region-text">성남시 수정구</text>
+  </g>
+  <!-- 성남시 중원구 -->
+  <g id="41133" class="region" data-name="성남시 중원구" data-region-id="41133">
+    <path d="M 230 280 L 310 280 L 310 340 L 230 340 Z" fill="#E0FFFF" />
+    <text x="270" y="313" class="region-text">성남시 중원구</text>
+  </g>
+  <!-- 성남시 분당구 -->
+  <g id="41135" class="region" data-name="성남시 분당구" data-region-id="41135">
+    <path d="M 310 280 L 390 280 L 390 340 L 310 340 Z" fill="#FFF0F5" />
+    <text x="350" y="313" class="region-text">성남시 분당구</text>
+  </g>
+  <!-- 의정부시 -->
+  <g id="41150" class="region" data-name="의정부시" data-region-id="41150">
+    <path d="M 320 80 L 400 80 L 400 140 L 320 140 Z" fill="#F0FFF0" />
+    <text x="360" y="113" class="region-text">의정부시</text>
+  </g>
+  <!-- 안양시 만안구 -->
+  <g id="41170" class="region" data-name="안양시 만안구" data-region-id="41170">
+    <path d="M 150 350 L 230 350 L 230 410 L 150 410 Z" fill="#FFF8DC" />
+    <text x="190" y="383" class="region-text">안양시 만안구</text>
+  </g>
+  <!-- 안양시 동안구 -->
+  <g id="41171" class="region" data-name="안양시 동안구" data-region-id="41171">
+    <path d="M 230 350 L 310 350 L 310 410 L 230 410 Z" fill="#FDF5E6" />
+    <text x="270" y="383" class="region-text">안양시 동안구</text>
+  </g>
+  <!-- 부천시 -->
+  <g id="41190" class="region" data-name="부천시" data-region-id="41190">
+    <path d="M 310 350 L 390 350 L 390 410 L 310 410 Z" fill="#F5F5F5" />
+    <text x="350" y="383" class="region-text">부천시</text>
+  </g>
+  <!-- 광명시 -->
+  <g id="41210" class="region" data-name="광명시" data-region-id="41210">
+    <path d="M 310 410 L 390 410 L 390 470 L 310 470 Z" fill="#FFEFD5" />
+    <text x="350" y="443" class="region-text">광명시</text>
+  </g>
+  <!-- 평택시 -->
+  <g id="41220" class="region" data-name="평택시" data-region-id="41220">
+    <path d="M 100 410 L 180 410 L 180 470 L 100 470 Z" fill="#F0F8FF" />
+    <text x="140" y="443" class="region-text">평택시</text>
+  </g>
+  <!-- 동두천시 -->
+  <g id="41250" class="region" data-name="동두천시" data-region-id="41250">
+    <path d="M 400 80 L 480 80 L 480 140 L 400 140 Z" fill="#FFF0F5" />
+    <text x="440" y="113" class="region-text">동두천시</text>
+  </g>
+  <!-- 안산시 상록구 -->
+  <g id="41271" class="region" data-name="안산시 상록구" data-region-id="41271">
+    <path d="M 100 470 L 180 470 L 180 530 L 100 530 Z" fill="#E6F3FF" />
+    <text x="140" y="503" class="region-text">안산시 상록구</text>
+  </g>
+  <!-- 안산시 단원구 -->
+  <g id="41273" class="region" data-name="안산시 단원구" data-region-id="41273">
+    <path d="M 180 470 L 260 470 L 260 530 L 180 530 Z" fill="#F0FFF0" />
+    <text x="220" y="503" class="region-text">안산시 단원구</text>
+  </g>
+  <!-- 고양시 덕양구 -->
+  <g id="41281" class="region" data-name="고양시 덕양구" data-region-id="41281">
+    <path d="M 150 50 L 230 50 L 230 110 L 150 110 Z" fill="#FFF8DC" />
+    <text x="190" y="83" class="region-text">고양시 덕양구</text>
+  </g>
+  <!-- 고양시 일산동구 -->
+  <g id="41285" class="region" data-name="고양시 일산동구" data-region-id="41285">
+    <path d="M 230 50 L 310 50 L 310 110 L 230 110 Z" fill="#FDF5E6" />
+    <text x="270" y="83" class="region-text">고양시 일산동구</text>
+  </g>
+  <!-- 고양시 일산서구 -->
+  <g id="41287" class="region" data-name="고양시 일산서구" data-region-id="41287">
+    <path d="M 310 50 L 390 50 L 390 110 L 310 110 Z" fill="#F5F5F5" />
+    <text x="350" y="83" class="region-text">고양시 일산서구</text>
+  </g>
+  <!-- 과천시 -->
+  <g id="41290" class="region" data-name="과천시" data-region-id="41290">
+    <path d="M 230 410 L 310 410 L 310 470 L 230 470 Z" fill="#E6E6FA" />
+    <text x="270" y="443" class="region-text">과천시</text>
+  </g>
+  <!-- 구리시 -->
+  <g id="41310" class="region" data-name="구리시" data-region-id="41310">
+    <path d="M 400 150 L 480 150 L 480 210 L 400 210 Z" fill="#FFE4E1" />
+    <text x="440" y="183" class="region-text">구리시</text>
+  </g>
+  <!-- 남양주시 -->
+  <g id="41360" class="region" data-name="남양주시" data-region-id="41360">
+    <path d="M 480 150 L 560 150 L 560 210 L 480 210 Z" fill="#E0FFFF" />
+    <text x="520" y="183" class="region-text">남양주시</text>
+  </g>
+  <!-- 오산시 -->
+  <g id="41370" class="region" data-name="오산시" data-region-id="41370">
+    <path d="M 180 410 L 260 410 L 260 470 L 180 470 Z" fill="#FFF0F5" />
+    <text x="220" y="443" class="region-text">오산시</text>
+  </g>
+  <!-- 시흥시 -->
+  <g id="41390" class="region" data-name="시흥시" data-region-id="41390">
+    <path d="M 100 350 L 180 350 L 180 410 L 100 410 Z" fill="#F0FFF0" />
+    <text x="140" y="383" class="region-text">시흥시</text>
+  </g>
+  <!-- 군포시 -->
+  <g id="41410" class="region" data-name="군포시" data-region-id="41410">
+    <path d="M 150 280 L 230 280 L 230 340 L 150 340 Z" fill="#FFF8DC" />
+    <text x="190" y="313" class="region-text">군포시</text>
+  </g>
+  <!-- 의왕시 -->
+  <g id="41430" class="region" data-name="의왕시" data-region-id="41430">
+    <path d="M 230 280 L 310 280 L 310 340 L 230 340 Z" fill="#FDF5E6" />
+    <text x="270" y="313" class="region-text">의왕시</text>
+  </g>
+  <!-- 하남시 -->
+  <g id="41450" class="region" data-name="하남시" data-region-id="41450">
+    <path d="M 390 280 L 470 280 L 470 340 L 390 340 Z" fill="#F5F5F5" />
+    <text x="430" y="313" class="region-text">하남시</text>
+  </g>
+  <!-- 용인시 기흥구 -->
+  <g id="41461" class="region" data-name="용인시 기흥구" data-region-id="41461">
+    <path d="M 470 280 L 550 280 L 550 340 L 470 340 Z" fill="#FFEFD5" />
+    <text x="510" y="313" class="region-text">용인시 기흥구</text>
+  </g>
+  <!-- 용인시 수지구 -->
+  <g id="41463" class="region" data-name="용인시 수지구" data-region-id="41463">
+    <path d="M 550 280 L 630 280 L 630 340 L 550 340 Z" fill="#E6F3FF" />
+    <text x="590" y="313" class="region-text">용인시 수지구</text>
+  </g>
+  <!-- 용인시 처인구 -->
+  <g id="41465" class="region" data-name="용인시 처인구" data-region-id="41465">
+    <path d="M 470 350 L 550 350 L 550 410 L 470 410 Z" fill="#F0FFF0" />
+    <text x="510" y="383" class="region-text">용인시 처인구</text>
+  </g>
+  <!-- 파주시 -->
+  <g id="41480" class="region" data-name="파주시" data-region-id="41480">
+    <path d="M 80 50 L 160 50 L 160 110 L 80 110 Z" fill="#FFF8DC" />
+    <text x="120" y="83" class="region-text">파주시</text>
+  </g>
+  <!-- 이천시 -->
+  <g id="41500" class="region" data-name="이천시" data-region-id="41500">
+    <path d="M 550 350 L 630 350 L 630 410 L 550 410 Z" fill="#FDF5E6" />
+    <text x="590" y="383" class="region-text">이천시</text>
+  </g>
+  <!-- 안성시 -->
+  <g id="41550" class="region" data-name="안성시" data-region-id="41550">
+    <path d="M 470 410 L 550 410 L 550 470 L 470 470 Z" fill="#F5F5F5" />
+    <text x="510" y="443" class="region-text">안성시</text>
+  </g>
+  <!-- 김포시 -->
+  <g id="41570" class="region" data-name="김포시" data-region-id="41570">
+    <path d="M 80 150 L 160 150 L 160 210 L 80 210 Z" fill="#FFEFD5" />
+    <text x="120" y="183" class="region-text">김포시</text>
+  </g>
+  <!-- 화성시 -->
+  <g id="41590" class="region" data-name="화성시" data-region-id="41590">
+    <path d="M 100 280 L 180 280 L 180 340 L 100 340 Z" fill="#E6F3FF" />
+    <text x="140" y="313" class="region-text">화성시</text>
+  </g>
+  <!-- 광주시 -->
+  <g id="41610" class="region" data-name="광주시" data-region-id="41610">
+    <path d="M 390 410 L 470 410 L 470 470 L 390 470 Z" fill="#F0FFF0" />
+    <text x="430" y="443" class="region-text">광주시</text>
+  </g>
+  <!-- 여주시 -->
+  <g id="41630" class="region" data-name="여주시" data-region-id="41630">
+    <path d="M 630 350 L 710 350 L 710 410 L 630 410 Z" fill="#FFF8DC" />
+    <text x="670" y="383" class="region-text">여주시</text>
+  </g>
+  <!-- 양평군 -->
+  <g id="41800" class="region" data-name="양평군" data-region-id="41800">
+    <path d="M 630 280 L 710 280 L 710 340 L 630 340 Z" fill="#FDF5E6" />
+    <text x="670" y="313" class="region-text">양평군</text>
+  </g>
+  <!-- 가평군 -->
+  <g id="41820" class="region" data-name="가평군" data-region-id="41820">
+    <path d="M 550 50 L 630 50 L 630 110 L 550 110 Z" fill="#F5F5F5" />
+    <text x="590" y="83" class="region-text">가평군</text>
+  </g>
+  <!-- 연천군 -->
+  <g id="41830" class="region" data-name="연천군" data-region-id="41830">
+    <path d="M 480 50 L 560 50 L 560 110 L 480 110 Z" fill="#FFEFD5" />
+    <text x="520" y="83" class="region-text">연천군</text>
+  </g>
+</svg>

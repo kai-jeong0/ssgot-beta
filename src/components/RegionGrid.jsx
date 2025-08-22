@@ -7,8 +7,8 @@ const RegionGrid = ({ onCitySelect }) => {
   const [selectedRegion, setSelectedRegion] = useState(null);
 
   useEffect(() => {
-    // 새로 생성된 SVG 파일을 public/gyeonggi-real-regions.svg에서 불러오기
-    fetch('/gyeonggi-real-regions.svg')
+    // 새로 생성된 정확한 SVG 파일을 public/gyeonggi-accurate.svg에서 불러오기
+    fetch('/gyeonggi-accurate.svg')
       .then(response => {
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -30,8 +30,8 @@ const RegionGrid = ({ onCitySelect }) => {
   // SVG 클릭 이벤트 핸들러
   const handleSvgClick = (event) => {
     if (event.target.tagName === 'path') {
-      const regionId = event.target.getAttribute('data-region-id');
-      const regionName = event.target.getAttribute('data-name');
+      const regionId = event.target.parentElement.getAttribute('data-region-id');
+      const regionName = event.target.parentElement.getAttribute('data-name');
       
       if (regionId && regionName) {
         setSelectedRegion({ id: regionId, name: regionName });
@@ -87,18 +87,19 @@ const RegionGrid = ({ onCitySelect }) => {
       </div>
 
       {/* 경기도 지도 컨테이너 */}
-      <div className="relative bg-white rounded-2xl shadow-lg border border-gray-200 p-6 max-w-4xl w-full mb-6">
+      <div className="relative bg-white rounded-2xl shadow-lg border border-gray-200 p-6 max-w-6xl w-full mb-6">
         <div className="text-center mb-4">
           <h2 className="text-lg font-semibold text-gray-800">경기도</h2>
-          <p className="text-sm text-gray-500">31개 시·군</p>
+          <p className="text-sm text-gray-500">40개 시·군</p>
         </div>
         
         {/* SVG 경기도 지도 */}
-        <div className="relative">
+        <div className="relative overflow-x-auto">
           <style>{`
             .gyeonggi-svg {
               width: 100%;
               height: auto;
+              min-width: 800px;
             }
             .gyeonggi-svg path {
               cursor: pointer;
@@ -106,10 +107,11 @@ const RegionGrid = ({ onCitySelect }) => {
             }
             .gyeonggi-svg path:hover {
               filter: brightness(1.1);
-              stroke-width: 2;
+              stroke-width: 3;
+              stroke: #ff7419;
             }
             .gyeonggi-svg .region-text {
-              font-size: 8px;
+              font-size: 10px;
               font-weight: bold;
               fill: #333;
               pointer-events: none;
