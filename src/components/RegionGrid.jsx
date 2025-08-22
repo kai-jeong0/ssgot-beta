@@ -82,7 +82,7 @@ const RegionGrid = ({ onCitySelect }) => {
 
   useEffect(() => {
     // SVG 파일 로드
-    fetch('/gyeonggi.svg')
+    fetch('./gyeonggi.svg')
       .then(response => response.text())
       .then(svgText => {
         setSvgContent(svgText);
@@ -102,6 +102,8 @@ const RegionGrid = ({ onCitySelect }) => {
       })
       .catch(error => {
         console.error('SVG 로드 실패:', error);
+        // SVG 로드 실패 시 대체 UI 표시
+        setSvgContent('');
       });
   }, []);
 
@@ -122,13 +124,32 @@ const RegionGrid = ({ onCitySelect }) => {
 
   // SVG 내용을 dangerouslySetInnerHTML로 렌더링하고 이벤트 핸들러 추가
   const renderSvgWithInteractivity = () => {
-    if (!svgContent) return null;
+    if (!svgContent) {
+      // SVG 로드 실패 시 대체 UI
+      return `
+        <div style="display: flex; align-items: center; justify-content: center; height: 400px; background: #f9fafb; border-radius: 8px;">
+          <div style="text-align: center; color: #6b7280;">
+            <div style="font-size: 16px; margin-bottom: 8px;">지도 로딩 중...</div>
+            <div style="font-size: 14px;">잠시만 기다려주세요</div>
+          </div>
+        </div>
+      `;
+    }
 
     const parser = new DOMParser();
     const svgDoc = parser.parseFromString(svgContent, 'image/svg+xml');
     const svgElement = svgDoc.querySelector('svg');
     
-    if (!svgElement) return null;
+    if (!svgElement) {
+      return `
+        <div style="display: flex; align-items: center; justify-content: center; height: 400px; background: #f9fafb; border-radius: 8px;">
+          <div style="text-align: center; color: #6b7280;">
+            <div style="font-size: 16px; margin-bottom: 8px;">지도 표시 오류</div>
+            <div style="font-size: 14px;">페이지를 새로고침해주세요</div>
+          </div>
+        </div>
+      `;
+    }
 
     // SVG 크기 조정
     svgElement.setAttribute('width', '100%');
