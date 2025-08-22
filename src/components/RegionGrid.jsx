@@ -4,10 +4,11 @@ const RegionGrid = ({ onCitySelect }) => {
   const [svgContent, setSvgContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedRegion, setSelectedRegion] = useState(null);
 
   useEffect(() => {
-    // SVG 파일을 public/assets/gyeonggi.svg에서 불러오기
-    fetch('/assets/gyeonggi.svg')
+    // 새로 생성된 SVG 파일을 public/gyeonggi-real-regions.svg에서 불러오기
+    fetch('/gyeonggi-real-regions.svg')
       .then(response => {
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -29,15 +30,16 @@ const RegionGrid = ({ onCitySelect }) => {
   // SVG 클릭 이벤트 핸들러
   const handleSvgClick = (event) => {
     if (event.target.tagName === 'path') {
-      const id = event.target.getAttribute('id');
-      const dataName = event.target.getAttribute('data-name');
+      const regionId = event.target.getAttribute('data-region-id');
+      const regionName = event.target.getAttribute('data-name');
       
-      // alert로 id와 data-name 표시
-      alert(`지역 ID: ${id}\n지역명: ${dataName}`);
-      
-      // 부모 컴포넌트에 선택된 지역 전달
-      if (onCitySelect && dataName) {
-        onCitySelect(dataName);
+      if (regionId && regionName) {
+        setSelectedRegion({ id: regionId, name: regionName });
+        
+        // 부모 컴포넌트에 선택된 지역 전달
+        if (onCitySelect) {
+          onCitySelect(regionName);
+        }
       }
     }
   };
@@ -88,7 +90,7 @@ const RegionGrid = ({ onCitySelect }) => {
       <div className="relative bg-white rounded-2xl shadow-lg border border-gray-200 p-6 max-w-4xl w-full mb-6">
         <div className="text-center mb-4">
           <h2 className="text-lg font-semibold text-gray-800">경기도</h2>
-          <p className="text-sm text-gray-500">12개 시·군</p>
+          <p className="text-sm text-gray-500">31개 시·군</p>
         </div>
         
         {/* SVG 경기도 지도 */}
@@ -99,14 +101,21 @@ const RegionGrid = ({ onCitySelect }) => {
               height: auto;
             }
             .gyeonggi-svg path {
-              fill: #f2b38c;
-              stroke: #333;
-              stroke-width: 1;
               cursor: pointer;
-              transition: fill 0.3s ease;
+              transition: all 0.3s ease;
             }
             .gyeonggi-svg path:hover {
-              fill: #ff8c5a;
+              filter: brightness(1.1);
+              stroke-width: 2;
+            }
+            .gyeonggi-svg .region-text {
+              font-size: 8px;
+              font-weight: bold;
+              fill: #333;
+              pointer-events: none;
+            }
+            .gyeonggi-svg .region-text:hover {
+              fill: #ff7419;
             }
           `}</style>
           
@@ -116,6 +125,20 @@ const RegionGrid = ({ onCitySelect }) => {
             onClick={handleSvgClick}
           />
         </div>
+
+        {/* 선택된 지역 표시 */}
+        {selectedRegion && (
+          <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+            <div className="text-center">
+              <div className="text-sm font-medium text-orange-800">
+                선택된 지역: <span className="font-bold">{selectedRegion.name}</span>
+              </div>
+              <div className="text-xs text-orange-600 mt-1">
+                지역 코드: {selectedRegion.id}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 푸터 */}
