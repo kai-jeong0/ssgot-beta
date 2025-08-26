@@ -7,12 +7,14 @@ import NaverStyleTest from './components/region/NaverStyleTest';
 import DebugTopo from './components/debug/DebugTopo';
 import BottomList from './components/BottomList';
 import RouteModal from './components/RouteModal';
+import SplashScreen from './components/SplashScreen';
 import { useKakaoMap } from './hooks/useKakaoMap';
 import { useStores } from './hooks/useStores';
 import './App.css';
 
 export default function App() {
   // 기본 상태
+  const [showSplash, setShowSplash] = useState(true);
   const [mode, setMode] = useState('region');
   const [selectedCity, setSelectedCity] = useState('');
   const [category, setCategory] = useState('all');
@@ -86,7 +88,7 @@ export default function App() {
         if (el) {
           el.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
         }
-      });
+      }, true); // 정보창 표시 활성화
     } else {
       // 업체가 없으면 마커 강조 해제
       if (kakaoObj && map) {
@@ -107,23 +109,38 @@ export default function App() {
     // 가게 정보 먼저 로드
     await loadStoresByCity(city);
     
-    // 카카오맵으로 해당 지역의 시청/군청 중심 이동
-    if (kakaoObj && map) {
-      const ps = new kakaoObj.maps.services.Places();
-      ps.keywordSearch(`${city}청`, (data, status) => {
-        if (status === kakaoObj.maps.services.Status.OK && data[0]) {
-          const center = new kakaoObj.maps.LatLng(+data[0].y, +data[0].x);
-          map.setCenter(center);
-          map.setLevel(8); // 적절한 줌 레벨로 설정
-          console.log(`🗺️ ${city} 시청/군청으로 지도 중심 이동:`, data[0].place_name);
-        } else {
-          console.warn(`⚠️ ${city} 시청/군청 검색 실패:`, status);
-          // 기본 좌표로 이동 (경기도 중심)
-          const defaultCenter = new kakaoObj.maps.LatLng(37.4138, 127.5183);
-          map.setCenter(defaultCenter);
-          map.setLevel(8);
-        }
-      });
+    // 첫 번째 업체 자동 선택 (업체가 있는 경우)
+    if (stores.length > 0) {
+      const firstStore = stores[0];
+      setSelectedId(firstStore.id);
+      console.log(`🎯 ${city} 첫 번째 업체 자동 선택:`, firstStore.name);
+      
+      // 지도 중심을 첫 번째 업체로 이동
+      if (kakaoObj && map) {
+        const center = new kakaoObj.maps.LatLng(firstStore.lat, firstStore.lng);
+        map.setCenter(center);
+        map.setLevel(6); // 업체 주변을 잘 보이도록 줌 레벨 조정
+        console.log(`🗺️ ${city} 첫 번째 업체로 지도 중심 이동:`, firstStore.name);
+      }
+    } else {
+      // 업체가 없는 경우 시청/군청으로 이동
+      if (kakaoObj && map) {
+        const ps = new kakaoObj.maps.services.Places();
+        ps.keywordSearch(`${city}청`, (data, status) => {
+          if (status === kakaoObj.maps.services.Status.OK && data[0]) {
+            const center = new kakaoObj.maps.LatLng(+data[0].y, +data[0].x);
+            map.setCenter(center);
+            map.setLevel(8); // 적절한 줌 레벨로 설정
+            console.log(`🗺️ ${city} 시청/군청으로 지도 중심 이동:`, data[0].place_name);
+          } else {
+            console.warn(`⚠️ ${city} 시청/군청 검색 실패:`, status);
+            // 기본 좌표로 이동 (경기도 중심)
+            const defaultCenter = new kakaoObj.maps.LatLng(37.4138, 127.5183);
+            map.setCenter(defaultCenter);
+            map.setLevel(8);
+          }
+        });
+      }
     }
   };
 
@@ -236,15 +253,68 @@ export default function App() {
     setShowRouteModal(true);
   };
 
-  const handleRouteSelect = (routeType) => {
+  const handleRouteSelect = async (routeType) => {
     if (!selectedStore) return;
     
     const { lat, lng, name } = selectedStore;
     let routeUrl = '';
     
-    // 현재 위치가 있으면 출발지로 설정
+    // 현재 위치가 없으면 먼저 위치 정보를 가져오기 시도
+    if (!myPos) {
+      try {
+        if (!navigator.geolocation) {
+          alert('위치 정보를 사용할 수 없습니다.');
+          return;
+        }
+        
+        const pos = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000
+          });
+        });
+        
+        const latitude = pos.coords.latitude;
+        const longitude = pos.coords.longitude;
+        setMyPos({ lat: latitude, lng: longitude });
+        
+        // 지도 중심을 현재 위치로 이동
+        if (map && kakaoObj) {
+          const loc = new kakaoObj.maps.LatLng(latitude, longitude);
+          map.setCenter(loc);
+          
+          // 내 위치 표시 원 생성
+          if (circle) {
+            circle.setMap(null);
+          }
+          const newCircle = new kakaoObj.maps.Circle({
+            center: loc,
+            radius: radius,
+            strokeWeight: 2,
+            strokeColor: '#FF7419',
+            strokeOpacity: 0.9,
+            fillColor: '#FF7419',
+            fillOpacity: 0.15
+          });
+          newCircle.setMap(map);
+          setCircle(newCircle);
+        }
+        
+        console.log('📍 길찾기를 위해 현재 위치 정보 가져옴:', { latitude, longitude });
+        
+      } catch (error) {
+        console.error('길찾기 위치 정보 가져오기 실패:', error);
+        alert('위치 정보를 가져오는데 실패했습니다. 길찏기 기능을 사용할 수 없습니다.');
+        return;
+      }
+    }
+    
+    // 현재 위치가 있으면 출발지로 설정하여 길찾기
     if (myPos) {
       const { lat: startLat, lng: startLng } = myPos;
+      
+      // 카카오맵 길찾기 URL 생성 (출발지: 내위치, 도착지: 선택된 업체)
       switch (routeType) {
         case 'walk':
           routeUrl = `https://map.kakao.com/link/route/${startLat},${startLng}/${lat},${lng}?mode=walk`;
@@ -258,21 +328,32 @@ export default function App() {
         default:
           routeUrl = `https://map.kakao.com/link/route/${startLat},${startLng}/${lat},${lng}`;
       }
+      
+      console.log(`🗺️ 길찏기 시작: ${routeType} 모드`, {
+        출발지: `(${startLat}, ${startLng})`,
+        도착지: `${name} (${lat}, ${lng})`,
+        URL: routeUrl
+      });
     } else {
-      // 현재 위치가 없으면 기존 방식 사용
-    switch (routeType) {
-      case 'walk':
-        routeUrl = `https://map.kakao.com/link/to/${name},${lat},${lng}?mode=walk`;
-        break;
-      case 'transit':
-        routeUrl = `https://map.kakao.com/link/to/${name},${lat},${lng}?mode=transit`;
-        break;
-      case 'car':
-        routeUrl = `https://map.kakao.com/link/to/${name},${lat},${lng}?mode=car`;
-        break;
-      default:
-        routeUrl = `https://map.kakao.com/link/to/${name},${lat},${lng}`;
+      // 위치 정보를 가져올 수 없는 경우 기본 길찏기 (도착지만 지정)
+      switch (routeType) {
+        case 'walk':
+          routeUrl = `https://map.kakao.com/link/to/${name},${lat},${lng}?mode=walk`;
+          break;
+        case 'transit':
+          routeUrl = `https://map.kakao.com/link/to/${name},${lat},${lng}?mode=transit`;
+          break;
+        case 'car':
+          routeUrl = `https://map.kakao.com/link/to/${name},${lat},${lng}?mode=car`;
+          break;
+        default:
+          routeUrl = `https://map.kakao.com/link/to/${name},${lat},${lng}`;
       }
+      
+      console.log(`🗺️ 기본 길찏기: ${routeType} 모드`, {
+        도착지: `${name} (${lat}, ${lng})`,
+        URL: routeUrl
+      });
     }
     
     window.open(routeUrl, '_blank');
@@ -305,6 +386,15 @@ export default function App() {
       };
     }
   }, [mode, searchName, category]);
+
+  // 스플래시 화면이 표시되는 동안 메인 앱을 숨김
+  if (showSplash) {
+    return (
+      <SplashScreen 
+        onComplete={() => setShowSplash(false)}
+      />
+    );
+  }
 
   return (
     <div className="frame">
@@ -399,33 +489,51 @@ export default function App() {
               if (map && kakaoObj) {
                 const position = new kakaoObj.maps.LatLng(store.lat, store.lng);
                 map.setCenter(position);
-                map.setLevel(3); // 줌 레벨 조정
+                map.setLevel(4); // 적절한 줌 레벨로 조정
                 
-                // 마커 강조 효과 (당근마켓 주황색)
+                // 마커 강조 효과 개선
+                const defaultMarker = new kakaoObj.maps.MarkerImage(
+                  'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+                  new kakaoObj.maps.Size(36, 37),
+                  { offset: new kakaoObj.maps.Point(18, 37) }
+                );
+                
+                const selectedMarker = new kakaoObj.maps.MarkerImage(
+                  'data:image/svg+xml;base64,' + btoa(`
+                    <svg width="36" height="37" viewBox="0 0 36 37" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M18 0c-7.2 0-13 5.8-13 13 0 7.2 13 24 13 24s13-16.8 13-24c0-7.2-5.8-13-13-13z" fill="#FF7419"/>
+                      <circle cx="18" cy="13" r="6" fill="white"/>
+                    </svg>
+                  `),
+                  new kakaoObj.maps.Size(36, 37),
+                  { offset: new kakaoObj.maps.Point(18, 37) }
+                );
+                
+                // 모든 마커를 기본 이미지로 리셋
                 Object.values(markerMap).forEach(marker => {
-                  // 기본 마커로 리셋
-                  const normalImage = new kakaoObj.maps.MarkerImage(
-                    'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
-                    new kakaoObj.maps.Size(36, 37),
-                    { offset: new kakaoObj.maps.Point(18, 37) }
-                  );
-                  marker.setImage(normalImage);
+                  marker.setImage(defaultMarker);
                 });
                 
+                // 선택된 마커를 강조
                 if (markerMap[store.id]) {
-                  // 선택된 마커를 당근마켓 주황색으로 강조
-                  const highlightImage = new kakaoObj.maps.MarkerImage(
-                    'data:image/svg+xml;base64,' + btoa(`
-                      <svg width="36" height="37" viewBox="0 0 36 37" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M18 0c-7.2 0-13 5.8-13 13 0 7.2 13 24 13 24s13-16.8 13-24c0-7.2-5.8-13-13-13z" fill="#FF7419"/>
-                        <circle cx="18" cy="13" r="6" fill="white"/>
-                      </svg>
-                    `),
-                    new kakaoObj.maps.Size(36, 37),
-                    { offset: new kakaoObj.maps.Point(18, 37) }
-                  );
-                  markerMap[store.id].setImage(highlightImage);
+                  markerMap[store.id].setImage(selectedMarker);
                   console.log(`📍 ${store.name} 마커 하이라이팅 처리 완료`);
+                  
+                  // 정보창 표시
+                  const infoContent = `
+                    <div style="padding: 10px; min-width: 200px;">
+                      <h3 style="margin: 0 0 5px 0; font-size: 14px; font-weight: bold;">${store.name}</h3>
+                      <p style="margin: 0; font-size: 12px; color: #666;">${store.address || '주소 정보 없음'}</p>
+                      <p style="margin: 5px 0 0 0; font-size: 12px; color: #FF7419;">지역화폐 사용 가능</p>
+                    </div>
+                  `;
+                  
+                  const infoWindow = new kakaoObj.maps.InfoWindow({
+                    content: infoContent,
+                    removable: true
+                  });
+                  
+                  infoWindow.open(map, markerMap[store.id]);
                 }
               }
             }}

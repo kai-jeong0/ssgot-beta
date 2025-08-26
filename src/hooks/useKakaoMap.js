@@ -64,8 +64,24 @@ export const useKakaoMap = (mode) => {
     
     console.log('지도 초기화 시작...', mapRef.current);
     try {
-      const center = new kakaoObj.maps.LatLng(37.440, 127.137);
-      const newMap = new kakaoObj.maps.Map(mapRef.current, { center, level: 6 });
+      const center = new kakaoObj.maps.LatLng(37.4138, 127.5183); // 경기도 중심
+      const newMap = new kakaoObj.maps.Map(mapRef.current, { 
+        center, 
+        level: 8, // 적절한 줌 레벨
+        draggable: true, // 드래그 가능
+        scrollwheel: true, // 마우스 휠 줌 가능
+        keyboardShortcuts: true, // 키보드 단축키 사용
+        disableDoubleClick: false, // 더블클릭 줌 활성화
+        disableDoubleTap: false, // 더블탭 줌 활성화 (모바일)
+        tileAnimation: true, // 타일 애니메이션 활성화
+        zoomControl: true, // 줌 컨트롤 표시
+        mapTypeControl: false, // 지도 타입 컨트롤 비활성화 (일반 지도만)
+        scaleControl: true, // 축척 표시
+        streetViewPanControl: false, // 거리뷰 컨트롤 비활성화
+        overviewMapControl: false, // 개요 지도 컨트롤 비활성화
+        fullscreenControl: false, // 전체화면 컨트롤 비활성화
+        searchControl: false // 검색 컨트롤 비활성화
+      });
       console.log('지도 생성 완료');
       setMap(newMap);
     } catch (error) {
@@ -82,21 +98,36 @@ export const useKakaoMap = (mode) => {
     // 기존 마커 제거
     markers.forEach(mk => mk.setMap(null));
     
-    const star = new kakaoObj.maps.MarkerImage(
-      'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png', 
-      new kakaoObj.maps.Size(24, 35)
+    // 기본 마커 이미지 (지역화폐 상점용)
+    const defaultMarker = new kakaoObj.maps.MarkerImage(
+      'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+      new kakaoObj.maps.Size(36, 37),
+      { offset: new kakaoObj.maps.Point(18, 37) }
+    );
+    
+    // 선택된 마커 이미지 (당근마켓 주황색)
+    const selectedMarker = new kakaoObj.maps.MarkerImage(
+      'data:image/svg+xml;base64,' + btoa(`
+        <svg width="36" height="37" viewBox="0 0 36 37" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 0c-7.2 0-13 5.8-13 13 0 7.2 13 24 13 24s13-16.8 13-24c0-7.2-5.8-13-13-13z" fill="#FF7419"/>
+          <circle cx="18" cy="13" r="6" fill="white"/>
+        </svg>
+      `),
+      new kakaoObj.maps.Size(36, 37),
+      { offset: new kakaoObj.maps.Point(18, 37) }
     );
     
     const mm = {};
     const newMarkers = stores.map(store => {
       const marker = new kakaoObj.maps.Marker({
         position: new kakaoObj.maps.LatLng(store.lat, store.lng),
-        title: store.name
+        title: store.name,
+        image: defaultMarker
       });
       
       marker.setMap(map);
       
-      // 마커 클릭 이벤트 (상세 정보 탭 비활성화)
+      // 마커 클릭 이벤트
       kakaoObj.maps.event.addListener(marker, 'click', () => {
         // 기존 정보창 닫기
         if (currentInfo) {
@@ -104,11 +135,30 @@ export const useKakaoMap = (mode) => {
           setCurrentInfo(null);
         }
         
-        // 강조 토글 (이전 선택 해제)
-        Object.values(mm).forEach(m => m.setImage(null));
+        // 모든 마커를 기본 이미지로 리셋
+        Object.values(mm).forEach(m => m.setImage(defaultMarker));
         
-        // 현재 마커 강조
-        marker.setImage(star);
+        // 현재 마커를 선택된 이미지로 강조
+        marker.setImage(selectedMarker);
+        
+        // 정보창 표시 (선택사항)
+        if (showInfoWindow) {
+          const infoContent = `
+            <div style="padding: 10px; min-width: 200px;">
+              <h3 style="margin: 0 0 5px 0; font-size: 14px; font-weight: bold;">${store.name}</h3>
+              <p style="margin: 0; font-size: 12px; color: #666;">${store.address || '주소 정보 없음'}</p>
+              <p style="margin: 5px 0 0 0; font-size: 12px; color: #FF7419;">지역화폐 사용 가능</p>
+            </div>
+          `;
+          
+          const infoWindow = new kakaoObj.maps.InfoWindow({
+            content: infoContent,
+            removable: true
+          });
+          
+          infoWindow.open(map, marker);
+          setCurrentInfo(infoWindow);
+        }
         
         // 콜백 실행 (하단 리스트 앵커링)
         onMarkerClick(store);
