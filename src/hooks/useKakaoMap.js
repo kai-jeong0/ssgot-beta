@@ -121,8 +121,7 @@ export const useKakaoMap = (mode) => {
       const marker = new kakaoObj.maps.Marker({
         position: new kakaoObj.maps.LatLng(store.lat, store.lng),
         title: store.name,
-        image: markerImage,
-        opacity: isSelected ? 1.0 : 0.4 // 선택되지 않은 마커는 투명도 낮춤
+        image: markerImage
       });
       
       marker.setMap(map);
@@ -135,15 +134,13 @@ export const useKakaoMap = (mode) => {
           setCurrentInfo(null);
         }
         
-        // 모든 마커를 기본 이미지로 리셋하고 약함처리
+        // 모든 마커를 기본 이미지로 리셋
         Object.values(mm).forEach(m => {
           m.setImage(defaultMarker);
-          m.setOpacity(0.4);
         });
         
         // 현재 마커를 선택된 이미지로 강조
         marker.setImage(selectedMarker);
-        marker.setOpacity(1.0);
         
         // 콜백 실행 (하단 리스트 앵커링)
         onMarkerClick(store);
