@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 const RegionGrid = ({ onCitySelect }) => {
-  const [svgContent, setSvgContent] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [selectedRegion, setSelectedRegion] = useState(null);
 
-  // 31개 시도군 데이터 (가나다순 정렬, 시만 표시)
+  // 31개 시도군 데이터 (가나다순 정렬)
   const regions = [
     { id: "41270", name: "안산시", type: "시", description: "반도체 산업도시", color: "#F0F8FF" },
     { id: "41170", name: "안양시", type: "시", description: "교통의 요충지", color: "#F5F5DC" },
@@ -41,27 +38,6 @@ const RegionGrid = ({ onCitySelect }) => {
     { id: "41840", name: "가평군", type: "군", description: "강원도 접경", color: "#FFFACD" }
   ];
 
-  useEffect(() => {
-    // 31개 시도군 SVG 파일을 public/gyeonggi-31-regions.svg에서 불러오기
-    fetch('/gyeonggi-31-regions.svg')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        return response.text();
-      })
-      .then(svgText => {
-        console.log('SVG 로드 성공, 길이:', svgText.length);
-        setSvgContent(svgText);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('SVG 로드 실패:', error);
-        setError(error.message);
-        setLoading(false);
-      });
-  }, []);
-
   // 지역 선택 핸들러
   const handleRegionSelect = (region) => {
     setSelectedRegion(region);
@@ -70,187 +46,110 @@ const RegionGrid = ({ onCitySelect }) => {
     if (onCitySelect) {
       onCitySelect(region.name);
     }
-
-    // SVG에서 해당 지역 하이라이트
-    highlightRegionInSVG(region.id);
   };
-
-  // SVG에서 지역 하이라이트
-  const highlightRegionInSVG = (regionId) => {
-    const svgElement = document.querySelector('.gyeonggi-svg svg');
-    if (svgElement) {
-      // 모든 지역의 하이라이트 제거
-      const allRegions = svgElement.querySelectorAll('.region');
-      allRegions.forEach(region => {
-        const circle = region.querySelector('circle');
-        if (circle) {
-          circle.style.stroke = 'none';
-          circle.style.strokeWidth = '0';
-        }
-      });
-
-      // 선택된 지역 하이라이트
-      const selectedRegion = svgElement.querySelector(`#${regionId}`);
-      if (selectedRegion) {
-        const circle = selectedRegion.querySelector('circle');
-        if (circle) {
-          circle.style.stroke = '#ff7419';
-          circle.style.strokeWidth = '3';
-        }
-      }
-    }
-  };
-
-  // 로딩 중일 때
-  if (loading) {
-    return (
-      <div className="bg-white flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="text-lg font-bold text-gray-900 mb-2">지도 로딩 중...</div>
-          <div className="text-sm text-gray-600">잠시만 기다려주세요</div>
-        </div>
-      </div>
-    );
-  }
-
-  // 에러 발생 시
-  if (error) {
-    return (
-      <div className="bg-white flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="text-lg font-bold text-red-600 mb-2">지도 로드 실패</div>
-          <div className="text-sm text-gray-600 mb-4">오류: {error}</div>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded"
-          >
-            다시 시도
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="bg-white h-screen flex flex-col">
+    <div className="bg-white min-h-screen">
       {/* 상단 헤더 */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">지역 선택</h1>
-          <p className="text-sm text-gray-600">경기도 31개 시도군 중 원하는 지역을 선택해주세요</p>
+      <div className="bg-white border-b border-gray-200 px-6 py-6">
+        <div className="max-w-7xl mx-auto text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">지역 선택</h1>
+          <p className="text-lg text-gray-600">경기도 31개 시도군 중 원하는 지역을 선택해주세요</p>
         </div>
       </div>
 
       {/* 메인 콘텐츠 */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* 좌측 - 지역 리스트 */}
-        <div className="w-80 bg-gray-50 border-r border-gray-200 flex flex-col">
-          {/* 지역 리스트 */}
-          <div className="flex-1 overflow-y-auto p-4">
-            <div className="space-y-2">
-              {regions.map((region) => (
-                <div
-                  key={region.id}
-                  onClick={() => handleRegionSelect(region)}
-                  className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-md ${
-                    selectedRegion?.id === region.id
-                      ? 'border-orange-500 bg-orange-50 shadow-md'
-                      : 'border-gray-200 bg-white hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-base font-semibold text-gray-900">
-                          {region.name}
-                        </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          region.type === '시' 
-                            ? 'bg-blue-100 text-blue-800' 
-                            : 'bg-green-100 text-green-800'
-                        }`}>
-                          {region.type}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-600">{region.description}</p>
-                    </div>
-                    <div className="ml-3">
-                      <div 
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: region.color }}
-                      ></div>
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* 지역 카드 그리드 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {regions.map((region) => (
+            <div
+              key={region.id}
+              onClick={() => handleRegionSelect(region)}
+              className={`group relative bg-white rounded-xl border-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 ${
+                selectedRegion?.id === region.id
+                  ? 'border-orange-500 shadow-lg scale-105'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              {/* 카드 배경색 */}
+              <div 
+                className="absolute inset-0 rounded-xl opacity-10 transition-opacity duration-300 group-hover:opacity-20"
+                style={{ backgroundColor: region.color }}
+              ></div>
+              
+              {/* 카드 내용 */}
+              <div className="relative p-6 text-center">
+                {/* 지역 타입 배지 */}
+                <div className="flex justify-center mb-3">
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    region.type === '시' 
+                      ? 'bg-blue-100 text-blue-800 border border-blue-200' 
+                      : 'bg-green-100 text-green-800 border border-green-200'
+                  }`}>
+                    {region.type}
+                  </span>
+                </div>
+                
+                {/* 지역명 */}
+                <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors duration-300">
+                  {region.name}
+                </h3>
+                
+                {/* 지역 설명 */}
+                <p className="text-sm text-gray-600 mb-3 leading-relaxed">
+                  {region.description}
+                </p>
+                
+                {/* 지역 코드 */}
+                <div className="text-xs text-gray-400 font-mono">
+                  {region.id}
+                </div>
+                
+                {/* 선택 표시 */}
+                {selectedRegion?.id === region.id && (
+                  <div className="absolute top-3 right-3">
+                    <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
                     </div>
                   </div>
-                </div>
-              ))}
+                )}
+              </div>
             </div>
-          </div>
+          ))}
         </div>
 
-        {/* 우측 - 지도 */}
-        <div className="flex-1 bg-white flex flex-col">
-          {/* 지도 제목 */}
-          <div className="p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-800">경기도 지도</h2>
-            <p className="text-sm text-gray-600">선택한 지역이 지도에서 하이라이트됩니다</p>
-          </div>
-
-          {/* SVG 지도 */}
-          <div className="flex-1 p-4 overflow-auto">
-            <div className="relative border border-gray-300 rounded-lg overflow-hidden">
-              <style>{`
-                .gyeonggi-svg {
-                  width: 100%;
-                  height: auto;
-                  max-width: 100%;
-                  display: block;
-                }
-                .gyeonggi-svg circle {
-                  cursor: pointer;
-                  transition: all 0.3s ease;
-                }
-                .gyeonggi-svg circle:hover {
-                  filter: brightness(1.1);
-                  stroke-width: 2;
-                  stroke: #ff7419;
-                }
-                .gyeonggi-svg .region-text {
-                  font-size: 10px;
-                  font-weight: bold;
-                  fill: #333;
-                  pointer-events: none;
-                  text-anchor: middle;
-                  dominant-baseline: middle;
-                }
-              `}</style>
-              
-              <div 
-                className="gyeonggi-svg"
-                dangerouslySetInnerHTML={{ __html: svgContent }}
-              />
-            </div>
-          </div>
-
-          {/* 선택된 지역 정보 */}
-          {selectedRegion && (
-            <div className="p-4 border-t border-gray-200 bg-gray-50">
-              <div className="text-center">
-                <div className="text-sm font-medium text-gray-700 mb-2">
-                  선택된 지역
+        {/* 선택된 지역 정보 */}
+        {selectedRegion && (
+          <div className="mt-12 max-w-2xl mx-auto">
+            <div className="bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-2xl p-8 text-center shadow-lg">
+              <div className="mb-4">
+                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
                 </div>
-                <div className="text-lg font-bold text-gray-900 mb-1">
+                <h2 className="text-2xl font-bold text-orange-900 mb-2">
+                  선택된 지역
+                </h2>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="text-3xl font-bold text-gray-900">
                   {selectedRegion.name}
                 </div>
-                <div className="text-sm text-gray-600 mb-2">
+                <div className="text-lg text-gray-700">
                   {selectedRegion.description}
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-sm text-gray-500 font-mono">
                   지역 코드: {selectedRegion.id}
                 </div>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
