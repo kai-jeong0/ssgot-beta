@@ -61,7 +61,7 @@ const RegionGrid = ({ onCitySelect }) => {
       {/* 메인 콘텐츠 */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* 지역 카드 그리드 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {regions.map((region) => (
             <div
               key={region.id}
@@ -79,25 +79,14 @@ const RegionGrid = ({ onCitySelect }) => {
               ></div>
               
               {/* 카드 내용 */}
-              <div className="relative p-6 text-center">
-                {/* 지역 타입 배지 */}
-                <div className="flex justify-center mb-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    region.type === '시' 
-                      ? 'bg-blue-100 text-blue-800 border border-blue-200' 
-                      : 'bg-green-100 text-green-800 border border-green-200'
-                  }`}>
-                    {region.type}
-                  </span>
-                </div>
-                
+              <div className="relative p-4 text-center">
                 {/* 지역명 */}
-                <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors duration-300">
+                <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors duration-300">
                   {region.name}
                 </h3>
                 
                 {/* 지역 설명 */}
-                <p className="text-sm text-gray-600 mb-3 leading-relaxed">
+                <p className="text-sm text-gray-600 mb-2 leading-relaxed">
                   {region.description}
                 </p>
                 
@@ -108,9 +97,9 @@ const RegionGrid = ({ onCitySelect }) => {
                 
                 {/* 선택 표시 */}
                 {selectedRegion?.id === region.id && (
-                  <div className="absolute top-3 right-3">
-                    <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <div className="absolute top-2 right-2">
+                    <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center">
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
