@@ -51,25 +51,25 @@ const RegionGrid = ({ onCitySelect }) => {
   };
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white min-h-screen flex flex-col">
       {/* 상단 헤더 */}
-      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-12">
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-8 flex-shrink-0">
         <div className="max-w-6xl mx-auto text-center">
-          <div className="mb-6">
-            <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
-              <MapPin className="w-8 h-8 text-white" />
+          <div className="mb-4">
+            <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center mx-auto mb-3">
+              <MapPin className="w-6 h-6 text-white" />
             </div>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-primary-text mb-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-primary-text mb-2">
             지역화폐를 쓸 곳을 선택해주세요
           </h1>
         </div>
       </div>
 
       {/* 메인 콘텐츠 */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
         {/* 지역 카드 그리드 */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-3 gap-3 max-w-6xl mx-auto">
           {regions.map((region) => (
             <Card
               key={region.id}
@@ -80,12 +80,12 @@ const RegionGrid = ({ onCitySelect }) => {
               }`}
               onClick={() => handleRegionSelect(region)}
             >
-              <CardContent className="p-4 text-center">
-                <CardTitle className="text-lg sm:text-xl mb-0">{region.name}</CardTitle>
+              <CardContent className="p-3 text-center">
+                <CardTitle className="text-sm sm:text-base font-bold mb-0">{region.name}</CardTitle>
                 {selectedRegion?.id === region.id && (
                   <div className="mt-2">
-                    <div className="w-5 h-5 bg-black rounded-full flex items-center justify-center mx-auto">
-                      <Check className="w-3 h-3 text-white" />
+                    <div className="w-4 h-4 bg-black rounded-full flex items-center justify-center mx-auto">
+                      <Check className="w-2 h-2 text-white" />
                     </div>
                   </div>
                 )}
@@ -96,24 +96,33 @@ const RegionGrid = ({ onCitySelect }) => {
 
         {/* 선택된 지역 정보 */}
         {selectedRegion && (
-          <div className="mt-12 max-w-2xl mx-auto px-4">
+          <div className="mt-8 max-w-2xl mx-auto px-4">
             <Card className="bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-black">
-              <CardHeader className="text-center pb-4">
-                <div className="w-20 h-20 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MapPin className="w-10 h-10 text-white" />
+              <CardHeader className="text-center pb-3">
+                <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-3">
+                  <MapPin className="w-8 h-8 text-white" />
                 </div>
-                <CardTitle className="text-2xl text-primary-text">
+                <CardTitle className="text-xl text-primary-text">
                   선택된 지역
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
-                <div className="text-3xl font-bold text-primary-text mb-2">
+                <div className="text-2xl font-bold text-primary-text mb-2">
                   {selectedRegion.name}
                 </div>
               </CardContent>
             </Card>
           </div>
         )}
+
+        {/* 푸터 */}
+        <footer className="mt-auto pt-8 pb-4">
+          <div className="max-w-6xl mx-auto px-4 text-center">
+            <p className="text-xs text-gray-500">
+              © kai.jeong — Contact: kai.jeong0@gmail.com
+            </p>
+          </div>
+        </footer>
       </div>
     </div>
   );
