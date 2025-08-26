@@ -439,9 +439,13 @@ export default function App() {
         </>
       )}
 
-      <div className="footer">
-        © kai.jeong — Contact: kai.jeong0@gmail.com
-      </div>
+      <footer className="bg-white border-t border-border-light py-8">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+          <p className="text-sm text-primary-body">
+            © kai.jeong — Contact: kai.jeong0@gmail.com
+          </p>
+        </div>
+      </footer>
 
       <RouteModal
         isOpen={showRouteModal}
