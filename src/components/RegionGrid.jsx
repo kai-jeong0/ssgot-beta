@@ -53,8 +53,7 @@ const RegionGrid = ({ onCitySelect }) => {
       {/* 상단 헤더 */}
       <div className="bg-white border-b border-gray-200 px-6 py-6">
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">지역 선택</h1>
-          <p className="text-lg text-gray-600">경기도 31개 시도군 중 원하는 지역을 선택해주세요</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">지역화폐를 쓸 곳을 선택해주세요</h1>
         </div>
       </div>
 
@@ -80,20 +79,10 @@ const RegionGrid = ({ onCitySelect }) => {
               
               {/* 카드 내용 */}
               <div className="relative p-4 text-center">
-                {/* 지역명 */}
-                <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors duration-300">
+                {/* 지역명만 표시 */}
+                <h3 className="text-lg font-bold text-gray-900 group-hover:text-orange-600 transition-colors duration-300">
                   {region.name}
                 </h3>
-                
-                {/* 지역 설명 */}
-                <p className="text-sm text-gray-600 mb-2 leading-relaxed">
-                  {region.description}
-                </p>
-                
-                {/* 지역 코드 */}
-                <div className="text-xs text-gray-400 font-mono">
-                  {region.id}
-                </div>
                 
                 {/* 선택 표시 */}
                 {selectedRegion?.id === region.id && (
@@ -128,12 +117,6 @@ const RegionGrid = ({ onCitySelect }) => {
               <div className="space-y-3">
                 <div className="text-3xl font-bold text-gray-900">
                   {selectedRegion.name}
-                </div>
-                <div className="text-lg text-gray-700">
-                  {selectedRegion.description}
-                </div>
-                <div className="text-sm text-gray-500 font-mono">
-                  지역 코드: {selectedRegion.id}
                 </div>
               </div>
             </div>
