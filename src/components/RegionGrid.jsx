@@ -34,7 +34,7 @@ const RegionGrid = ({ onCitySelect }) => {
     { id: "41630", name: "여주시" },
     { id: "41250", name: "동두천시" },
     { id: "41830", name: "양평군" },
-    { id: "41800", name: "고양군" },
+
     { id: "41820", name: "연천군" },
     { id: "41810", name: "포천군" },
     { id: "41840", name: "가평군" }

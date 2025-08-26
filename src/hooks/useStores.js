@@ -83,8 +83,10 @@ export const useStores = () => {
       const all = pages.flat();
       setStores(all);
       setFiltered(all);
+      return all; // 로드된 업체 정보 반환
     } catch (error) {
       console.error('도시별 가게 정보 로드 실패:', error);
+      return []; // 에러 시 빈 배열 반환
     } finally {
       setLoading(false);
     }
