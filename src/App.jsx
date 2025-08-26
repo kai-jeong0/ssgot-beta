@@ -88,7 +88,14 @@ export default function App() {
         if (el) {
           el.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
         }
-      }, false); // 정보창 표시 비활성화
+      }, false, selectedId); // 정보창 표시 비활성화, selectedId 전달
+      
+      // 첫 번째 업체가 선택되지 않은 경우 자동 선택
+      if (!selectedId && finalShown.length > 0) {
+        const firstStore = finalShown[0];
+        setSelectedId(firstStore.id);
+        console.log(`🎯 첫 번째 업체 자동 선택:`, firstStore.name);
+      }
     } else {
       // 업체가 없으면 마커 강조 해제
       if (kakaoObj && map) {
@@ -97,7 +104,7 @@ export default function App() {
         });
       }
     }
-  }, [finalShown, updateMarkers, kakaoObj, map, markerMap]);
+  }, [finalShown, updateMarkers, kakaoObj, map, markerMap, selectedId]);
 
   // 도시 선택
   const enterCity = async (city) => {
@@ -122,31 +129,8 @@ export default function App() {
         map.setLevel(6); // 업체 주변을 잘 보이도록 줌 레벨 조정
         console.log(`🗺️ ${city} 첫 번째 업체로 지도 중심 이동:`, firstStore.name);
         
-        // 첫 번째 업체 마커 강조 처리 (마커가 업데이트된 후)
-        setTimeout(() => {
-          if (markerMap[firstStore.id]) {
-            const defaultMarker = new kakaoObj.maps.MarkerImage(
-              'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
-              new kakaoObj.maps.Size(36, 37),
-              { offset: new kakaoObj.maps.Point(18, 37) }
-            );
-            
-            const selectedMarker = new kakaoObj.maps.MarkerImage(
-              'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_blue.png',
-              new kakaoObj.maps.Size(36, 37),
-              { offset: new kakaoObj.maps.Point(18, 37) }
-            );
-            
-            // 모든 마커를 기본 이미지로 리셋
-            Object.values(markerMap).forEach(marker => {
-              marker.setImage(defaultMarker);
-            });
-            
-            // 첫 번째 업체 마커를 강조
-            markerMap[firstStore.id].setImage(selectedMarker);
-            console.log(`📍 ${firstStore.name} 마커 강조 처리 완료`);
-          }
-        }, 100); // 마커 업데이트 후 약간의 지연을 두고 실행
+        // 마커 강조 처리는 updateMarkers에서 자동으로 처리됨
+        console.log(`📍 ${firstStore.name} 마커 강조 처리 준비 완료`);
       }
     } else {
       // 업체가 없는 경우 시청/군청으로 이동

@@ -90,15 +90,15 @@ export const useKakaoMap = (mode) => {
   }, [kakaoObj, mode]);
 
   // 마커 관리 (성능 최적화)
-  const updateMarkers = (stores, onMarkerClick, showInfoWindow = false) => {
+  const updateMarkers = (stores, onMarkerClick, showInfoWindow = false, selectedId = null) => {
     if (!map || !kakaoObj) return;
     
-    console.log(`마커 업데이트 시작: ${stores.length}개 업체`);
+    console.log(`마커 업데이트 시작: ${stores.length}개 업체, 선택된 ID: ${selectedId}`);
     
     // 기존 마커 제거
     markers.forEach(mk => mk.setMap(null));
     
-    // 기본 마커 이미지 (일반적인 핀)
+    // 기본 마커 이미지 (일반적인 핀 - 약함처리)
     const defaultMarker = new kakaoObj.maps.MarkerImage(
       'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
       new kakaoObj.maps.Size(36, 37),
@@ -112,12 +112,24 @@ export const useKakaoMap = (mode) => {
       { offset: new kakaoObj.maps.Point(18, 37) }
     );
     
+    // 약함처리된 마커 이미지 (투명도 낮춤)
+    const dimmedMarker = new kakaoObj.maps.MarkerImage(
+      'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+      new kakaoObj.maps.Size(36, 37),
+      { offset: new kakaoObj.maps.Point(18, 37) }
+    );
+    
     const mm = {};
     const newMarkers = stores.map(store => {
+      // 선택된 업체인지 확인하여 마커 이미지 결정
+      const isSelected = selectedId === store.id;
+      const markerImage = isSelected ? selectedMarker : dimmedMarker;
+      
       const marker = new kakaoObj.maps.Marker({
         position: new kakaoObj.maps.LatLng(store.lat, store.lng),
         title: store.name,
-        image: defaultMarker
+        image: markerImage,
+        opacity: isSelected ? 1.0 : 0.4 // 선택되지 않은 마커는 투명도 낮춤
       });
       
       marker.setMap(map);
@@ -130,13 +142,15 @@ export const useKakaoMap = (mode) => {
           setCurrentInfo(null);
         }
         
-        // 모든 마커를 기본 이미지로 리셋
-        Object.values(mm).forEach(m => m.setImage(defaultMarker));
+        // 모든 마커를 약함처리
+        Object.values(mm).forEach(m => {
+          m.setImage(dimmedMarker);
+          m.setOpacity(0.4);
+        });
         
         // 현재 마커를 선택된 이미지로 강조
         marker.setImage(selectedMarker);
-        
-        // 정보창 표시 비활성화 (요청사항에 따라 제거)
+        marker.setOpacity(1.0);
         
         // 콜백 실행 (하단 리스트 앵커링)
         onMarkerClick(store);
@@ -149,7 +163,7 @@ export const useKakaoMap = (mode) => {
     setMarkers(newMarkers);
     setMarkerMap(mm);
     
-    console.log(`마커 업데이트 완료: ${newMarkers.length}개 마커 생성`);
+    console.log(`마커 업데이트 완료: ${newMarkers.length}개 마커 생성, 선택된 마커 하이라이팅 완료`);
   };
 
   // 마커 강조 해제
