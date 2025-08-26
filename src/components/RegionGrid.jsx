@@ -7,8 +7,8 @@ const RegionGrid = ({ onCitySelect }) => {
   const [selectedRegion, setSelectedRegion] = useState(null);
 
   useEffect(() => {
-    // 새로 생성된 정확한 SVG 파일을 public/gyeonggi-accurate.svg에서 불러오기
-    fetch('/gyeonggi-accurate.svg')
+    // 31개 시도군 SVG 파일을 public/gyeonggi-31-regions.svg에서 불러오기
+    fetch('/gyeonggi-31-regions.svg')
       .then(response => {
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -29,9 +29,20 @@ const RegionGrid = ({ onCitySelect }) => {
 
   // SVG 클릭 이벤트 핸들러
   const handleSvgClick = (event) => {
-    if (event.target.tagName === 'path') {
-      const regionId = event.target.parentElement.getAttribute('data-region-id');
-      const regionName = event.target.parentElement.getAttribute('data-name');
+    // rect 요소나 g 요소를 클릭했을 때 처리
+    if (event.target.tagName === 'rect' || event.target.tagName === 'g') {
+      let regionId, regionName;
+      
+      if (event.target.tagName === 'rect') {
+        // rect를 클릭한 경우 부모 g 요소에서 정보 가져오기
+        const parentGroup = event.target.parentElement;
+        regionId = parentGroup.getAttribute('data-region-id');
+        regionName = parentGroup.getAttribute('data-name');
+      } else {
+        // g 요소를 직접 클릭한 경우
+        regionId = event.target.getAttribute('data-region-id');
+        regionName = event.target.getAttribute('data-name');
+      }
       
       if (regionId && regionName) {
         setSelectedRegion({ id: regionId, name: regionName });
@@ -47,7 +58,7 @@ const RegionGrid = ({ onCitySelect }) => {
   // 로딩 중일 때
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 flex flex-col items-center justify-center px-4 py-6">
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 py-6">
         <div className="text-center">
           <div className="text-lg font-bold text-gray-900 mb-2">지도 로딩 중...</div>
           <div className="text-sm text-gray-600">잠시만 기다려주세요</div>
@@ -59,7 +70,7 @@ const RegionGrid = ({ onCitySelect }) => {
   // 에러 발생 시
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 flex flex-col items-center justify-center px-4 py-6">
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 py-6">
         <div className="text-center">
           <div className="text-lg font-bold text-red-600 mb-2">지도 로드 실패</div>
           <div className="text-sm text-gray-600 mb-4">오류: {error}</div>
@@ -75,77 +86,88 @@ const RegionGrid = ({ onCitySelect }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 flex flex-col items-center justify-center px-4 py-6">
-      {/* 메인 제목 */}
-      <div className="text-center mb-6 max-w-sm mx-auto">
-        <h1 className="text-lg font-bold text-gray-900 mb-2 leading-tight">
-          💰 오늘은 어디서 <span className="text-orange-500">지역화폐</span>를 써볼까?
-        </h1>
-        <p className="text-sm text-gray-600 font-medium">
-          원하는 지역을 선택해주세요
-        </p>
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* 상단 - 서비스명과 캐치프라이즈 */}
+      <div className="bg-white border-b border-gray-200 px-6 py-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">쓰곳</h1>
+          <p className="text-lg text-gray-600">지역화폐를 사용할 지역을 선택해 주세요.</p>
+        </div>
       </div>
 
-      {/* 경기도 지도 컨테이너 */}
-      <div className="relative bg-white rounded-2xl shadow-lg border border-gray-200 p-6 max-w-6xl w-full mb-6">
-        <div className="text-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">경기도</h2>
-          <p className="text-sm text-gray-500">40개 시·군</p>
-        </div>
-        
-        {/* SVG 경기도 지도 */}
-        <div className="relative overflow-x-auto">
-          <style>{`
-            .gyeonggi-svg {
-              width: 100%;
-              height: auto;
-              min-width: 800px;
-            }
-            .gyeonggi-svg path {
-              cursor: pointer;
-              transition: all 0.3s ease;
-            }
-            .gyeonggi-svg path:hover {
-              filter: brightness(1.1);
-              stroke-width: 3;
-              stroke: #ff7419;
-            }
-            .gyeonggi-svg .region-text {
-              font-size: 10px;
-              font-weight: bold;
-              fill: #333;
-              pointer-events: none;
-            }
-            .gyeonggi-svg .region-text:hover {
-              fill: #ff7419;
-            }
-          `}</style>
-          
-          <div 
-            className="gyeonggi-svg"
-            dangerouslySetInnerHTML={{ __html: svgContent }}
-            onClick={handleSvgClick}
-          />
-        </div>
-
-        {/* 선택된 지역 표시 */}
-        {selectedRegion && (
-          <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-            <div className="text-center">
-              <div className="text-sm font-medium text-orange-800">
-                선택된 지역: <span className="font-bold">{selectedRegion.name}</span>
-              </div>
-              <div className="text-xs text-orange-600 mt-1">
-                지역 코드: {selectedRegion.id}
-              </div>
+      {/* 중단 - 지역 선택 UI */}
+      <div className="flex-1 px-6 py-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">경기도 31개 시도군</h2>
+              <p className="text-sm text-gray-500">행정경계에 맞춰 선택할 수 있는 지역</p>
             </div>
+            
+            {/* SVG 경기도 지도 */}
+            <div className="relative overflow-x-auto">
+              <style>{`
+                .gyeonggi-svg {
+                  width: 100%;
+                  height: auto;
+                  min-width: 800px;
+                }
+                .gyeonggi-svg rect {
+                  cursor: pointer;
+                  transition: all 0.3s ease;
+                }
+                .gyeonggi-svg rect:hover {
+                  filter: brightness(1.1);
+                  stroke-width: 3;
+                  stroke: #ff7419;
+                }
+                .gyeonggi-svg .region-text {
+                  font-size: 11px;
+                  font-weight: bold;
+                  fill: #333;
+                  pointer-events: none;
+                  text-anchor: middle;
+                  dominant-baseline: middle;
+                }
+                .gyeonggi-svg .region-text:hover {
+                  fill: #ff7419;
+                }
+              `}</style>
+              
+              <div 
+                className="gyeonggi-svg"
+                dangerouslySetInnerHTML={{ __html: svgContent }}
+                onClick={handleSvgClick}
+              />
+            </div>
+
+            {/* 선택된 지역 표시 */}
+            {selectedRegion && (
+              <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                <div className="text-center">
+                  <div className="text-sm font-medium text-orange-800 mb-2">
+                    선택된 지역
+                  </div>
+                  <div className="text-lg font-bold text-orange-900 mb-1">
+                    {selectedRegion.name}
+                  </div>
+                  <div className="text-xs text-orange-600">
+                    지역 코드: {selectedRegion.id}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
-      {/* 푸터 */}
-      <div className="text-center text-gray-400 text-xs">
-        © kai.jeong — Contact: kai.jeong0@gmail.com
+      {/* 하단 - 푸터 */}
+      <div className="bg-gray-50 border-t border-gray-200 px-6 py-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="text-sm text-gray-500">
+            © kai.jeong — Contact: kai.jeong0@gmail.com
+          </div>
+        </div>
       </div>
     </div>
   );
