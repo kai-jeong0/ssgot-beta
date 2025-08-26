@@ -64,7 +64,7 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
             {store.address && (
               <div className="flex items-start gap-1 text-xs text-primary-body">
                 <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                <span className="line-clamp-2">{store.address}</span>
+                <span className="truncate" title={store.address}>{store.address}</span>
               </div>
             )}
           </div>

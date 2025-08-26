@@ -121,6 +121,32 @@ export default function App() {
         map.setCenter(center);
         map.setLevel(6); // 업체 주변을 잘 보이도록 줌 레벨 조정
         console.log(`🗺️ ${city} 첫 번째 업체로 지도 중심 이동:`, firstStore.name);
+        
+        // 첫 번째 업체 마커 강조 처리 (마커가 업데이트된 후)
+        setTimeout(() => {
+          if (markerMap[firstStore.id]) {
+            const defaultMarker = new kakaoObj.maps.MarkerImage(
+              'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+              new kakaoObj.maps.Size(36, 37),
+              { offset: new kakaoObj.maps.Point(18, 37) }
+            );
+            
+            const selectedMarker = new kakaoObj.maps.MarkerImage(
+              'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_blue.png',
+              new kakaoObj.maps.Size(36, 37),
+              { offset: new kakaoObj.maps.Point(18, 37) }
+            );
+            
+            // 모든 마커를 기본 이미지로 리셋
+            Object.values(markerMap).forEach(marker => {
+              marker.setImage(defaultMarker);
+            });
+            
+            // 첫 번째 업체 마커를 강조
+            markerMap[firstStore.id].setImage(selectedMarker);
+            console.log(`📍 ${firstStore.name} 마커 강조 처리 완료`);
+          }
+        }, 100); // 마커 업데이트 후 약간의 지연을 두고 실행
       }
     } else {
       // 업체가 없는 경우 시청/군청으로 이동
