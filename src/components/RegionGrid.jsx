@@ -29,12 +29,12 @@ const RegionGrid = ({ onCitySelect }) => {
 
   // SVG 클릭 이벤트 핸들러
   const handleSvgClick = (event) => {
-    // rect 요소나 g 요소를 클릭했을 때 처리
-    if (event.target.tagName === 'rect' || event.target.tagName === 'g') {
+    // circle 요소나 g 요소를 클릭했을 때 처리
+    if (event.target.tagName === 'circle' || event.target.tagName === 'g') {
       let regionId, regionName;
       
-      if (event.target.tagName === 'rect') {
-        // rect를 클릭한 경우 부모 g 요소에서 정보 가져오기
+      if (event.target.tagName === 'circle') {
+        // circle을 클릭한 경우 부모 g 요소에서 정보 가져오기
         const parentGroup = event.target.parentElement;
         regionId = parentGroup.getAttribute('data-region-id');
         regionName = parentGroup.getAttribute('data-name');
@@ -99,11 +99,6 @@ const RegionGrid = ({ onCitySelect }) => {
       <div className="flex-1 px-6 py-8">
         <div className="max-w-6xl mx-auto">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="text-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-2">경기도 31개 시도군</h2>
-              <p className="text-sm text-gray-500">행정경계에 맞춰 선택할 수 있는 지역</p>
-            </div>
-            
             {/* SVG 경기도 지도 */}
             <div className="relative overflow-x-auto">
               <style>{`
@@ -112,17 +107,17 @@ const RegionGrid = ({ onCitySelect }) => {
                   height: auto;
                   min-width: 800px;
                 }
-                .gyeonggi-svg rect {
+                .gyeonggi-svg circle {
                   cursor: pointer;
                   transition: all 0.3s ease;
                 }
-                .gyeonggi-svg rect:hover {
+                .gyeonggi-svg circle:hover {
                   filter: brightness(1.1);
                   stroke-width: 3;
                   stroke: #ff7419;
                 }
                 .gyeonggi-svg .region-text {
-                  font-size: 11px;
+                  font-size: 12px;
                   font-weight: bold;
                   fill: #333;
                   pointer-events: none;
