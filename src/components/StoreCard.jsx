@@ -26,7 +26,7 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
 
   return (
     <Card
-      className={`cursor-pointer transition-all duration-200 hover:scale-105 ${
+      className={`cursor-pointer transition-all duration-200 hover:scale-105 h-full ${
         isSelected ? 'ring-2 ring-black ring-offset-2' : ''
       }`}
       data-card-id={store.id}
@@ -38,15 +38,15 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
             src={store.photo} 
             alt={store.name} 
             onError={onImgError}
-            className="w-full h-48 object-cover rounded-t-xl"
+            className="w-full h-32 object-cover rounded-t-xl"
           />
-          <div className="absolute top-3 left-3">
+          <div className="absolute top-2 left-2">
             <Badge variant={categoryInfo.color} className="text-xs">
               {categoryInfo.label}
             </Badge>
           </div>
           {store.status && (
-            <div className="absolute top-3 right-3">
+            <div className="absolute top-2 right-2">
               <Badge variant="outline" className="text-xs bg-white/90">
                 {store.status === 'open' ? '영업중' : '정보없음'}
               </Badge>
@@ -55,15 +55,15 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
         </div>
       </CardHeader>
       
-      <CardContent className="p-4">
-        <div className="space-y-3">
+      <CardContent className="p-3">
+        <div className="space-y-2">
           <div>
-            <h3 className="font-bold text-primary-text text-lg mb-1 line-clamp-2" title={store.name}>
+            <h3 className="font-bold text-primary-text text-sm mb-1 line-clamp-2" title={store.name}>
               {store.name}
             </h3>
             {store.address && (
-              <div className="flex items-start gap-2 text-sm text-primary-body">
-                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <div className="flex items-start gap-1 text-xs text-primary-body">
+                <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
                 <span className="line-clamp-2">{store.address}</span>
               </div>
             )}
@@ -71,7 +71,7 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
           
           <div className="flex items-center justify-between">
             {store.distance && (
-              <span className="text-sm text-primary-body">
+              <span className="text-xs text-primary-body">
                 {store.distance}m
               </span>
             )}
@@ -82,9 +82,9 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
                 e.stopPropagation();
                 onRoute(store);
               }}
-              className="flex items-center gap-2"
+              className="flex items-center gap-1 text-xs px-2 py-1 h-6"
             >
-              <Navigation className="w-4 h-4" />
+              <Navigation className="w-3 h-3" />
               찾아가기
             </Button>
           </div>

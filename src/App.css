@@ -18,8 +18,8 @@ body {
 }
 
 .frame {
-  min-width: 360px;
-  max-width: 480px;
+  min-width: 320px;
+  max-width: 430px; /* iPhone 16 Plus 기준 */
   margin: 0 auto;
   background: #fff;
   height: 100vh;
@@ -27,6 +27,8 @@ body {
   flex-direction: column;
   border-left: 1px solid var(--line);
   border-right: 1px solid var(--line);
+  overflow-x: auto; /* 가로 스크롤 */
+  overflow-y: auto; /* 세로 스크롤 */
 }
 
 /* 내 위치 버튼 */
@@ -245,4 +247,15 @@ body {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* 모바일 최적화 글씨 크기 */
+@media (max-width: 430px) {
+  .text-4xl { font-size: 1.75rem; } /* 28px */
+  .text-5xl { font-size: 2rem; } /* 32px */
+  .text-2xl { font-size: 1.25rem; } /* 20px */
+  .text-xl { font-size: 1.125rem; } /* 18px */
+  .text-lg { font-size: 1rem; } /* 16px */
+  .text-base { font-size: 0.875rem; } /* 14px */
+  .text-sm { font-size: 0.75rem; } /* 12px */
 }

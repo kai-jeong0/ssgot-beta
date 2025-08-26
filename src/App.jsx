@@ -377,11 +377,11 @@ export default function App() {
 
       {mode === 'map' && (
         <>
-          <div className="map-wrap">
+          <div className="map-wrap flex-1">
             <div ref={mapRef} className="map" />
             
             {/* 내 위치 버튼 */}
-                      <button 
+            <button 
               className="my-location-btn"
               onClick={handleNearby}
               aria-label="내 위치 표시"
@@ -391,7 +391,7 @@ export default function App() {
                 <circle cx="12" cy="12" r="10"></circle>
                 <circle cx="12" cy="12" r="3"></circle>
               </svg>
-                      </button>
+            </button>
           </div>
           
           <BottomList
