@@ -102,15 +102,15 @@ export const useKakaoMap = (mode) => {
     // 기본 마커 이미지 (쓰곳 커스텀 아이콘)
     const defaultMarker = new kakaoObj.maps.MarkerImage(
       '/assets/marker-default.svg',
-      new kakaoObj.maps.Size(36, 37),
-      { offset: new kakaoObj.maps.Point(18, 37) }
+      new kakaoObj.maps.Size(48, 49),
+      { offset: new kakaoObj.maps.Point(24, 49) }
     );
     
     // 선택된 마커 이미지 (쓰곳 커스텀 선택 아이콘)
     const selectedMarker = new kakaoObj.maps.MarkerImage(
       '/assets/marker-selected.svg',
-      new kakaoObj.maps.Size(36, 37),
-      { offset: new kakaoObj.maps.Point(18, 37) }
+      new kakaoObj.maps.Size(48, 49),
+      { offset: new kakaoObj.maps.Point(24, 49) }
     );
     
     const mm = {};
@@ -176,8 +176,8 @@ export const useKakaoMap = (mode) => {
     // 기본 마커 이미지 생성
     const defaultMarker = new kakaoObj.maps.MarkerImage(
       '/assets/marker-default.svg',
-      new kakaoObj.maps.Size(36, 37),
-      { offset: new kakaoObj.maps.Point(18, 37) }
+      new kakaoObj.maps.Size(48, 49),
+      { offset: new kakaoObj.maps.Point(24, 49) }
     );
     
     Object.values(markerMap).forEach(marker => {

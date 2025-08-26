@@ -1,12 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MapPin, Navigation } from 'lucide-react';
 import { Card, CardContent, CardHeader } from './ui/Card';
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
 
 const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  
   const onImgError = (e) => {
+    setImageError(true);
     e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect width='100%25' height='100%25' fill='%23f2f2f2'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E";
+  };
+
+  const onImgLoad = () => {
+    setImageLoaded(true);
   };
 
   // 카테고리 한글 매핑 및 색상
@@ -34,11 +42,20 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
     >
       <CardHeader className="p-0">
         <div className="relative">
+          {!imageLoaded && !imageError && (
+            <div className="w-full h-32 bg-gray-200 rounded-t-xl flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-carrot"></div>
+            </div>
+          )}
           <img 
             src={store.photo} 
             alt={store.name} 
             onError={onImgError}
-            className="w-full h-32 object-cover rounded-t-xl"
+            onLoad={onImgLoad}
+            className={`w-full h-32 object-cover rounded-t-xl transition-opacity duration-300 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={{ display: imageLoaded ? 'block' : 'none' }}
           />
           <div className="absolute top-2 left-2">
             <Badge variant={categoryInfo.color} className="text-xs">

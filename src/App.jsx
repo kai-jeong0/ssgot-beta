@@ -83,28 +83,26 @@ export default function App() {
       console.log(`마커 업데이트: ${finalShown.length}개 업체`);
       updateMarkers(finalShown, (store) => {
         setSelectedId(store.id);
-        // 하단 리스트에서 해당 업체로 스크롤
+        // 하단 리스트에서 해당 업체로 즉시 스크롤 (애니메이션 제거)
         const el = document.querySelector(`[data-card-id="${CSS.escape(store.id)}"]`);
         if (el) {
-          el.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+          el.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
         }
       }, false, selectedId); // 정보창 표시 비활성화, selectedId 전달
       
-      // 첫 번째 업체가 선택되지 않은 경우 자동 선택
-      if (!selectedId && finalShown.length > 0) {
-        const firstStore = finalShown[0];
-        setSelectedId(firstStore.id);
-        console.log(`🎯 첫 번째 업체 자동 선택:`, firstStore.name);
-        
-        // 첫 번째 업체로 하단 리스트 앵커링
-        setTimeout(() => {
+              // 첫 번째 업체가 선택되지 않은 경우 자동 선택
+        if (!selectedId && finalShown.length > 0) {
+          const firstStore = finalShown[0];
+          setSelectedId(firstStore.id);
+          console.log(`🎯 첫 번째 업체 자동 선택:`, firstStore.name);
+          
+          // 첫 번째 업체로 하단 리스트 앵커링 (즉시)
           const el = document.querySelector(`[data-card-id="${CSS.escape(firstStore.id)}"]`);
           if (el) {
-            el.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+            el.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
             console.log(`📍 ${firstStore.name} 하단 리스트 앵커링 완료`);
           }
-        }, 100);
-      }
+        }
     } else {
       // 업체가 없으면 마커 강조 해제
       if (kakaoObj && map) {
@@ -124,23 +122,32 @@ export default function App() {
     // 가게 정보 먼저 로드
     const loadedStores = await loadStoresByCity(city);
     
-    // 첫 번째 업체 자동 선택 (업체가 있는 경우)
-    if (loadedStores && loadedStores.length > 0) {
-      const firstStore = loadedStores[0];
-      setSelectedId(firstStore.id);
-      console.log(`🎯 ${city} 첫 번째 업체 자동 선택:`, firstStore.name);
-      
-      // 지도 중심을 첫 번째 업체로 이동
-      if (kakaoObj && map) {
-        const center = new kakaoObj.maps.LatLng(firstStore.lat, firstStore.lng);
-        map.setCenter(center);
-        map.setLevel(6); // 업체 주변을 잘 보이도록 줌 레벨 조정
-        console.log(`🗺️ ${city} 첫 번째 업체로 지도 중심 이동:`, firstStore.name);
-        
-        // 마커 강조 처리는 useEffect에서 자동으로 처리됨
-        console.log(`📍 ${firstStore.name} 마커 강조 처리 준비 완료`);
-      }
-    } else {
+              // 첫 번째 업체 자동 선택 (업체가 있는 경우)
+          if (loadedStores && loadedStores.length > 0) {
+            const firstStore = loadedStores[0];
+            setSelectedId(firstStore.id);
+            console.log(`🎯 ${city} 첫 번째 업체 자동 선택:`, firstStore.name);
+            
+            // 지도 중심을 첫 번째 업체로 이동
+            if (kakaoObj && map) {
+              const center = new kakaoObj.maps.LatLng(firstStore.lat, firstStore.lng);
+              map.setCenter(center);
+              map.setLevel(6); // 업체 주변을 잘 보이도록 줌 레벨 조정
+              console.log(`🗺️ ${city} 첫 번째 업체로 지도 중심 이동:`, firstStore.name);
+              
+              // 마커 강조 처리는 useEffect에서 자동으로 처리됨
+              console.log(`📍 ${firstStore.name} 마커 강조 처리 준비 완료`);
+            }
+            
+            // 첫 번째 업체로 하단 리스트 앵커링 (즉시)
+            setTimeout(() => {
+              const el = document.querySelector(`[data-card-id="${CSS.escape(firstStore.id)}"]`);
+              if (el) {
+                el.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
+                console.log(`📍 ${firstStore.name} 하단 리스트 앵커링 완료`);
+              }
+            }, 100);
+          } else {
       // 업체가 없는 경우 시청/군청으로 이동
       if (kakaoObj && map) {
         const ps = new kakaoObj.maps.services.Places();
@@ -257,20 +264,29 @@ export default function App() {
           const loadedStores = await loadStoresByCity(siGun);
           console.log('내주변 검색 - 가게 정보 로드 완료');
           
-          // 첫 번째 업체 자동 선택 (업체가 있는 경우)
-          if (loadedStores && loadedStores.length > 0) {
-            const firstStore = loadedStores[0];
-            setSelectedId(firstStore.id);
-            console.log(`🎯 내주변 검색 - 첫 번째 업체 자동 선택:`, firstStore.name);
-            
-            // 지도 중심을 첫 번째 업체로 이동
-            if (kakaoObj && map) {
-              const center = new kakaoObj.maps.LatLng(firstStore.lat, firstStore.lng);
-              map.setCenter(center);
-              map.setLevel(6); // 업체 주변을 잘 보이도록 줌 레벨 조정
-              console.log(`🗺️ 내주변 검색 - 첫 번째 업체로 지도 중심 이동:`, firstStore.name);
+                      // 첫 번째 업체 자동 선택 (업체가 있는 경우)
+            if (loadedStores && loadedStores.length > 0) {
+              const firstStore = loadedStores[0];
+              setSelectedId(firstStore.id);
+              console.log(`🎯 내주변 검색 - 첫 번째 업체 자동 선택:`, firstStore.name);
+              
+              // 지도 중심을 첫 번째 업체로 이동
+              if (kakaoObj && map) {
+                const center = new kakaoObj.maps.LatLng(firstStore.lat, firstStore.lng);
+                map.setCenter(center);
+                map.setLevel(6); // 업체 주변을 잘 보이도록 줌 레벨 조정
+                console.log(`🗺️ 내주변 검색 - 첫 번째 업체로 지도 중심 이동:`, firstStore.name);
+              }
+              
+              // 첫 번째 업체로 하단 리스트 앵커링 (즉시)
+              setTimeout(() => {
+                const el = document.querySelector(`[data-card-id="${CSS.escape(firstStore.id)}"]`);
+                if (el) {
+                  el.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
+                  console.log(`📍 내주변 검색 - ${firstStore.name} 하단 리스트 앵커링 완료`);
+                }
+              }, 100);
             }
-          }
         }
       });
       
@@ -527,14 +543,14 @@ export default function App() {
                 // 마커 강조 효과 개선 (쓰곳 커스텀 아이콘 사용)
                 const defaultMarker = new kakaoObj.maps.MarkerImage(
                   '/assets/marker-default.svg',
-                  new kakaoObj.maps.Size(36, 37),
-                  { offset: new kakaoObj.maps.Point(18, 37) }
+                  new kakaoObj.maps.Size(48, 49),
+                  { offset: new kakaoObj.maps.Point(24, 49) }
                 );
                 
                 const selectedMarker = new kakaoObj.maps.MarkerImage(
                   '/assets/marker-selected.svg',
-                  new kakaoObj.maps.Size(36, 37),
-                  { offset: new kakaoObj.maps.Point(18, 37) }
+                  new kakaoObj.maps.Size(48, 49),
+                  { offset: new kakaoObj.maps.Point(24, 49) }
                 );
                 
                 // 모든 마커를 기본 이미지로 리셋
