@@ -34,89 +34,107 @@ export const useStores = () => {
     return "etc";
   };
 
-  // 카카오맵 Places API로 업체 이미지 조회
+  // Python FastAPI 백엔드를 통한 카카오맵 업체 이미지 조회
   const fetchStoreImage = async (storeName, lat, lng) => {
     try {
-      // 카카오맵 SDK 로딩 대기
-      let retryCount = 0;
-      const maxRetries = 10;
+      // Python FastAPI 백엔드 호출
+      const apiUrl = import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8000';
+      const fullApiUrl = `${apiUrl}/image`;
+      const params = new URLSearchParams({ keyword: storeName });
       
-      while (!window.kakao || !window.kakao.maps) {
-        if (retryCount >= maxRetries) {
-          console.log(`카카오맵 SDK 로딩 실패 (${maxRetries}회 시도), 기본 이미지 사용`);
+      console.log(`🔍 ${storeName} Python API 호출 시작`);
+      
+      const response = await fetch(`${fullApiUrl}?${params}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // 타임아웃 설정 (5초)
+        signal: AbortSignal.timeout(5000)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log(`🔍 ${storeName} Python API 응답:`, data);
+      
+      if (data.image_url) {
+        console.log(`✅ ${storeName} Python API 이미지 성공:`, data.image_url);
+        
+        // 이미지 로딩 테스트
+        const testImg = new Image();
+        testImg.onload = () => {
+          console.log(`✅ ${storeName} 이미지 로딩 성공`);
+        };
+        testImg.onerror = () => {
+          console.log(`❌ ${storeName} Python API 이미지 로딩 실패`);
+        };
+        testImg.src = data.image_url;
+        
+        return data.image_url;
+      } else {
+        console.log(`⚠️ ${storeName} Python API 이미지 없음, 기본 이미지 사용`);
+        return `https://picsum.photos/seed/${encodeURIComponent(storeName)}/400/300`;
+      }
+      
+    } catch (error) {
+      console.error(`❌ ${storeName} Python API 호출 실패:`, error);
+      
+      // Python API 실패 시 기존 카카오맵 SDK 방식으로 fallback
+      try {
+        if (!window.kakao || !window.kakao.maps) {
+          console.log('카카오맵 SDK가 로드되지 않음, 기본 이미지 사용');
           return `https://picsum.photos/seed/${encodeURIComponent(storeName)}/400/300`;
         }
-        await new Promise(resolve => setTimeout(resolve, 500));
-        retryCount++;
-      }
 
-      const places = new window.kakao.maps.services.Places();
-      
-      return new Promise((resolve) => {
-        // 업체명으로 검색 (더 정확한 매칭을 위해)
-        const searchQuery = storeName.trim();
-        places.keywordSearch(searchQuery, (data, status) => {
-          if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
-            // 가장 가까운 업체 찾기 (좌표 기반)
-            let closestPlace = data[0];
-            let minDistance = Infinity;
-            
-            data.forEach(place => {
-              if (place.y && place.x) {
-                const distance = Math.sqrt(
-                  Math.pow(place.y - lat, 2) + Math.pow(place.x - lng, 2)
-                );
-                if (distance < minDistance) {
-                  minDistance = distance;
-                  closestPlace = place;
-                }
-              }
-            });
-            
-            console.log(`🔍 ${storeName} 이미지 검색 결과:`, {
-              found: data.length,
-              closest: closestPlace.place_name,
-              distance: minDistance,
-              hasImage: !!closestPlace.place_url,
-              placeId: closestPlace.id
-            });
-            
-            // 카카오맵에서 실제 업체 이미지 URL 생성
-            if (closestPlace.id) {
-              // 카카오맵 업체 ID를 사용하여 이미지 URL 생성
-              const imageUrl = `https://img1.kakaocdn.net/cthumb/local/C400x300.q50/?fname=${encodeURIComponent(`https://t1.kakaocdn.net/mystore/${closestPlace.id}`)}`;
-              console.log(`✅ ${storeName} 카카오맵 이미지 생성:`, imageUrl);
+        const places = new window.kakao.maps.services.Places();
+        
+        return new Promise((resolve) => {
+          const searchQuery = storeName.trim();
+          places.keywordSearch(searchQuery, (data, status) => {
+            if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
+              let closestPlace = data[0];
+              let minDistance = Infinity;
               
-              // 이미지 로딩 테스트
-              const testImg = new Image();
-              testImg.onload = () => {
-                console.log(`✅ ${storeName} 이미지 로딩 성공`);
+              data.forEach(place => {
+                if (place.y && place.x) {
+                  const distance = Math.sqrt(
+                    Math.pow(place.y - lat, 2) + Math.pow(place.x - lng, 2)
+                  );
+                  if (distance < minDistance) {
+                    minDistance = distance;
+                    closestPlace = place;
+                  }
+                }
+              });
+              
+              console.log(`🔍 ${storeName} 카카오맵 SDK fallback:`, {
+                found: data.length,
+                closest: closestPlace.place_name,
+                distance: minDistance,
+                placeId: closestPlace.id
+              });
+              
+              if (closestPlace.id) {
+                const imageUrl = `https://img1.kakaocdn.net/cthumb/local/C400x300.q50/?fname=${encodeURIComponent(`https://t1.kakaocdn.net/mystore/${closestPlace.id}`)}`;
+                console.log(`✅ ${storeName} 카카오맵 SDK 이미지 생성:`, imageUrl);
                 resolve(imageUrl);
-              };
-              testImg.onerror = () => {
-                console.log(`❌ ${storeName} 카카오맵 이미지 로딩 실패, 기본 이미지 사용`);
+              } else {
+                console.log(`⚠️ ${storeName} 카카오맵 SDK 이미지 정보 없음, 기본 이미지 사용`);
                 resolve(`https://picsum.photos/seed/${encodeURIComponent(storeName)}/400/300`);
-              };
-              testImg.src = imageUrl;
-            } else if (closestPlace.place_url && closestPlace.place_url.includes('place')) {
-              // 기존 place_url 사용
-              console.log(`✅ ${storeName} place_url 사용:`, closestPlace.place_url);
-              resolve(closestPlace.place_url);
+              }
             } else {
-              // 기본 이미지 사용
-              console.log(`⚠️ ${storeName} 기본 이미지 사용 (이미지 정보 없음)`);
+              console.log(`❌ ${storeName} 카카오맵 SDK 검색 실패:`, status);
               resolve(`https://picsum.photos/seed/${encodeURIComponent(storeName)}/400/300`);
             }
-          } else {
-            // 검색 실패 시 기본 이미지 사용
-            console.log(`❌ ${storeName} 이미지 검색 실패:`, status);
-            resolve(`https://picsum.photos/seed/${encodeURIComponent(storeName)}/400/300`);
-          }
+          });
         });
-      });
-    } catch (error) {
-      console.error('업체 이미지 조회 실패:', error);
-      return `https://picsum.photos/seed/${encodeURIComponent(storeName)}/400/300`;
+      } catch (fallbackError) {
+        console.error(`❌ ${storeName} fallback도 실패:`, fallbackError);
+        return `https://picsum.photos/seed/${encodeURIComponent(storeName)}/400/300`;
+      }
     }
   };
 
