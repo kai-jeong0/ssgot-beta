@@ -104,6 +104,9 @@ export default function App() {
     setCategory('all');
     setSelectedId(null);
     
+    // 가게 정보 먼저 로드
+    await loadStoresByCity(city);
+    
     // 카카오맵으로 해당 지역의 시청/군청 중심 이동
     if (kakaoObj && map) {
       const ps = new kakaoObj.maps.services.Places();
@@ -113,12 +116,15 @@ export default function App() {
           map.setCenter(center);
           map.setLevel(8); // 적절한 줌 레벨로 설정
           console.log(`🗺️ ${city} 시청/군청으로 지도 중심 이동:`, data[0].place_name);
+        } else {
+          console.warn(`⚠️ ${city} 시청/군청 검색 실패:`, status);
+          // 기본 좌표로 이동 (경기도 중심)
+          const defaultCenter = new kakaoObj.maps.LatLng(37.4138, 127.5183);
+          map.setCenter(defaultCenter);
+          map.setLevel(8);
         }
       });
     }
-    
-    // 가게 정보 로드
-    await loadStoresByCity(city);
   };
 
   // 뒤로가기
@@ -429,9 +435,9 @@ export default function App() {
       )}
 
       {mode !== 'region' && (
-        <footer className="bg-white border-t border-gray-200 py-8">
+        <footer className="bg-white border-t border-gray-200 py-2">
           <div className="max-w-6xl mx-auto px-4 text-center">
-            <p className="text-sm text-primary-body">
+            <p className="text-xs text-gray-500">
               © kai.jeong — Contact: kai.jeong0@gmail.com
             </p>
           </div>

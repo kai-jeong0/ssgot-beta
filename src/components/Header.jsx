@@ -52,7 +52,7 @@ const Header = React.forwardRef(({
                   value={searchName}
                   onChange={(e) => setSearchName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && setSearchName(e.currentTarget.value)}
-                  className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent transition-all duration-200 text-sm"
+                  className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-carrot focus:border-carrot transition-all duration-200 text-sm"
                 />
                 <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               </div>

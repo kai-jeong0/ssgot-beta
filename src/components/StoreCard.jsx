@@ -27,7 +27,7 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
   return (
     <Card
       className={`cursor-pointer transition-all duration-200 hover:scale-105 h-full ${
-        isSelected ? 'ring-2 ring-black ring-offset-2' : ''
+        isSelected ? 'ring-2 ring-carrot ring-offset-2 border-carrot' : ''
       }`}
       data-card-id={store.id}
       onClick={() => onSelect(store)}
@@ -58,7 +58,7 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
       <CardContent className="p-3">
         <div className="space-y-2">
           <div>
-            <h3 className="font-bold text-primary-text text-sm mb-1 line-clamp-2" title={store.name}>
+            <h3 className="font-bold text-primary-text text-sm mb-1 truncate" title={store.name}>
               {store.name}
             </h3>
             {store.address && (
