@@ -40,7 +40,7 @@ export default function App() {
 
   // 커스텀 훅 사용
   const { stores, filtered, loading, loadStoresByCity, setFiltered } = useStores();
-  const { kakaoObj, map, mapRef, markers, markerMap, updateMarkers } = useKakaoMap(mode);
+  const { kakaoObj, map, mapRef, markers, markerMap, updateMarkers, clearMarkerHighlight, selectedMarkerId } = useKakaoMap(mode);
 
   // 검색 필터링
   useEffect(() => {
@@ -108,9 +108,8 @@ export default function App() {
     } else {
       // 업체가 없으면 마커 강조 해제
       if (kakaoObj && map) {
-        Object.values(markerMap).forEach(marker => {
-          marker.setImage(null);
-        });
+        console.log('업체가 없어서 마커 강조 해제');
+        clearMarkerHighlight();
       }
     }
   }, [finalShown, updateMarkers, kakaoObj, map, markerMap, selectedId]);
@@ -525,15 +524,15 @@ export default function App() {
                 map.setCenter(position);
                 map.setLevel(4); // 적절한 줌 레벨로 조정
                 
-                // 마커 강조 효과 개선
+                // 마커 강조 효과 개선 (쓰곳 커스텀 아이콘 사용)
                 const defaultMarker = new kakaoObj.maps.MarkerImage(
-                  'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+                  '/assets/marker-default.svg',
                   new kakaoObj.maps.Size(36, 37),
                   { offset: new kakaoObj.maps.Point(18, 37) }
                 );
                 
                 const selectedMarker = new kakaoObj.maps.MarkerImage(
-                  'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_blue.png',
+                  '/assets/marker-selected.svg',
                   new kakaoObj.maps.Size(36, 37),
                   { offset: new kakaoObj.maps.Point(18, 37) }
                 );

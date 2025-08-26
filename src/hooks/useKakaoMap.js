@@ -8,6 +8,7 @@ export const useKakaoMap = (mode) => {
   const [markers, setMarkers] = useState([]);
   const [markerMap, setMarkerMap] = useState({});
   const [currentInfo, setCurrentInfo] = useState(null);
+  const [selectedMarkerId, setSelectedMarkerId] = useState(null);
   const mapRef = useRef(null);
 
   // 카카오맵 SDK 로드
@@ -98,16 +99,16 @@ export const useKakaoMap = (mode) => {
     // 기존 마커 제거
     markers.forEach(mk => mk.setMap(null));
     
-    // 기본 마커 이미지 (일반적인 핀)
+    // 기본 마커 이미지 (쓰곳 커스텀 아이콘)
     const defaultMarker = new kakaoObj.maps.MarkerImage(
-      'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+      '/assets/marker-default.svg',
       new kakaoObj.maps.Size(36, 37),
       { offset: new kakaoObj.maps.Point(18, 37) }
     );
     
-    // 선택된 마커 이미지 (강조된 핀 - 파란색)
+    // 선택된 마커 이미지 (쓰곳 커스텀 선택 아이콘)
     const selectedMarker = new kakaoObj.maps.MarkerImage(
-      'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_blue.png',
+      '/assets/marker-selected.svg',
       new kakaoObj.maps.Size(36, 37),
       { offset: new kakaoObj.maps.Point(18, 37) }
     );
@@ -117,6 +118,11 @@ export const useKakaoMap = (mode) => {
       // 선택된 업체인지 확인하여 마커 이미지 결정
       const isSelected = selectedId === store.id;
       const markerImage = isSelected ? selectedMarker : defaultMarker;
+      
+      // 선택 상태 업데이트
+      if (isSelected) {
+        setSelectedMarkerId(store.id);
+      }
       
       const marker = new kakaoObj.maps.Marker({
         position: new kakaoObj.maps.LatLng(store.lat, store.lng),
@@ -128,22 +134,27 @@ export const useKakaoMap = (mode) => {
       
       // 마커 클릭 이벤트
       kakaoObj.maps.event.addListener(marker, 'click', () => {
+        console.log(`🎯 마커 클릭: ${store.name} (ID: ${store.id})`);
+        
         // 기존 정보창 닫기
         if (currentInfo) {
           currentInfo.close();
           setCurrentInfo(null);
         }
         
-        // 모든 마커를 기본 이미지로 리셋
-        Object.values(mm).forEach(m => {
-          m.setImage(defaultMarker);
-        });
+        // 이전 선택된 마커가 있으면 기본 이미지로 리셋
+        if (selectedMarkerId && mm[selectedMarkerId]) {
+          mm[selectedMarkerId].setImage(defaultMarker);
+        }
         
         // 현재 마커를 선택된 이미지로 강조
         marker.setImage(selectedMarker);
+        setSelectedMarkerId(store.id);
         
         // 콜백 실행 (하단 리스트 앵커링)
         onMarkerClick(store);
+        
+        console.log(`📍 ${store.name} 마커 하이라이팅 완료`);
       });
       
       mm[store.id] = marker;
@@ -160,9 +171,23 @@ export const useKakaoMap = (mode) => {
   const clearMarkerHighlight = () => {
     if (!map || !kakaoObj) return;
     
+    console.log('마커 강조 해제 시작');
+    
+    // 기본 마커 이미지 생성
+    const defaultMarker = new kakaoObj.maps.MarkerImage(
+      '/assets/marker-default.svg',
+      new kakaoObj.maps.Size(36, 37),
+      { offset: new kakaoObj.maps.Point(18, 37) }
+    );
+    
     Object.values(markerMap).forEach(marker => {
-      marker.setImage(null);
+      marker.setImage(defaultMarker);
     });
+    
+    // 선택 상태 리셋
+    setSelectedMarkerId(null);
+    
+    console.log('마커 강조 해제 완료');
   };
 
   return {
@@ -172,6 +197,7 @@ export const useKakaoMap = (mode) => {
     markers,
     markerMap,
     currentInfo,
+    selectedMarkerId,
     updateMarkers,
     clearMarkerHighlight
   };
