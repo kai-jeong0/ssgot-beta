@@ -104,7 +104,7 @@ export default function App() {
     setCategory('all');
     setSelectedId(null);
     
-    // 카카오맵으로 도시 중심 이동
+    // 카카오맵으로 해당 지역의 시청/군청 중심 이동
     if (kakaoObj && map) {
       const ps = new kakaoObj.maps.services.Places();
       ps.keywordSearch(`${city}청`, (data, status) => {
@@ -112,6 +112,7 @@ export default function App() {
           const center = new kakaoObj.maps.LatLng(+data[0].y, +data[0].x);
           map.setCenter(center);
           map.setLevel(8); // 적절한 줌 레벨로 설정
+          console.log(`🗺️ ${city} 시청/군청으로 지도 중심 이동:`, data[0].place_name);
         }
       });
     }
@@ -394,7 +395,7 @@ export default function App() {
                 map.setCenter(position);
                 map.setLevel(3); // 줌 레벨 조정
                 
-                // 마커 강조 효과 (주황색)
+                // 마커 강조 효과 (당근마켓 주황색)
                 Object.values(markerMap).forEach(marker => {
                   // 기본 마커로 리셋
                   const normalImage = new kakaoObj.maps.MarkerImage(
@@ -406,7 +407,7 @@ export default function App() {
                 });
                 
                 if (markerMap[store.id]) {
-                  // 선택된 마커를 주황색으로 강조
+                  // 선택된 마커를 당근마켓 주황색으로 강조
                   const highlightImage = new kakaoObj.maps.MarkerImage(
                     'data:image/svg+xml;base64,' + btoa(`
                       <svg width="36" height="37" viewBox="0 0 36 37" xmlns="http://www.w3.org/2000/svg">
@@ -418,6 +419,7 @@ export default function App() {
                     { offset: new kakaoObj.maps.Point(18, 37) }
                   );
                   markerMap[store.id].setImage(highlightImage);
+                  console.log(`📍 ${store.name} 마커 하이라이팅 처리 완료`);
                 }
               }
             }}

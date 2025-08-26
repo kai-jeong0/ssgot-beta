@@ -38,7 +38,7 @@ const RegionGrid = ({ onCitySelect }) => {
     { id: "41820", name: "연천군" },
     { id: "41810", name: "포천군" },
     { id: "41840", name: "가평군" }
-  ];
+  ].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 
   // 지역 선택 핸들러
   const handleRegionSelect = (region) => {
@@ -74,9 +74,9 @@ const RegionGrid = ({ onCitySelect }) => {
           {regions.map((region) => (
             <Card
               key={region.id}
-              className={`cursor-pointer transition-all duration-200 hover:scale-105 ${
+              className={`cursor-pointer transition-all duration-200 hover:scale-105 hover:border-carrot hover:shadow-lg ${
                 selectedRegion?.id === region.id
-                  ? 'ring-2 ring-black ring-offset-2'
+                  ? 'ring-2 ring-carrot ring-offset-2'
                   : ''
               }`}
               onClick={() => handleRegionSelect(region)}
