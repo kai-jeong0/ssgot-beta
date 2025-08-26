@@ -129,8 +129,17 @@ export default function App() {
         map.setLevel(6); // 업체 주변을 잘 보이도록 줌 레벨 조정
         console.log(`🗺️ ${city} 첫 번째 업체로 지도 중심 이동:`, firstStore.name);
         
-        // 마커 강조 처리는 updateMarkers에서 자동으로 처리됨
-        console.log(`📍 ${firstStore.name} 마커 강조 처리 준비 완료`);
+        // 마커를 직접 업데이트하여 첫 번째 업체 강조 처리
+        updateMarkers(loadedStores, (store) => {
+          setSelectedId(store.id);
+          // 하단 리스트에서 해당 업체로 스크롤
+          const el = document.querySelector(`[data-card-id="${CSS.escape(store.id)}"]`);
+          if (el) {
+            el.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+          }
+        }, false, firstStore.id); // 첫 번째 업체 ID를 selectedId로 전달
+        
+        console.log(`📍 ${firstStore.name} 마커 강조 처리 완료`);
       }
     } else {
       // 업체가 없는 경우 시청/군청으로 이동

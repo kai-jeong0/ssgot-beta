@@ -98,7 +98,7 @@ export const useKakaoMap = (mode) => {
     // 기존 마커 제거
     markers.forEach(mk => mk.setMap(null));
     
-    // 기본 마커 이미지 (일반적인 핀 - 약함처리)
+    // 기본 마커 이미지 (일반적인 핀)
     const defaultMarker = new kakaoObj.maps.MarkerImage(
       'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
       new kakaoObj.maps.Size(36, 37),
@@ -112,18 +112,11 @@ export const useKakaoMap = (mode) => {
       { offset: new kakaoObj.maps.Point(18, 37) }
     );
     
-    // 약함처리된 마커 이미지 (투명도 낮춤)
-    const dimmedMarker = new kakaoObj.maps.MarkerImage(
-      'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
-      new kakaoObj.maps.Size(36, 37),
-      { offset: new kakaoObj.maps.Point(18, 37) }
-    );
-    
     const mm = {};
     const newMarkers = stores.map(store => {
       // 선택된 업체인지 확인하여 마커 이미지 결정
       const isSelected = selectedId === store.id;
-      const markerImage = isSelected ? selectedMarker : dimmedMarker;
+      const markerImage = isSelected ? selectedMarker : defaultMarker;
       
       const marker = new kakaoObj.maps.Marker({
         position: new kakaoObj.maps.LatLng(store.lat, store.lng),
@@ -142,9 +135,9 @@ export const useKakaoMap = (mode) => {
           setCurrentInfo(null);
         }
         
-        // 모든 마커를 약함처리
+        // 모든 마커를 기본 이미지로 리셋하고 약함처리
         Object.values(mm).forEach(m => {
-          m.setImage(dimmedMarker);
+          m.setImage(defaultMarker);
           m.setOpacity(0.4);
         });
         
