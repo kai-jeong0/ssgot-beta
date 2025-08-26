@@ -105,14 +105,9 @@ export const useKakaoMap = (mode) => {
       { offset: new kakaoObj.maps.Point(18, 37) }
     );
     
-    // 선택된 마커 이미지 (강조된 핀 - 주황색 테두리)
+    // 선택된 마커 이미지 (강조된 핀 - 파란색)
     const selectedMarker = new kakaoObj.maps.MarkerImage(
-      'data:image/svg+xml;base64,' + btoa(`
-        <svg width="36" height="37" viewBox="0 0 36 37" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18 0c-7.2 0-13 5.8-13 13 0 7.2 13 24 13 24s13-16.8 13-24c0-7.2-5.8-13-13-13z" fill="#FF7419" stroke="#FF7419" stroke-width="2"/>
-          <circle cx="18" cy="13" r="6" fill="white"/>
-        </svg>
-      `),
+      'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_blue.png',
       new kakaoObj.maps.Size(36, 37),
       { offset: new kakaoObj.maps.Point(18, 37) }
     );

@@ -236,8 +236,23 @@ export default function App() {
           
           // 가게 정보 로드
           console.log('내주변 검색 - 가게 정보 로드 시작');
-          await loadStoresByCity(siGun);
+          const loadedStores = await loadStoresByCity(siGun);
           console.log('내주변 검색 - 가게 정보 로드 완료');
+          
+          // 첫 번째 업체 자동 선택 (업체가 있는 경우)
+          if (loadedStores && loadedStores.length > 0) {
+            const firstStore = loadedStores[0];
+            setSelectedId(firstStore.id);
+            console.log(`🎯 내주변 검색 - 첫 번째 업체 자동 선택:`, firstStore.name);
+            
+            // 지도 중심을 첫 번째 업체로 이동
+            if (kakaoObj && map) {
+              const center = new kakaoObj.maps.LatLng(firstStore.lat, firstStore.lng);
+              map.setCenter(center);
+              map.setLevel(6); // 업체 주변을 잘 보이도록 줌 레벨 조정
+              console.log(`🗺️ 내주변 검색 - 첫 번째 업체로 지도 중심 이동:`, firstStore.name);
+            }
+          }
         }
       });
       
@@ -499,12 +514,7 @@ export default function App() {
                 );
                 
                 const selectedMarker = new kakaoObj.maps.MarkerImage(
-                  'data:image/svg+xml;base64,' + btoa(`
-                    <svg width="36" height="37" viewBox="0 0 36 37" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M18 0c-7.2 0-13 5.8-13 13 0 7.2 13 24 13 24s13-16.8 13-24c0-7.2-5.8-13-13-13z" fill="#FF7419"/>
-                      <circle cx="18" cy="13" r="6" fill="white"/>
-                    </svg>
-                  `),
+                  'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_blue.png',
                   new kakaoObj.maps.Size(36, 37),
                   { offset: new kakaoObj.maps.Point(18, 37) }
                 );

@@ -129,16 +129,6 @@ const SplashScreen = ({ onComplete }) => {
             ))}
           </div>
 
-          {/* 시작 버튼 */}
-          {showButton && (
-            <button
-              onClick={handleClick}
-              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-full text-base sm:text-lg md:text-xl transform transition-all duration-300 hover:scale-105 hover:shadow-lg animate-fade-in focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2 active:scale-95"
-            >
-              시작하기
-            </button>
-          )}
-
           {/* 스킵 안내 */}
           {animationPhase >= 2 && (
             <p className="text-xs text-gray-400 mt-4 animate-fade-in">
@@ -156,12 +146,6 @@ const SplashScreen = ({ onComplete }) => {
                 }}
               />
             </div>
-            <p className="text-xs sm:text-sm text-gray-500 mt-2">
-              {animationPhase === 0 && '준비 중...'}
-              {animationPhase === 1 && '로딩 중...'}
-              {animationPhase === 2 && '거의 완료...'}
-              {animationPhase === 3 && '준비 완료!'}
-            </p>
           </div>
         </div>
 
