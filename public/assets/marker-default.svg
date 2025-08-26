@@ -8,12 +8,6 @@
   <!-- 핀 상단 원형 -->
   <circle cx="24" cy="16" r="8" fill="#FFFFFF" stroke="#E65A00" stroke-width="1.5"/>
   
-  <!-- 쓰곳 로고 (지도 핀) -->
-  <path d="M20 12C20 11.448 20.448 11 21 11H27C27.552 11 28 11.448 28 12V20C28 20.552 27.552 21 27 21H21C20.448 21 20 20.552 20 20V12Z" fill="#FF7419"/>
-  
   <!-- 핀 중앙 점 -->
-  <circle cx="24" cy="16" r="3" fill="#FFFFFF"/>
-  
-  <!-- 쓰곳 텍스트 -->
-  <text x="24" y="18" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#FFFFFF">쓰곳</text>
+  <circle cx="24" cy="16" r="3" fill="#FF7419"/>
 </svg>
