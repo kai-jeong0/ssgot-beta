@@ -58,7 +58,7 @@ const RegionGrid = ({ onCitySelect }) => {
   // 로딩 중일 때
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="bg-white flex items-center justify-center h-screen">
         <div className="text-center">
           <div className="text-lg font-bold text-gray-900 mb-2">지도 로딩 중...</div>
           <div className="text-sm text-gray-600">잠시만 기다려주세요</div>
@@ -70,7 +70,7 @@ const RegionGrid = ({ onCitySelect }) => {
   // 에러 발생 시
   if (error) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="bg-white flex items-center justify-center h-screen">
         <div className="text-center">
           <div className="text-lg font-bold text-red-600 mb-2">지도 로드 실패</div>
           <div className="text-sm text-gray-600 mb-4">오류: {error}</div>
@@ -86,9 +86,9 @@ const RegionGrid = ({ onCitySelect }) => {
   }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
+    <div className="bg-white flex items-center justify-center h-screen">
       {/* 지역 선택 UI */}
-      <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-8 max-w-4xl w-full">
+      <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-4xl w-full">
         {/* SVG 경기도 지도 */}
         <div className="relative overflow-hidden rounded-lg border border-gray-300">
           <style>{`
@@ -126,12 +126,12 @@ const RegionGrid = ({ onCitySelect }) => {
 
         {/* 선택된 지역 표시 */}
         {selectedRegion && (
-          <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+          <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
             <div className="text-center">
-              <div className="text-sm font-medium text-orange-800 mb-2">
+              <div className="text-sm font-medium text-orange-800 mb-1">
                 선택된 지역
               </div>
-              <div className="text-lg font-bold text-orange-900 mb-1">
+              <div className="text-base font-bold text-orange-900 mb-1">
                 {selectedRegion.name}
               </div>
               <div className="text-xs text-orange-600">
