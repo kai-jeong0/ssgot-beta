@@ -88,14 +88,15 @@ const RegionGrid = ({ onCitySelect }) => {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center">
       {/* 지역 선택 UI */}
-      <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-8">
+      <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-8 max-w-4xl w-full">
         {/* SVG 경기도 지도 */}
-        <div className="relative">
+        <div className="relative overflow-hidden rounded-lg border border-gray-300">
           <style>{`
             .gyeonggi-svg {
               width: 100%;
               height: auto;
-              min-width: 800px;
+              max-width: 800px;
+              display: block;
             }
             .gyeonggi-svg circle {
               cursor: pointer;
