@@ -12,10 +12,10 @@ const BottomList = ({
   onRoute 
 }) => {
   return (
-    <div className="bg-white border-t border-border-light">
+    <div className="bg-white border-t border-gray-200">
       <div className="max-w-6xl mx-auto">
         {/* 헤더 */}
-        <div className="px-4 py-4 border-b border-border-light">
+        <div className="px-4 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">

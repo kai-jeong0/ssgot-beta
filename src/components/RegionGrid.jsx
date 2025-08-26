@@ -54,7 +54,7 @@ const RegionGrid = ({ onCitySelect }) => {
   return (
     <div className="bg-white min-h-screen">
       {/* 상단 헤더 */}
-      <div className="bg-white border-b border-border-light px-4 sm:px-6 py-16">
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-16">
         <div className="max-w-6xl mx-auto text-center">
           <div className="mb-6">
             <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
@@ -64,9 +64,6 @@ const RegionGrid = ({ onCitySelect }) => {
           <h1 className="text-4xl sm:text-5xl font-bold text-primary-text mb-4">
             지역화폐를 쓸 곳을 선택해주세요
           </h1>
-          <p className="text-lg text-primary-body max-w-2xl mx-auto">
-            사용하고자 하는 지역화폐의 지역을 선택하시면 해당 지역의 가맹점을 찾을 수 있습니다.
-          </p>
         </div>
       </div>
 
