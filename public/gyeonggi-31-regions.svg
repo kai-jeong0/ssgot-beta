@@ -31,157 +31,188 @@
   
   <!-- 각 시도군 영역 (원형) -->
   <!-- 수원시 -->
-  <g id="41110" class="region" data-name="수원시" data-region-id="41110">
+  <g id="41110" class="region" data-name="수원시" data-region-id="41110" 
+     data-lat="37.2636" data-lng="127.0286" data-address="경기도 수원시 팔달구 창룡대로 103">
     <circle cx="400" cy="350" r="35" fill="#FFE4E1" />
     <text x="400" y="350" class="region-text">수원시</text>
   </g>
   <!-- 성남시 -->
-  <g id="41130" class="region" data-name="성남시" data-region-id="41130">
+  <g id="41130" class="region" data-name="성남시" data-region-id="41130" 
+     data-lat="37.4449" data-lng="127.1389" data-address="경기도 성남시 중원구 성남대로 1234">
     <circle cx="430" cy="300" r="35" fill="#E6F3FF" />
     <text x="430" y="300" class="region-text">성남시</text>
   </g>
   <!-- 의정부시 -->
-  <g id="41150" class="region" data-name="의정부시" data-region-id="41150">
+  <g id="41150" class="region" data-name="의정부시" data-region-id="41150" 
+     data-lat="37.7381" data-lng="127.0337" data-address="경기도 의정부시 행정로 1">
     <circle cx="300" cy="280" r="30" fill="#F0F8FF" />
     <text x="300" y="280" class="region-text">의정부시</text>
   </g>
   <!-- 안양시 -->
-  <g id="41170" class="region" data-name="안양시" data-region-id="41170">
+  <g id="41170" class="region" data-name="안양시" data-region-id="41170" 
+     data-lat="37.4564" data-lng="126.9522" data-address="경기도 안양시 만안구 안양로 123">
     <circle cx="420" cy="320" r="30" fill="#F5F5DC" />
     <text x="420" y="320" class="region-text">안양시</text>
   </g>
   <!-- 부천시 -->
-  <g id="41190" class="region" data-name="부천시" data-region-id="41190">
+  <g id="41190" class="region" data-name="부천시" data-region-id="41190" 
+     data-lat="37.5035" data-lng="126.706" data-address="경기도 부천시 원미구 길주로 210">
     <circle cx="390" cy="340" r="30" fill="#FFF8DC" />
     <text x="390" y="340" class="region-text">부천시</text>
   </g>
   <!-- 광명시 -->
-  <g id="41210" class="region" data-name="광명시" data-region-id="41210">
+  <g id="41210" class="region" data-name="광명시" data-region-id="41210" 
+     data-lat="37.4795" data-lng="126.8646" data-address="경기도 광명시 시청로 20">
     <circle cx="350" cy="380" r="25" fill="#F0FFF0" />
     <text x="350" y="380" class="region-text">광명시</text>
   </g>
   <!-- 평택시 -->
-  <g id="41220" class="region" data-name="평택시" data-region-id="41220">
+  <g id="41220" class="region" data-name="평택시" data-region-id="41220" 
+     data-lat="36.992" data-lng="127.1127" data-address="경기도 평택시 중앙로 123">
     <circle cx="550" cy="450" r="30" fill="#FFF0F5" />
     <text x="550" y="450" class="region-text">평택시</text>
   </g>
   <!-- 동두천시 -->
-  <g id="41250" class="region" data-name="동두천시" data-region-id="41250">
+  <g id="41250" class="region" data-name="동두천시" data-region-id="41250" 
+     data-lat="37.9036" data-lng="127.0606" data-address="경기도 동두천시 중앙로 123">
     <circle cx="280" cy="260" r="25" fill="#FDF5E6" />
     <text x="280" y="260" class="region-text">동두천시</text>
   </g>
   <!-- 안산시 -->
-  <g id="41270" class="region" data-name="안산시" data-region-id="41270">
+  <g id="41270" class="region" data-name="안산시" data-region-id="41270" 
+     data-lat="37.3219" data-lng="126.8309" data-address="경기도 안산시 단원구 화랑로 123">
     <circle cx="520" cy="400" r="30" fill="#F0F8FF" />
     <text x="520" y="400" class="region-text">안산시</text>
   </g>
   <!-- 고양시 -->
-  <g id="41280" class="region" data-name="고양시" data-region-id="41280">
+  <g id="41280" class="region" data-name="고양시" data-region-id="41280" 
+     data-lat="37.6584" data-lng="126.832" data-address="경기도 고양시 덕양구 화정로 2">
     <circle cx="370" cy="240" r="35" fill="#F5F5F5" />
     <text x="370" y="240" class="region-text">고양시</text>
   </g>
   <!-- 과천시 -->
-  <g id="41290" class="region" data-name="과천시" data-region-id="41290">
+  <g id="41290" class="region" data-name="과천시" data-region-id="41290" 
+     data-lat="37.4295" data-lng="126.9877" data-address="경기도 과천시 관문로 123">
     <circle cx="420" cy="360" r="20" fill="#F8F8FF" />
     <text x="420" y="360" class="region-text">과천시</text>
   </g>
   <!-- 구리시 -->
-  <g id="41310" class="region" data-name="구리시" data-region-id="41310">
+  <g id="41310" class="region" data-name="구리시" data-region-id="41310" 
+     data-lat="37.5944" data-lng="127.1296" data-address="경기도 구리시 건원대로 123">
     <circle cx="340" cy="260" r="25" fill="#FFFACD" />
     <text x="340" y="260" class="region-text">구리시</text>
   </g>
   <!-- 남양주시 -->
-  <g id="41360" class="region" data-name="남양주시" data-region-id="41360">
+  <g id="41360" class="region" data-name="남양주시" data-region-id="41360" 
+     data-lat="37.6364" data-lng="127.2162" data-address="경기도 남양주시 도농로 123">
     <circle cx="320" cy="240" r="35" fill="#F0FFF0" />
     <text x="320" y="240" class="region-text">남양주시</text>
   </g>
   <!-- 오산시 -->
-  <g id="41370" class="region" data-name="오산시" data-region-id="41370">
+  <g id="41370" class="region" data-name="오산시" data-region-id="41370" 
+     data-lat="37.1498" data-lng="127.0772" data-address="경기도 오산시 오산로 123">
     <circle cx="440" cy="380" r="25" fill="#FFF5EE" />
     <text x="440" y="380" class="region-text">오산시</text>
   </g>
   <!-- 시흥시 -->
-  <g id="41390" class="region" data-name="시흥시" data-region-id="41390">
+  <g id="41390" class="region" data-name="시흥시" data-region-id="41390" 
+     data-lat="37.3799" data-lng="126.8031" data-address="경기도 시흥시 시청로 123">
     <circle cx="520" cy="380" r="30" fill="#F5F5DC" />
     <text x="520" y="380" class="region-text">시흥시</text>
   </g>
   <!-- 군포시 -->
-  <g id="41410" class="region" data-name="군포시" data-region-id="41410">
+  <g id="41410" class="region" data-name="군포시" data-region-id="41410" 
+     data-lat="37.3616" data-lng="126.9352" data-address="경기도 군포시 군포로 123">
     <circle cx="400" cy="300" r="25" fill="#F0F8FF" />
     <text x="400" y="300" class="region-text">군포시</text>
   </g>
   <!-- 의왕시 -->
-  <g id="41430" class="region" data-name="의왕시" data-region-id="41430">
+  <g id="41430" class="region" data-name="의왕시" data-region-id="41430" 
+     data-lat="37.3449" data-lng="126.9482" data-address="경기도 의왕시 시청로 123">
     <circle cx="420" cy="320" r="25" fill="#FFF8DC" />
     <text x="420" y="320" class="region-text">의왕시</text>
   </g>
   <!-- 하남시 -->
-  <g id="41450" class="region" data-name="하남시" data-region-id="41450">
+  <g id="41450" class="region" data-name="하남시" data-region-id="41450" 
+     data-lat="37.5392" data-lng="127.2149" data-address="경기도 하남시 시청로 123">
     <circle cx="360" cy="280" r="30" fill="#F0FFF0" />
     <text x="360" y="280" class="region-text">하남시</text>
   </g>
   <!-- 용인시 -->
-  <g id="41460" class="region" data-name="용인시" data-region-id="41460">
+  <g id="41460" class="region" data-name="용인시" data-region-id="41460" 
+     data-lat="37.2411" data-lng="127.1776" data-address="경기도 용인시 기흥구 동백로 123">
     <circle cx="540" cy="320" r="35" fill="#F5F5DC" />
     <text x="540" y="320" class="region-text">용인시</text>
   </g>
   <!-- 파주시 -->
-  <g id="41480" class="region" data-name="파주시" data-region-id="41480">
+  <g id="41480" class="region" data-name="파주시" data-region-id="41480" 
+     data-lat="37.8154" data-lng="126.7928" data-address="경기도 파주시 시청로 123">
     <circle cx="250" cy="220" r="30" fill="#F0F8FF" />
     <text x="250" y="220" class="region-text">파주시</text>
   </g>
   <!-- 이천시 -->
-  <g id="41500" class="region" data-name="이천시" data-region-id="41500">
+  <g id="41500" class="region" data-name="이천시" data-region-id="41500" 
+     data-lat="37.272" data-lng="127.435" data-address="경기도 이천시 중리천로 123">
     <circle cx="600" cy="280" r="30" fill="#FFF8DC" />
     <text x="600" y="280" class="region-text">이천시</text>
   </g>
   <!-- 안성시 -->
-  <g id="41550" class="region" data-name="안성시" data-region-id="41550">
+  <g id="41550" class="region" data-name="안성시" data-region-id="41550" 
+     data-lat="37.008" data-lng="127.2791" data-address="경기도 안성시 시청로 123">
     <circle cx="580" cy="350" r="30" fill="#F0FFF0" />
     <text x="580" y="350" class="region-text">안성시</text>
   </g>
   <!-- 김포시 -->
-  <g id="41570" class="region" data-name="김포시" data-region-id="41570">
+  <g id="41570" class="region" data-name="김포시" data-region-id="41570" 
+     data-lat="37.6156" data-lng="126.7158" data-address="경기도 김포시 시청로 123">
     <circle cx="280" cy="320" r="30" fill="#FFF5EE" />
     <text x="280" y="320" class="region-text">김포시</text>
   </g>
   <!-- 화성시 -->
-  <g id="41590" class="region" data-name="화성시" data-region-id="41590">
+  <g id="41590" class="region" data-name="화성시" data-region-id="41590" 
+     data-lat="37.1995" data-lng="126.8314" data-address="경기도 화성시 시청로 123">
     <circle cx="500" cy="420" r="35" fill="#F8F8FF" />
     <text x="500" y="420" class="region-text">화성시</text>
   </g>
   <!-- 광주시 -->
-  <g id="41610" class="region" data-name="광주시" data-region-id="41610">
+  <g id="41610" class="region" data-name="광주시" data-region-id="41610" 
+     data-lat="37.4295" data-lng="127.255" data-address="경기도 광주시 시청로 123">
     <circle cx="480" cy="300" r="30" fill="#F0F8FF" />
     <text x="480" y="300" class="region-text">광주시</text>
   </g>
   <!-- 여주시 -->
-  <g id="41630" class="region" data-name="여주시" data-region-id="41630">
+  <g id="41630" class="region" data-name="여주시" data-region-id="41630" 
+     data-lat="37.2983" data-lng="127.637" data-address="경기도 여주시 시청로 123">
     <circle cx="620" cy="320" r="30" fill="#FFF8DC" />
     <text x="620" y="320" class="region-text">여주시</text>
   </g>
   <!-- 양평군 -->
-  <g id="41830" class="region" data-name="양평군" data-region-id="41830">
+  <g id="41830" class="region" data-name="양평군" data-region-id="41830" 
+     data-lat="37.4914" data-lng="127.4874" data-address="경기도 양평군 양평로 123">
     <circle cx="650" cy="280" r="30" fill="#F0FFF0" />
     <text x="650" y="280" class="region-text">양평군</text>
   </g>
   <!-- 고양군 -->
-  <g id="41800" class="region" data-name="고양군" data-region-id="41800">
+  <g id="41800" class="region" data-name="고양군" data-region-id="41800" 
+     data-lat="37.6584" data-lng="126.832" data-address="경기도 고양시 덕양구 화정로 2">
     <circle cx="300" cy="400" r="30" fill="#FFF5EE" />
     <text x="300" y="400" class="region-text">고양군</text>
   </g>
   <!-- 연천군 -->
-  <g id="41820" class="region" data-name="연천군" data-region-id="41820">
+  <g id="41820" class="region" data-name="연천군" data-region-id="41820" 
+     data-lat="38.0968" data-lng="127.0747" data-address="경기도 연천군 전진로 123">
     <circle cx="260" cy="240" r="30" fill="#F8F8FF" />
     <text x="260" y="240" class="region-text">연천군</text>
   </g>
   <!-- 포천군 -->
-  <g id="41810" class="region" data-name="포천군" data-region-id="41810">
+  <g id="41810" class="region" data-name="포천군" data-region-id="41810" 
+     data-lat="37.8949" data-lng="127.2002" data-address="경기도 포천시 시청로 123">
     <circle cx="280" cy="220" r="30" fill="#F0F8FF" />
     <text x="280" y="220" class="region-text">포천군</text>
   </g>
   <!-- 가평군 -->
-  <g id="41840" class="region" data-name="가평군" data-region-id="41840">
+  <g id="41840" class="region" data-name="가평군" data-region-id="41840" 
+     data-lat="37.8315" data-lng="127.5105" data-address="경기도 가평군 가화로 123">
     <circle cx="320" cy="220" r="25" fill="#FFFACD" />
     <text x="320" y="220" class="region-text">가평군</text>
   </g>
