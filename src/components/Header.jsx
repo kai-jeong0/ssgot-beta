@@ -40,10 +40,7 @@ const Header = React.forwardRef(({
           
           {mode !== 'map' && (
             <div className="flex-1 text-center">
-              <div className="flex flex-col items-center">
-                <h1 className="text-2xl font-bold text-primary-text mb-1">쓰곳</h1>
-                <p className="text-xs text-primary-body">지역화폐 쓰는 곳</p>
-              </div>
+              {/* 지역 선택 화면에서는 텍스트를 표시하지 않음 - RegionGrid에서 처리 */}
             </div>
           )}
           
