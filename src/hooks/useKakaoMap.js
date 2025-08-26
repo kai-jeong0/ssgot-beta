@@ -119,11 +119,6 @@ export const useKakaoMap = (mode) => {
       const isSelected = selectedId === store.id;
       const markerImage = isSelected ? selectedMarker : defaultMarker;
       
-      // 선택 상태 업데이트
-      if (isSelected) {
-        setSelectedMarkerId(store.id);
-      }
-      
       const marker = new kakaoObj.maps.Marker({
         position: new kakaoObj.maps.LatLng(store.lat, store.lng),
         title: store.name,
@@ -142,10 +137,10 @@ export const useKakaoMap = (mode) => {
           setCurrentInfo(null);
         }
         
-        // 이전 선택된 마커가 있으면 기본 이미지로 리셋
-        if (selectedMarkerId && mm[selectedMarkerId]) {
-          mm[selectedMarkerId].setImage(defaultMarker);
-        }
+        // 모든 마커를 기본 이미지로 리셋
+        Object.values(mm).forEach(m => {
+          m.setImage(defaultMarker);
+        });
         
         // 현재 마커를 선택된 이미지로 강조
         marker.setImage(selectedMarker);
@@ -160,6 +155,11 @@ export const useKakaoMap = (mode) => {
       mm[store.id] = marker;
       return marker;
     });
+    
+    // 선택 상태 업데이트
+    if (selectedId) {
+      setSelectedMarkerId(selectedId);
+    }
     
     setMarkers(newMarkers);
     setMarkerMap(mm);
