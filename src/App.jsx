@@ -88,7 +88,7 @@ export default function App() {
         if (el) {
           el.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
         }
-      }, true); // 정보창 표시 활성화
+      }, false); // 정보창 표시 비활성화
     } else {
       // 업체가 없으면 마커 강조 해제
       if (kakaoObj && map) {
@@ -107,11 +107,11 @@ export default function App() {
     setSelectedId(null);
     
     // 가게 정보 먼저 로드
-    await loadStoresByCity(city);
+    const loadedStores = await loadStoresByCity(city);
     
     // 첫 번째 업체 자동 선택 (업체가 있는 경우)
-    if (stores.length > 0) {
-      const firstStore = stores[0];
+    if (loadedStores && loadedStores.length > 0) {
+      const firstStore = loadedStores[0];
       setSelectedId(firstStore.id);
       console.log(`🎯 ${city} 첫 번째 업체 자동 선택:`, firstStore.name);
       
@@ -518,22 +518,6 @@ export default function App() {
                 if (markerMap[store.id]) {
                   markerMap[store.id].setImage(selectedMarker);
                   console.log(`📍 ${store.name} 마커 하이라이팅 처리 완료`);
-                  
-                  // 정보창 표시
-                  const infoContent = `
-                    <div style="padding: 10px; min-width: 200px;">
-                      <h3 style="margin: 0 0 5px 0; font-size: 14px; font-weight: bold;">${store.name}</h3>
-                      <p style="margin: 0; font-size: 12px; color: #666;">${store.address || '주소 정보 없음'}</p>
-                      <p style="margin: 5px 0 0 0; font-size: 12px; color: #FF7419;">지역화폐 사용 가능</p>
-                    </div>
-                  `;
-                  
-                  const infoWindow = new kakaoObj.maps.InfoWindow({
-                    content: infoContent,
-                    removable: true
-                  });
-                  
-                  infoWindow.open(map, markerMap[store.id]);
                 }
               }
             }}

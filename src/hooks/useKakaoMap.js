@@ -98,18 +98,18 @@ export const useKakaoMap = (mode) => {
     // 기존 마커 제거
     markers.forEach(mk => mk.setMap(null));
     
-    // 기본 마커 이미지 (지역화폐 상점용)
+    // 기본 마커 이미지 (일반적인 핀)
     const defaultMarker = new kakaoObj.maps.MarkerImage(
       'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
       new kakaoObj.maps.Size(36, 37),
       { offset: new kakaoObj.maps.Point(18, 37) }
     );
     
-    // 선택된 마커 이미지 (당근마켓 주황색)
+    // 선택된 마커 이미지 (강조된 핀 - 주황색 테두리)
     const selectedMarker = new kakaoObj.maps.MarkerImage(
       'data:image/svg+xml;base64,' + btoa(`
         <svg width="36" height="37" viewBox="0 0 36 37" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18 0c-7.2 0-13 5.8-13 13 0 7.2 13 24 13 24s13-16.8 13-24c0-7.2-5.8-13-13-13z" fill="#FF7419"/>
+          <path d="M18 0c-7.2 0-13 5.8-13 13 0 7.2 13 24 13 24s13-16.8 13-24c0-7.2-5.8-13-13-13z" fill="#FF7419" stroke="#FF7419" stroke-width="2"/>
           <circle cx="18" cy="13" r="6" fill="white"/>
         </svg>
       `),
@@ -141,24 +141,7 @@ export const useKakaoMap = (mode) => {
         // 현재 마커를 선택된 이미지로 강조
         marker.setImage(selectedMarker);
         
-        // 정보창 표시 (선택사항)
-        if (showInfoWindow) {
-          const infoContent = `
-            <div style="padding: 10px; min-width: 200px;">
-              <h3 style="margin: 0 0 5px 0; font-size: 14px; font-weight: bold;">${store.name}</h3>
-              <p style="margin: 0; font-size: 12px; color: #666;">${store.address || '주소 정보 없음'}</p>
-              <p style="margin: 5px 0 0 0; font-size: 12px; color: #FF7419;">지역화폐 사용 가능</p>
-            </div>
-          `;
-          
-          const infoWindow = new kakaoObj.maps.InfoWindow({
-            content: infoContent,
-            removable: true
-          });
-          
-          infoWindow.open(map, marker);
-          setCurrentInfo(infoWindow);
-        }
+        // 정보창 표시 비활성화 (요청사항에 따라 제거)
         
         // 콜백 실행 (하단 리스트 앵커링)
         onMarkerClick(store);
