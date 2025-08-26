@@ -111,6 +111,7 @@ export default function App() {
         if (status === kakaoObj.maps.services.Status.OK && data[0]) {
           const center = new kakaoObj.maps.LatLng(+data[0].y, +data[0].x);
           map.setCenter(center);
+          map.setLevel(8); // 적절한 줌 레벨로 설정
         }
       });
     }
@@ -152,25 +153,17 @@ export default function App() {
     }
 
     try {
-      // 성남시 테스트를 위한 알파돔타워 좌표 사용
-      let latitude, longitude;
-      
-      if (selectedCity === '성남시') {
-        console.log('🧪 성남시 테스트 - 알파돔타워 좌표 사용');
-        latitude = 37.4012;
-        longitude = 127.1101;
-      } else {
-        // 다른 지역은 실제 위치 정보 사용
-        const pos = await new Promise((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 60000
-          });
+      // 실제 위치 정보 사용
+      const pos = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
         });
-        latitude = pos.coords.latitude;
-        longitude = pos.coords.longitude;
-      }
+      });
+      
+      const latitude = pos.coords.latitude;
+      const longitude = pos.coords.longitude;
       const loc = new kakaoObj.maps.LatLng(latitude, longitude);
       
       setMyPos({ lat: latitude, lng: longitude });
@@ -195,7 +188,7 @@ export default function App() {
       newCircle.setMap(map);
       setCircle(newCircle);
 
-      // 먼저 내주변 검색 활성화 상태로 설정
+      // 내주변 검색 활성화 상태로 설정
       setIsNearbyEnabled(true);
       
       console.log('🎯 내주변 검색 설정:', { 
@@ -206,29 +199,23 @@ export default function App() {
         currentStoresCount: stores.length 
       });
       
-      // 성남시 테스트의 경우 지역구 조회 스킵
-      if (selectedCity === '성남시') {
-        console.log('🚀 성남시 테스트 - 기존 데이터 사용');
-        console.log('현재 stores 샘플:', stores.slice(0, 3).map(s => ({ name: s.name, lat: s.lat, lng: s.lng })));
-      } else {
-        // 다른 지역은 현재 위치의 시군구 정보 조회 (비동기 처리)
-        const geocoder = new kakaoObj.maps.services.Geocoder();
-        geocoder.coord2RegionCode(longitude, latitude, async (result, status) => {
-          if (status === kakaoObj.maps.services.Status.OK) {
-            const siGun = result.find(r => r.region_type === 'H')?.region_2depth_name || selectedCity;
-            console.log('내주변 검색 - 시군구 정보:', siGun);
-            
-            if (siGun && siGun !== selectedCity) {
-              setSelectedCity(siGun);
-            }
-            
-            // 가게 정보 로드
-            console.log('내주변 검색 - 가게 정보 로드 시작');
-            await loadStoresByCity(siGun);
-            console.log('내주변 검색 - 가게 정보 로드 완료');
+      // 현재 위치의 시군구 정보 조회 (비동기 처리)
+      const geocoder = new kakaoObj.maps.services.Geocoder();
+      geocoder.coord2RegionCode(longitude, latitude, async (result, status) => {
+        if (status === kakaoObj.maps.services.Status.OK) {
+          const siGun = result.find(r => r.region_type === 'H')?.region_2depth_name || selectedCity;
+          console.log('내주변 검색 - 시군구 정보:', siGun);
+          
+          if (siGun && siGun !== selectedCity) {
+            setSelectedCity(siGun);
           }
-        });
-      }
+          
+          // 가게 정보 로드
+          console.log('내주변 검색 - 가게 정보 로드 시작');
+          await loadStoresByCity(siGun);
+          console.log('내주변 검색 - 가게 정보 로드 완료');
+        }
+      });
       
     } catch (error) {
       console.error('내주변 검색 실패:', error);

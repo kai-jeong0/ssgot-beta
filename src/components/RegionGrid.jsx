@@ -55,14 +55,15 @@ const RegionGrid = ({ onCitySelect }) => {
       {/* 상단 헤더 */}
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-8 flex-shrink-0">
         <div className="max-w-6xl mx-auto text-center">
-          <div className="mb-4">
-            <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center mx-auto mb-3">
-              <MapPin className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <h1 className="text-2xl sm:text-3xl font-bold text-primary-text">쓰곳</h1>
+            <div className="w-8 h-8 bg-carrot rounded-full flex items-center justify-center">
+              <MapPin className="w-4 h-4 text-white" />
             </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-primary-text mb-2">
+          <h2 className="text-lg sm:text-xl font-bold text-primary-text mb-2">
             지역화폐를 쓸 곳을 선택해주세요
-          </h1>
+          </h2>
         </div>
       </div>
 
@@ -84,7 +85,7 @@ const RegionGrid = ({ onCitySelect }) => {
                 <CardTitle className="text-sm sm:text-base font-bold mb-0">{region.name}</CardTitle>
                 {selectedRegion?.id === region.id && (
                   <div className="mt-2">
-                    <div className="w-4 h-4 bg-black rounded-full flex items-center justify-center mx-auto">
+                    <div className="w-4 h-4 bg-carrot rounded-full flex items-center justify-center mx-auto">
                       <Check className="w-2 h-2 text-white" />
                     </div>
                   </div>
@@ -97,9 +98,9 @@ const RegionGrid = ({ onCitySelect }) => {
         {/* 선택된 지역 정보 */}
         {selectedRegion && (
           <div className="mt-8 max-w-2xl mx-auto px-4">
-            <Card className="bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-black">
+            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-carrot">
               <CardHeader className="text-center pb-3">
-                <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-3">
+                <div className="w-16 h-16 bg-carrot rounded-full flex items-center justify-center mx-auto mb-3">
                   <MapPin className="w-8 h-8 text-white" />
                 </div>
                 <CardTitle className="text-xl text-primary-text">
