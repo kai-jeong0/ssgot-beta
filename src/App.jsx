@@ -290,7 +290,10 @@ export default function App() {
       const loc = new kakaoObj.maps.LatLng(latitude, longitude);
       
       setMyPos({ lat: latitude, lng: longitude });
+      
+      // 지도 중심을 현재 위치로 이동
       map.setCenter(loc);
+      map.setLevel(6); // 적절한 줌 레벨
       
       // 기존 원 제거
       if (circle) {
@@ -314,58 +317,19 @@ export default function App() {
       // 내주변 검색 활성화 상태로 설정
       setIsNearbyEnabled(true);
       
-      console.log('🎯 내주변 검색 설정:', { 
+      console.log('🎯 내위치 설정 완료:', { 
         latitude, 
         longitude, 
-        radius, 
-        selectedCity,
-        currentStoresCount: stores.length 
+        radius
       });
       
-      // 현재 위치의 시군구 정보 조회 (비동기 처리)
-      const geocoder = new kakaoObj.maps.services.Geocoder();
-      geocoder.coord2RegionCode(longitude, latitude, async (result, status) => {
-        if (status === kakaoObj.maps.services.Status.OK) {
-          const siGun = result.find(r => r.region_type === 'H')?.region_2depth_name || selectedCity;
-          console.log('내주변 검색 - 시군구 정보:', siGun);
-          
-          if (siGun && siGun !== selectedCity) {
-            setSelectedCity(siGun);
-          }
-          
-          // 가게 정보 로드
-          console.log('내주변 검색 - 가게 정보 로드 시작');
-          const loadedStores = await loadStoresByCity(siGun);
-          console.log('내주변 검색 - 가게 정보 로드 완료');
-          
-                      // 첫 번째 업체 자동 선택 (업체가 있는 경우)
-            if (loadedStores && loadedStores.length > 0) {
-              const firstStore = loadedStores[0];
-              setSelectedId(firstStore.id);
-              console.log(`🎯 내주변 검색 - 첫 번째 업체 자동 선택:`, firstStore.name);
-              
-              // 지도 중심을 첫 번째 업체로 이동
-              if (kakaoObj && map) {
-                const center = new kakaoObj.maps.LatLng(firstStore.lat, firstStore.lng);
-                map.setCenter(center);
-                map.setLevel(6); // 업체 주변을 잘 보이도록 줌 레벨 조정
-                console.log(`🗺️ 내주변 검색 - 첫 번째 업체로 지도 중심 이동:`, firstStore.name);
-              }
-              
-              // 첫 번째 업체로 하단 리스트 앵커링 (즉시)
-              setTimeout(() => {
-                const el = document.querySelector(`[data-card-id="${CSS.escape(firstStore.id)}"]`);
-                if (el) {
-                  el.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
-                  console.log(`📍 내주변 검색 - ${firstStore.name} 하단 리스트 앵커링 완료`);
-                }
-              }, 100);
-            }
-        }
-      });
+      // 현재 지도 영역에서 재검색 수행
+      setTimeout(() => {
+        handleResearch();
+      }, 500);
       
     } catch (error) {
-      console.error('내주변 검색 실패:', error);
+      console.error('내위치 설정 실패:', error);
       alert('위치 정보를 가져오는데 실패했습니다. 다시 시도해주세요.');
     }
   };

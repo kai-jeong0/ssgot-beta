@@ -3,6 +3,12 @@ import React from 'react';
 const RouteModal = ({ isOpen, store, onClose, onRouteSelect }) => {
   if (!isOpen || !store) return null;
 
+  const handleRouteSelect = (routeType) => {
+    // 이동수단 선택 시 팝업 닫기
+    onRouteSelect(routeType);
+    onClose();
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -16,21 +22,21 @@ const RouteModal = ({ isOpen, store, onClose, onRouteSelect }) => {
         <div className="route-options">
           <div 
             className="route-option" 
-            onClick={() => onRouteSelect('walk')}
+            onClick={() => handleRouteSelect('walk')}
           >
             <div className="route-option-icon">🚶</div>
             <div className="route-option-text">도보</div>
           </div>
           <div 
             className="route-option" 
-            onClick={() => onRouteSelect('transit')}
+            onClick={() => handleRouteSelect('transit')}
           >
             <div className="route-option-icon">🚌</div>
             <div className="route-option-text">대중교통</div>
           </div>
           <div 
             className="route-option" 
-            onClick={() => onRouteSelect('car')}
+            onClick={() => handleRouteSelect('car')}
           >
             <div className="route-option-icon">🚗</div>
             <div className="route-option-text">자동차</div>

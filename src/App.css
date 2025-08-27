@@ -87,7 +87,6 @@ body {
 .research-btn:hover {
   background: #FF7419;
   color: white;
-  transform: scale(1.05);
   box-shadow: 0 6px 16px rgba(255, 116, 25, 0.3);
 }
 
