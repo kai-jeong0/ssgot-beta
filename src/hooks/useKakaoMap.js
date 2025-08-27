@@ -35,6 +35,12 @@ export const useKakaoMap = (mode) => {
         
         window.kakao.maps.load(() => {
           console.log('카카오맵 초기화 완료');
+          // services 라이브러리 로드 확인
+          if (window.kakao.maps.services && window.kakao.maps.services.Directions) {
+            console.log('✅ Directions 서비스 로드 완료');
+          } else {
+            console.warn('⚠️ Directions 서비스 로드 실패');
+          }
           resolve(window.kakao);
         });
       };

@@ -65,9 +65,9 @@ body {
 /* 재검색 버튼 */
 .research-btn {
   position: absolute;
-  bottom: 20px;
+  bottom: 20px; /* Aligned with my-location-btn Y-value */
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%); /* Centered horizontally */
   background: #fff;
   border: 2px solid #FF7419;
   border-radius: 24px;
@@ -88,10 +88,6 @@ body {
   background: #FF7419;
   color: white;
   box-shadow: 0 6px 16px rgba(255, 116, 25, 0.3);
-}
-
-.research-btn:active {
-  transform: scale(0.95);
 }
 
 .research-btn svg {

@@ -401,11 +401,17 @@ export default function App() {
 
   // 경로 선택 처리
   const handleRouteSelect = async (routeType) => {
-    if (!selectedStore || !kakaoObj || !map) return;
+    console.log('🗺️ 경로 선택 시작:', { routeType, selectedStore, hasKakaoObj: !!kakaoObj, hasMap: !!map });
+    
+    if (!selectedStore || !kakaoObj || !map) {
+      console.error('❌ 필수 조건 누락:', { selectedStore: !!selectedStore, kakaoObj: !!kakaoObj, map: !!map });
+      return;
+    }
     
     // 현재 위치 정보 가져오기
     if (!myPos) {
       try {
+        console.log('📍 현재 위치 정보 가져오기 시작...');
         if (!navigator.geolocation) {
           alert('위치 정보를 사용할 수 없습니다.');
           return;
@@ -445,10 +451,10 @@ export default function App() {
           setCircle(newCircle);
         }
         
-        console.log('📍 경로 안내를 위해 현재 위치 정보 가져옴:', { latitude, longitude });
+        console.log('✅ 현재 위치 정보 가져오기 완료:', { latitude, longitude });
         
       } catch (error) {
-        console.error('경로 안내 위치 정보 가져오기 실패:', error);
+        console.error('❌ 경로 안내 위치 정보 가져오기 실패:', error);
         alert('위치 정보를 가져오는데 실패했습니다. 경로 안내 기능을 사용할 수 없습니다.');
         return;
       }
@@ -460,9 +466,21 @@ export default function App() {
         const { lat: startLat, lng: startLng } = myPos;
         const { lat: endLat, lng: endLng, name } = selectedStore;
         
+        console.log('🗺️ 경로 검색 시작:', {
+          출발지: { lat: startLat, lng: startLng },
+          목적지: { lat: endLat, lng: endLng, name }
+        });
+        
         // 기존 경로 제거
         if (window.currentRoute) {
           window.currentRoute.setMap(null);
+        }
+        
+        // Directions 서비스 사용 가능 여부 확인
+        if (!kakaoObj.maps.services || !kakaoObj.maps.services.Directions) {
+          console.error('❌ Directions 서비스를 사용할 수 없습니다');
+          alert('경로 검색 서비스를 사용할 수 없습니다. 카카오맵 API를 확인해주세요.');
+          return;
         }
         
         // 카카오맵 경로 검색 API 사용
@@ -474,59 +492,126 @@ export default function App() {
           destination: new kakaoObj.maps.LatLng(endLat, endLng),
           priority: kakaoObj.maps.services.RoutePriority.FIRST
         }, (result, status) => {
+          console.log('🗺️ 경로 검색 결과:', { status, result });
+          
           if (status === kakaoObj.maps.services.Status.OK) {
-            const route = result.routes[0];
-            const summary = route.summary;
-            
-            // 경로를 지도에 표시
-            const path = route.sections[0].roads[0].vertexes;
-            const points = [];
-            
-            for (let i = 0; i < path.length; i += 2) {
-              points.push(new kakaoObj.maps.LatLng(path[i + 1], path[i]));
+            try {
+              const route = result.routes[0];
+              const summary = route.summary;
+              
+              console.log('✅ 경로 검색 성공:', { summary, route });
+              
+              // 경로를 지도에 표시 (안전한 경로 데이터 처리)
+              if (route.sections && route.sections[0] && route.sections[0].roads && route.sections[0].roads[0]) {
+                const path = route.sections[0].roads[0].vertexes;
+                const points = [];
+                
+                if (path && path.length > 0) {
+                  for (let i = 0; i < path.length; i += 2) {
+                    if (path[i + 1] !== undefined && path[i] !== undefined) {
+                      points.push(new kakaoObj.maps.LatLng(path[i + 1], path[i]));
+                    }
+                  }
+                  
+                  if (points.length > 0) {
+                    const polyline = new kakaoObj.maps.Polyline({
+                      path: points,
+                      strokeWeight: 5,
+                      strokeColor: '#FF7419',
+                      strokeOpacity: 0.8,
+                      strokeStyle: 'solid'
+                    });
+                    
+                    polyline.setMap(map);
+                    window.currentRoute = polyline;
+                    console.log('✅ 경로 지도 표시 완료');
+                  } else {
+                    console.warn('⚠️ 경로 좌표가 비어있음');
+                  }
+                } else {
+                  console.warn('⚠️ 경로 데이터가 비어있음');
+                }
+              } else {
+                console.warn('⚠️ 경로 섹션 데이터 구조가 예상과 다름');
+              }
+              
+              // 소요시간을 상태에 저장하여 좌측 하단에 표시
+              const durationMinutes = Math.round(summary.duration / 60);
+              setRouteInfo({
+                distance: `${Math.round(summary.distance / 1000 * 10) / 10}km`,
+                duration: durationMinutes,
+                type: routeType === 'walk' ? '도보' : routeType === 'transit' ? '대중교통' : '자동차'
+              });
+              
+              // 경로 정보 모달은 표시하지 않음 (지도상에 직접 표시)
+              setShowRouteModal(false);
+              
+              console.log(`✅ ${routeType} 경로 표시 완료:`, {
+                거리: summary.distance,
+                시간: summary.duration
+              });
+              
+            } catch (routeError) {
+              console.error('❌ 경로 데이터 처리 실패:', routeError);
+              setRouteInfo({
+                distance: '계산 불가',
+                duration: 0,
+                type: routeType === 'walk' ? '도보' : routeType === 'transit' ? '대중교통' : '자동차'
+              });
+              setShowRouteModal(false);
             }
             
-            const polyline = new kakaoObj.maps.Polyline({
-              path: points,
-              strokeWeight: 5,
-              strokeColor: '#FF7419',
-              strokeOpacity: 0.8,
-              strokeStyle: 'solid'
-            });
-            
-            polyline.setMap(map);
-            window.currentRoute = polyline;
-            
-            // 소요시간을 상태에 저장하여 좌측 하단에 표시
-            const durationMinutes = Math.round(summary.duration / 60);
-            setRouteInfo({
-              distance: `${Math.round(summary.distance / 1000 * 10) / 10}km`,
-              duration: durationMinutes,
-              type: routeType === 'walk' ? '도보' : routeType === 'transit' ? '대중교통' : '자동차'
-            });
-            
-            // 경로 정보 모달은 표시하지 않음 (지도상에 직접 표시)
-            setShowRouteModal(false);
-            
-            console.log(`🗺️ ${routeType} 경로 표시 완료:`, {
-              거리: summary.distance,
-              시간: summary.duration
-            });
-            
           } else {
-            console.error('경로 검색 실패:', status);
-            // 기본 정보라도 표시
-            setRouteInfo({
-              distance: '계산 불가',
-              duration: 0,
-              type: routeType === 'walk' ? '도보' : routeType === 'transit' ? '대중교통' : '자동차'
-            });
+            console.error('❌ 경로 검색 실패:', status);
+            
+            // 대안: 직선 경로 표시
+            try {
+              console.log('🔄 대안 경로 표시 시도...');
+              const points = [
+                new kakaoObj.maps.LatLng(startLat, startLng),
+                new kakaoObj.maps.LatLng(endLat, endLng)
+              ];
+              
+              const fallbackPolyline = new kakaoObj.maps.Polyline({
+                path: points,
+                strokeWeight: 3,
+                strokeColor: '#FFA500',
+                strokeOpacity: 0.6,
+                strokeStyle: 'dashed'
+              });
+              
+              fallbackPolyline.setMap(map);
+              window.currentRoute = fallbackPolyline;
+              
+              // 대략적인 거리 계산
+              const distance = Math.sqrt(
+                Math.pow((endLat - startLat) * 111000, 2) + 
+                Math.pow((endLng - startLng) * 88800, 2)
+              );
+              
+              setRouteInfo({
+                distance: `${Math.round(distance / 1000 * 10) / 10}km`,
+                duration: 0,
+                type: routeType === 'walk' ? '도보' : routeType === 'transit' ? '대중교통' : '자동차'
+              });
+              
+              console.log('✅ 대안 경로 표시 완료 (직선)');
+              
+            } catch (fallbackError) {
+              console.error('❌ 대안 경로 표시도 실패:', fallbackError);
+              setRouteInfo({
+                distance: '계산 불가',
+                duration: 0,
+                type: routeType === 'walk' ? '도보' : routeType === 'transit' ? '대중교통' : '자동차'
+              });
+            }
+            
             setShowRouteModal(false);
           }
         });
         
       } catch (error) {
-        console.error('경로 검색 실패:', error);
+        console.error('❌ 경로 검색 실패:', error);
         // 기본 정보라도 표시
         setRouteInfo({
           distance: '계산 불가',
