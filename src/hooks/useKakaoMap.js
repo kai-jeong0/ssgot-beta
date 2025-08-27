@@ -1,21 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 
 // 환경 변수에서 API 키 가져오기 (빌드 시점에 대체됨)
-const KAKAO_JAVASCRIPT_KEY = import.meta.env.VITE_KAKAO_JS_KEY || "cf29dccdc1b81db907bf3cab84679703";
+const KAKAO_JAVASCRIPT_KEY = import.meta.env.VITE_KAKAO_JS_KEY;
 
 // API 키 유효성 검사
 const validateApiKey = (key) => {
   console.log('🔑 API 키 검증 시작:', key ? key.substring(0, 10) + '...' : 'undefined');
   
   if (!key) {
-    console.error('❌ API 키가 없습니다');
+    console.error('❌ API 키가 설정되지 않았습니다. 환경 변수 VITE_KAKAO_JS_KEY를 확인해주세요.');
     return false;
-  }
-  
-  if (key === "cf29dccdc1b81db907bf3cab84679703") {
-    console.warn('⚠️ 기본 API 키가 사용되고 있습니다. 환경 변수 VITE_KAKAO_JS_KEY를 설정해주세요.');
-    // 일시적으로 기본 키도 허용
-    return true;
   }
   
   if (key.length < 20) {
@@ -140,7 +134,13 @@ export const useKakaoMap = (mode) => {
           return;
         }
         
-        console.log('🔑 API 키 검증 완료:', KAKAO_JAVASCRIPT_KEY.substring(0, 10) + '...');
+        // 프로덕션 환경에서 API 키 노출 방지
+        if (import.meta.env.PROD) {
+          console.log('🔑 API 키 검증 완료 (프로덕션 모드)');
+        } else {
+          console.log('🔑 API 키 검증 완료:', KAKAO_JAVASCRIPT_KEY.substring(0, 10) + '...');
+        }
+        
         const kakao = await loadKakao(KAKAO_JAVASCRIPT_KEY);
         setKakaoObj(kakao);
         console.log('✅ 카카오맵 로드 성공');

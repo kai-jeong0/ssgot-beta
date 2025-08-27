@@ -66,12 +66,30 @@ python kakao_image_api.py
 
 ### 3. 환경 변수 설정
 
-`.env` 파일을 생성하고 다음 내용을 추가하세요:
+#### 로컬 개발 환경
+
+프로젝트 루트에 `.env.local` 파일을 생성하고 다음 내용을 추가하세요:
 
 ```env
-VITE_KAKAO_JS_KEY=your_kakao_api_key
-VITE_FASTAPI_URL=http://localhost:8000
+VITE_KAKAO_JS_KEY=cf29dccdc1b81db907bf3cab84679703
 ```
+
+#### 프로덕션 환경 (Vercel)
+
+Vercel 대시보드에서 환경 변수를 설정하세요:
+
+1. 프로젝트 설정 → Environment Variables
+2. `VITE_KAKAO_JS_KEY` 추가
+3. 값: `cf29dccdc1b81db907bf3cab84679703`
+4. Production, Preview, Development 모두 체크
+
+#### 보안 주의사항
+
+- `.env.local` 파일은 Git에 커밋되지 않습니다 (`.gitignore`에 포함됨)
+- 프로덕션 환경에서는 환경 변수를 통해 API 키를 관리하세요
+- API 키를 코드에 직접 하드코딩하지 마세요
+
+자세한 설정 방법은 [ENV_SETUP.md](./ENV_SETUP.md)를 참조하세요.
 
 ## 🔧 주요 API
 

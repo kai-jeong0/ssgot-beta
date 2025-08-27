@@ -752,14 +752,6 @@ export default function App() {
           <div className="map-wrap flex-1 relative">
             <div ref={mapRef} className="map" />
             
-            {/* 지도 디버깅 정보 */}
-            <div className="absolute top-2 left-2 bg-white bg-opacity-90 p-2 rounded text-xs z-20">
-              <div>지도 상태: {map ? '✅ 로드됨' : '❌ 로드 안됨'}</div>
-              <div>카카오맵: {kakaoObj ? '✅ 준비됨' : '❌ 준비 안됨'}</div>
-              <div>모드: {mode}</div>
-              <div>마커 수: {markers ? markers.length : 0}</div>
-            </div>
-            
             {/* 지도 로딩 실패 시 안내 메시지 */}
             {!map && (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
