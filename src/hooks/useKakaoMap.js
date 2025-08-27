@@ -39,7 +39,7 @@ const validateApiKey = (key) => {
   return true;
 };
 
-export const useKakaoMap = (mode) => {
+export default function useKakaoMap(mode) {
   const [kakaoObj, setKakaoObj] = useState(null);
   const [map, setMap] = useState(null);
   const [markers, setMarkers] = useState([]);
@@ -382,5 +382,3 @@ export const useKakaoMap = (mode) => {
     clearMarkerHighlight
   };
 };
-
-export default useKakaoMap;
