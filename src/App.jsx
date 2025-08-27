@@ -438,7 +438,10 @@ export default function App() {
   }
 
   // 딥링크 기반 길찾기
-  const handleRoute = async (store) => {
+  const handleRoute = async (store, transitMode = '자차') => {
+    // 이동수단 설정
+    setTransitMode(transitMode);
+    // 딥링크 길찾기 실행
     await handleDirections(store);
   };
 
@@ -479,8 +482,6 @@ export default function App() {
         setCategory={setCategory}
         stores={stores}
         onBack={() => setMode('region')}
-        transitMode={transitMode}
-        onTransitModeChange={setTransitMode}
       />
 
       {mode === 'region' && (

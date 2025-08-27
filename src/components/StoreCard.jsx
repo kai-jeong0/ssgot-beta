@@ -7,6 +7,7 @@ import { Button } from './ui/Button';
 const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [showTransitModal, setShowTransitModal] = useState(false);
   
   const onImgError = (e) => {
     setImageError(true);
@@ -17,6 +18,13 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
     setImageLoaded(true);
   };
 
+  // 이동수단 선택 처리
+  const handleTransitSelect = (transitMode) => {
+    setShowTransitModal(false);
+    // onRoute에 이동수단 정보도 함께 전달
+    onRoute(store, transitMode);
+  };
+
   // 카테고리 한글 매핑 및 색상
   const getCategoryInfo = (category) => {
     const categoryMap = {
@@ -25,6 +33,7 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
       'pharmacy': { label: '약국', color: 'green' },
       'mart': { label: '마트', color: 'blue' },
       'beauty': { label: '미용', color: 'purple' },
+      'academy': { label: '학원', color: 'indigo' },
       'etc': { label: '기타', color: 'secondary' }
     };
     return categoryMap[category] || { label: '기타', color: 'secondary' };
@@ -33,6 +42,7 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
   const categoryInfo = getCategoryInfo(store.category);
 
   return (
+    <>
     <Card
       className={`cursor-pointer transition-all duration-200 hover:scale-105 h-full ${
         isSelected ? 'ring-2 ring-carrot ring-offset-2 border-carrot' : ''
@@ -97,7 +107,7 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                onRoute(store);
+                setShowTransitModal(true);
               }}
               className="flex items-center gap-1 text-xs px-2 py-1 h-6"
             >
@@ -108,6 +118,44 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
         </div>
       </CardContent>
     </Card>
+
+    {/* 이동수단 선택 팝업 */}
+    {showTransitModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
+            이동수단을 선택해주세요
+          </h3>
+          <div className="space-y-3">
+            <button
+              onClick={() => handleTransitSelect('도보')}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              🚶 도보
+            </button>
+            <button
+              onClick={() => handleTransitSelect('대중교통')}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+            >
+              🚌 대중교통
+            </button>
+            <button
+              onClick={() => handleTransitSelect('자차')}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+            >
+              🚗 자차
+            </button>
+          </div>
+          <button
+            onClick={() => setShowTransitModal(false)}
+            className="w-full mt-4 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            취소
+          </button>
+        </div>
+      </div>
+    )}
+  </>
   );
 };
 
