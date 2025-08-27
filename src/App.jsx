@@ -4,6 +4,7 @@ import RegionGrid from './components/RegionGrid';
 import BottomList from './components/BottomList';
 import StoreCard from './components/StoreCard';
 import RouteModal from './components/RouteModal';
+import SplashScreen from './components/SplashScreen';
 import { buildKakaoDirectionsUrl, getUserLocOrFallback, uiModeToApi } from './utils/directionsLink';
 import useKakaoMap from './hooks/useKakaoMap';
 import { useStores } from './hooks/useStores';
