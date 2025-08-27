@@ -485,6 +485,16 @@ export default function App() {
             availableServices: kakaoObj.maps.services ? Object.keys(kakaoObj.maps.services) : []
           });
           
+          // 추가 디버깅 정보
+          console.error('🔍 카카오맵 객체 상세 상태:', {
+            kakaoObj: !!kakaoObj,
+            maps: !!(kakaoObj && kakaoObj.maps),
+            services: !!(kakaoObj && kakaoObj.maps && kakaoObj.maps.services),
+            Directions: !!(kakaoObj && kakaoObj.maps && kakaoObj.maps.services && kakaoObj.maps.services.Directions),
+            Places: !!(kakaoObj && kakaoObj.maps && kakaoObj.maps.services && kakaoObj.maps.services.Places),
+            Geocoder: !!(kakaoObj && kakaoObj.maps && kakaoObj.maps.services && kakaoObj.maps.services.Geocoder)
+          });
+          
           // 사용자에게 더 구체적인 안내
           if (!kakaoObj.maps.services) {
             alert('카카오맵 서비스 라이브러리가 로드되지 않았습니다. 페이지를 새로고침해주세요.');
