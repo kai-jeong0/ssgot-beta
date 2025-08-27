@@ -33,7 +33,8 @@ export default function App() {
   const [currentMapCenter, setCurrentMapCenter] = useState(null);
   const [showRouteInfo, setShowRouteInfo] = useState(false);
   const [routeInfo, setRouteInfo] = useState(null);
-  const [currentTransitMode, setCurrentTransitMode] = useState('car'); // 현재 선택된 이동 수단 모드
+  const [routePreview, setRoutePreview] = useState(null); // 경로 미리보기 정보
+  const [showTimeDisplay, setShowTimeDisplay] = useState(false); // 소요시간 표시 여부
   
   // Feature flags for region pickers (can be toggled via env or prop)
   const enableGyeonggiPicker = false; // 기존 그리드 스타일
@@ -50,15 +51,30 @@ export default function App() {
   const { stores, filtered, loading, loadStoresByCity, setFiltered } = useStores();
   const { kakaoObj, map, mapRef, markers, markerMap, updateMarkers, clearMarkerHighlight, selectedMarkerId } = useKakaoMap(mode);
 
-  // 현재 선택된 이동 수단 모드 가져오기
+  // 현재 선택된 이동 수단 모드 가져오기 (기본값: 자차)
   const getSelectedTransitMode = () => {
-    return currentTransitMode;
+    return 'car';
   };
 
-  // 이동 수단 모드 변경 핸들러
-  const handleTransitModeChange = (newMode) => {
-    setCurrentTransitMode(newMode);
-    console.log(`🚗 이동 수단 모드 변경: ${newMode}`);
+  // 경로 미리보기 콜백
+  const handleRoutePreview = (previewData) => {
+    setRoutePreview(previewData);
+    console.log('🗺️ 경로 미리보기 데이터:', previewData);
+  };
+
+  // 소요시간 표시 콜백
+  const handleTimeDisplay = (timeData) => {
+    setRouteInfo({
+      distance: `${(timeData.distance/1000).toFixed(1)}km`,
+      duration: timeData.time,
+      type: timeData.mode === 'walk' ? '도보' : timeData.mode === 'traffic' ? '대중교통' : '자차'
+    });
+    setShowTimeDisplay(true);
+    
+    // 5초 후 자동으로 숨기기
+    setTimeout(() => {
+      setShowTimeDisplay(false);
+    }, 5000);
   };
 
   // 마커에 길찾기 기능 설정
@@ -84,7 +100,9 @@ export default function App() {
           lat: 37.3948, 
           lng: 127.1111 
         },
-        getSelectedTransitMode
+        getSelectedTransitMode,
+        onRoutePreview: handleRoutePreview,
+        onTimeDisplay: handleTimeDisplay
       });
     }
   }, [markers, kakaoObj, currentTransitMode]); // currentTransitMode 변경 시에도 재설정
@@ -571,7 +589,6 @@ export default function App() {
         category={category}
         setCategory={setCategory}
         stores={stores} // 업체 목록 전달
-        onTransitModeChange={handleTransitModeChange} // 이동 수단 모드 변경 핸들러
         ref={headerRef}
       />
 
@@ -658,8 +675,66 @@ export default function App() {
               </button>
             )}
             
-            {/* 소요시간 표시 (좌측 하단) */}
+            {/* Route Duration Info (Bottom Left) */}
             {routeInfo && routeInfo.duration > 0 && (
+              <div className="route-duration-info">
+                <div className="duration-badge">
+                  <span className="duration-text">{routeInfo.duration}분</span>
+                  <span className="route-type">{routeInfo.type}</span>
+                </div>
+              </div>
+            )}
+            
+            {/* 경로 미리보기 정보 (Top Right) */}
+            {routePreview && (
+              <div className="route-preview-info">
+                <div className="preview-card">
+                  <div className="preview-header">
+                    <span className="preview-icon">🗺️</span>
+                    <span className="preview-title">경로 미리보기</span>
+                    <button 
+                      className="preview-close"
+                      onClick={() => setRoutePreview(null)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="preview-content">
+                    <div className="preview-route">
+                      <div className="route-point">
+                        <span className="point-label">출발</span>
+                        <span className="point-name">{routePreview.from.name}</span>
+                      </div>
+                      <div className="route-arrow">→</div>
+                      <div className="route-point">
+                        <span className="point-label">도착</span>
+                        <span className="point-name">{routePreview.to.name}</span>
+                      </div>
+                    </div>
+                    <div className="preview-stats">
+                      <div className="stat-item">
+                        <span className="stat-label">거리</span>
+                        <span className="stat-value">{(routePreview.distance/1000).toFixed(1)}km</span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-label">예상시간</span>
+                        <span className="stat-value">{routePreview.estimatedTime}분</span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-label">이동수단</span>
+                        <span className="stat-value">
+                          {routePreview.mode === 'walk' ? '🚶 도보' : 
+                           routePreview.mode === 'traffic' ? '🚌 대중교통' : '🚗 자차'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* 소요시간 표시 (Bottom Left) */}
+            {showTimeDisplay && routeInfo && (
               <div className="route-duration-info">
                 <div className="duration-badge">
                   <span className="duration-text">{routeInfo.duration}분</span>
