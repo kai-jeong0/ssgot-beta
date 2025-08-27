@@ -5,14 +5,25 @@ const KAKAO_JAVASCRIPT_KEY = import.meta.env.VITE_KAKAO_JS_KEY || "cf29dccdc1b81
 
 // API 키 유효성 검사
 const validateApiKey = (key) => {
-  if (!key || key === "cf29dccdc1b81db907bf3cab84679703") {
+  console.log('🔑 API 키 검증 시작:', key ? key.substring(0, 10) + '...' : 'undefined');
+  
+  if (!key) {
+    console.error('❌ API 키가 없습니다');
+    return false;
+  }
+  
+  if (key === "cf29dccdc1b81db907bf3cab84679703") {
     console.warn('⚠️ 기본 API 키가 사용되고 있습니다. 환경 변수 VITE_KAKAO_JS_KEY를 설정해주세요.');
-    return false;
+    // 일시적으로 기본 키도 허용
+    return true;
   }
+  
   if (key.length < 20) {
-    console.error('❌ API 키가 너무 짧습니다.');
+    console.error('❌ API 키가 너무 짧습니다:', key.length);
     return false;
   }
+  
+  console.log('✅ API 키 검증 통과');
   return true;
 };
 
@@ -28,13 +39,16 @@ export const useKakaoMap = (mode) => {
   // 카카오맵 SDK 로드
   const loadKakao = (key) => {
     return new Promise((resolve, reject) => {
-      console.log('카카오맵 로딩 시작...', key);
+      console.log('🗺️ 카카오맵 로딩 시작...', key ? key.substring(0, 10) + '...' : 'undefined');
+      
+      // 이미 로드된 경우 확인
       if (window.kakao && window.kakao.maps) {
-        console.log('이미 로드된 카카오맵 사용');
+        console.log('✅ 이미 로드된 카카오맵 사용');
         // 기존 로드된 객체에서 services 확인
         if (window.kakao.maps.services && window.kakao.maps.services.Directions) {
           console.log('✅ 기존 Directions 서비스 사용 가능');
           resolve(window.kakao);
+          return;
         } else {
           console.warn('⚠️ 기존 객체에 Directions 서비스가 없음, 재로드 필요');
           // 기존 스크립트 제거 후 재로드
@@ -51,16 +65,24 @@ export const useKakaoMap = (mode) => {
       script.src = `https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=${key}&libraries=services`;
       script.async = true;
       
+      // 로딩 타임아웃 설정
+      const timeoutId = setTimeout(() => {
+        console.error('❌ 카카오맵 SDK 로딩 타임아웃');
+        reject(new Error('SDK loading timeout'));
+      }, 15000); // 15초 타임아웃
+      
       script.onload = () => {
-        console.log('카카오맵 SDK 스크립트 로드 완료');
+        clearTimeout(timeoutId);
+        console.log('✅ 카카오맵 SDK 스크립트 로드 완료');
+        
         if (!window.kakao) {
-          console.error('카카오 객체를 찾을 수 없음');
+          console.error('❌ 카카오 객체를 찾을 수 없음');
           return reject(new Error('no kakao'));
         }
         
         // 카카오맵 초기화
         window.kakao.maps.load(() => {
-          console.log('카카오맵 초기화 완료');
+          console.log('✅ 카카오맵 초기화 완료');
           
           // services 라이브러리 로드 확인 및 초기화
           if (window.kakao.maps.services) {
@@ -96,7 +118,8 @@ export const useKakaoMap = (mode) => {
       };
       
       script.onerror = (e) => {
-        console.error('카카오맵 SDK 로드 실패:', e);
+        clearTimeout(timeoutId);
+        console.error('❌ 카카오맵 SDK 로드 실패:', e);
         reject(new Error('sdk load error'));
       };
       
@@ -106,7 +129,10 @@ export const useKakaoMap = (mode) => {
 
   // 카카오맵 로드
   useEffect(() => {
-    (async () => {
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    const attemptLoad = async () => {
       try {
         // API 키 유효성 검사
         if (!validateApiKey(KAKAO_JAVASCRIPT_KEY)) {
@@ -117,10 +143,21 @@ export const useKakaoMap = (mode) => {
         console.log('🔑 API 키 검증 완료:', KAKAO_JAVASCRIPT_KEY.substring(0, 10) + '...');
         const kakao = await loadKakao(KAKAO_JAVASCRIPT_KEY);
         setKakaoObj(kakao);
+        console.log('✅ 카카오맵 로드 성공');
       } catch (error) {
-        console.error('카카오맵 로드 실패:', error);
+        console.error(`❌ 카카오맵 로드 실패 (시도 ${retryCount + 1}/${maxRetries}):`, error);
+        retryCount++;
+        
+        if (retryCount < maxRetries) {
+          console.log(`🔄 ${retryCount}초 후 재시도...`);
+          setTimeout(attemptLoad, retryCount * 1000);
+        } else {
+          console.error('❌ 최대 재시도 횟수 초과. 카카오맵을 로드할 수 없습니다.');
+        }
       }
-    })();
+    };
+    
+    attemptLoad();
   }, []);
 
   // 지도 초기화

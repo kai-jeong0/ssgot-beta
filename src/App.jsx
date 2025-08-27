@@ -760,6 +760,39 @@ export default function App() {
               <div>마커 수: {markers ? markers.length : 0}</div>
             </div>
             
+            {/* 지도 로딩 실패 시 안내 메시지 */}
+            {!map && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
+                <div className="text-center p-6 bg-white rounded-lg shadow-lg max-w-sm mx-4">
+                  <div className="text-4xl mb-4">🗺️</div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">지도를 불러올 수 없습니다</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    카카오맵 서비스 연결에 문제가 발생했습니다.
+                  </p>
+                  <div className="space-y-2 text-xs text-left bg-gray-50 p-3 rounded">
+                    <div className="flex items-center">
+                      <span className="w-2 h-2 bg-red-400 rounded-full mr-2"></span>
+                      인터넷 연결 확인
+                    </div>
+                    <div className="flex items-center">
+                      <span className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
+                      페이지 새로고침
+                    </div>
+                    <div className="flex items-center">
+                      <span className="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
+                      잠시 후 다시 시도
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => window.location.reload()}
+                    className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                  >
+                    새로고침
+                  </button>
+                </div>
+              </div>
+            )}
+            
             {/* 내 위치 버튼 */}
             <button 
               className="my-location-btn"
