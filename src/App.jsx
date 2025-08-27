@@ -25,7 +25,13 @@ export default function App() {
   const [isNearbyEnabled, setIsNearbyEnabled] = useState(false);
   const [showRouteModal, setShowRouteModal] = useState(false);
   const [selectedStore, setSelectedStore] = useState(null);
-  const [isBottomListExpanded, setIsBottomListExpanded] = useState(true); // 항상 열린 상태로 변경
+  const [isBottomListExpanded, setIsBottomListExpanded] = useState(true);
+  
+  // 새로운 상태들
+  const [showResearchButton, setShowResearchButton] = useState(false);
+  const [currentMapCenter, setCurrentMapCenter] = useState(null);
+  const [showRouteInfo, setShowRouteInfo] = useState(false);
+  const [routeInfo, setRouteInfo] = useState(null);
   
   // Feature flags for region pickers (can be toggled via env or prop)
   const enableGyeonggiPicker = false; // 기존 그리드 스타일
@@ -42,7 +48,7 @@ export default function App() {
   const { stores, filtered, loading, loadStoresByCity, setFiltered } = useStores();
   const { kakaoObj, map, mapRef, markers, markerMap, updateMarkers, clearMarkerHighlight, selectedMarkerId } = useKakaoMap(mode);
 
-  // 검색 필터링
+  // 검색 필터링 (학원 카테고리 포함)
   useEffect(() => {
     if (!searchName) {
       setFiltered(stores);
@@ -52,7 +58,7 @@ export default function App() {
     setFiltered(stores.filter(s => s.name && s.name.includes(query)));
   }, [searchName, stores, setFiltered]);
 
-  // 카테고리 필터링 (디버깅 로그 추가)
+  // 카테고리 필터링 (학원 카테고리 포함)
   const finalShown = useMemo(() => {
     let result = filtered;
     
@@ -66,7 +72,7 @@ export default function App() {
     
     // 내 주변 필터링 제거 - 이제 지도에 내 위치만 표시
 
-    // 카테고리 필터링 적용
+    // 카테고리 필터링 적용 (학원 카테고리 포함)
     if (category !== 'all') {
       const beforeFilter = result.length;
       result = result.filter(s => s.category === category);
@@ -76,6 +82,67 @@ export default function App() {
     console.log('최종 결과:', result.length);
     return result;
   }, [filtered, isNearbyEnabled, myPos, circle, radius, category]);
+
+  // 지도 이동 감지 및 재검색 버튼 표시
+  useEffect(() => {
+    if (!map || !kakaoObj) return;
+
+    const handleMapMove = () => {
+      const center = map.getCenter();
+      const currentLat = center.getLat();
+      const currentLng = center.getLng();
+      
+      // 이전 중심점과 비교하여 이동 감지
+      if (currentMapCenter) {
+        const latDiff = Math.abs(currentLat - currentMapCenter.lat);
+        const lngDiff = Math.abs(currentLng - currentMapCenter.lng);
+        
+        // 일정 거리 이상 이동했을 때만 재검색 버튼 표시
+        if (latDiff > 0.001 || lngDiff > 0.001) {
+          setShowResearchButton(true);
+        }
+      }
+      
+      setCurrentMapCenter({ lat: currentLat, lng: currentLng });
+    };
+
+    // 지도 이벤트 리스너 등록
+    kakaoObj.maps.event.addListener(map, 'dragend', handleMapMove);
+    kakaoObj.maps.event.addListener(map, 'zoom_changed', handleMapMove);
+
+    return () => {
+      kakaoObj.maps.event.removeListener(map, 'dragend', handleMapMove);
+      kakaoObj.maps.event.removeListener(map, 'zoom_changed', handleMapMove);
+    };
+  }, [map, kakaoObj, currentMapCenter]);
+
+  // 재검색 기능
+  const handleResearch = async () => {
+    if (!map || !kakaoObj || !selectedCity) return;
+    
+    const center = map.getCenter();
+    const currentLat = center.getLat();
+    const currentLng = center.getLng();
+    
+    console.log(`🔄 재검색 시작: ${selectedCity} (${currentLat}, ${currentLng})`);
+    
+    // 현재 지도 중심에서 가까운 업체들 검색
+    const nearbyStores = stores.filter(store => {
+      const distance = Math.sqrt(
+        Math.pow(store.lat - currentLat, 2) + 
+        Math.pow(store.lng - currentLng, 2)
+      );
+      return distance < 0.01; // 약 1km 반경 내
+    });
+    
+    if (nearbyStores.length > 0) {
+      setFiltered(nearbyStores);
+      setShowResearchButton(false);
+      console.log(`✅ 재검색 완료: ${nearbyStores.length}개 업체 발견`);
+    } else {
+      console.log('⚠️ 재검색 결과: 해당 위치에 업체가 없습니다');
+    }
+  };
 
   // 마커 업데이트 (성능 최적화)
   useEffect(() => {
@@ -118,6 +185,7 @@ export default function App() {
     setMode('map');
     setCategory('all');
     setSelectedId(null);
+    setShowResearchButton(false);
     
     // 가게 정보 먼저 로드
     const loadedStores = await loadStoresByCity(city);
@@ -176,6 +244,8 @@ export default function App() {
     setSelectedId(null);
     setIsNearbyEnabled(false);
     setMyPos(null);
+    setShowResearchButton(false);
+    setShowRouteInfo(false);
     if (circle) {
       circle.setMap(null);
       setCircle(null);
@@ -296,19 +366,11 @@ export default function App() {
     }
   };
 
-  // 길찾기
-  const handleRoute = (store) => {
+  // 경로 안내 (새창 대신 모달 내에서 표시)
+  const handleRoute = async (store) => {
     setSelectedStore(store);
-    setShowRouteModal(true);
-  };
-
-  const handleRouteSelect = async (routeType) => {
-    if (!selectedStore) return;
     
-    const { lat, lng, name } = selectedStore;
-    let routeUrl = '';
-    
-    // 현재 위치가 없으면 먼저 위치 정보를 가져오기 시도
+    // 현재 위치 정보 가져오기
     if (!myPos) {
       try {
         if (!navigator.geolocation) {
@@ -350,64 +412,72 @@ export default function App() {
           setCircle(newCircle);
         }
         
-        console.log('📍 길찾기를 위해 현재 위치 정보 가져옴:', { latitude, longitude });
+        console.log('📍 경로 안내를 위해 현재 위치 정보 가져옴:', { latitude, longitude });
         
       } catch (error) {
-        console.error('길찾기 위치 정보 가져오기 실패:', error);
-        alert('위치 정보를 가져오는데 실패했습니다. 길찏기 기능을 사용할 수 없습니다.');
+        console.error('경로 안내 위치 정보 가져오기 실패:', error);
+        alert('위치 정보를 가져오는데 실패했습니다. 경로 안내 기능을 사용할 수 없습니다.');
         return;
       }
     }
     
-    // 현재 위치가 있으면 출발지로 설정하여 길찾기
-    if (myPos) {
-      const { lat: startLat, lng: startLng } = myPos;
-      
-      // 카카오맵 길찾기 URL 생성 (출발지: 내위치, 도착지: 선택된 업체)
-      switch (routeType) {
-        case 'walk':
-          routeUrl = `https://map.kakao.com/link/route/${startLat},${startLng}/${lat},${lng}?mode=walk`;
-          break;
-        case 'transit':
-          routeUrl = `https://map.kakao.com/link/route/${startLat},${startLng}/${lat},${lng}?mode=transit`;
-          break;
-        case 'car':
-          routeUrl = `https://map.kakao.com/link/route/${startLat},${startLng}/${lat},${lng}?mode=car`;
-          break;
-        default:
-          routeUrl = `https://map.kakao.com/link/route/${startLat},${startLng}/${lat},${lng}`;
+    // 경로 정보 가져오기
+    if (myPos && kakaoObj) {
+      try {
+        const { lat: startLat, lng: startLng } = myPos;
+        const { lat: endLat, lng: endLng, name } = store;
+        
+        // 카카오맵 경로 검색 API 사용
+        const directions = new kakaoObj.maps.services.Directions();
+        
+        // 도보 경로 검색
+        directions.route({
+          origin: new kakaoObj.maps.LatLng(startLat, startLng),
+          destination: new kakaoObj.maps.LatLng(endLat, endLng),
+          priority: kakaoObj.maps.services.RoutePriority.FIRST
+        }, (result, status) => {
+          if (status === kakaoObj.maps.services.Status.OK) {
+            const route = result.routes[0];
+            const summary = route.summary;
+            
+            setRouteInfo({
+              distance: summary.distance,
+              duration: summary.duration,
+              type: '도보'
+            });
+            setShowRouteInfo(true);
+            setShowRouteModal(false);
+          } else {
+            console.error('도보 경로 검색 실패:', status);
+            // 기본 정보라도 표시
+            setRouteInfo({
+              distance: '계산 불가',
+              duration: '계산 불가',
+              type: '도보'
+            });
+            setShowRouteInfo(true);
+            setShowRouteModal(false);
+          }
+        });
+        
+      } catch (error) {
+        console.error('경로 검색 실패:', error);
+        // 기본 정보라도 표시
+        setRouteInfo({
+          distance: '계산 불가',
+          duration: '계산 불가',
+          type: '도보'
+        });
+        setShowRouteInfo(true);
+        setShowRouteModal(false);
       }
-      
-      console.log(`🗺️ 길찏기 시작: ${routeType} 모드`, {
-        출발지: `(${startLat}, ${startLng})`,
-        도착지: `${name} (${lat}, ${lng})`,
-        URL: routeUrl
-      });
-    } else {
-      // 위치 정보를 가져올 수 없는 경우 기본 길찏기 (도착지만 지정)
-      switch (routeType) {
-        case 'walk':
-          routeUrl = `https://map.kakao.com/link/to/${name},${lat},${lng}?mode=walk`;
-          break;
-        case 'transit':
-          routeUrl = `https://map.kakao.com/link/to/${name},${lat},${lng}?mode=transit`;
-          break;
-        case 'car':
-          routeUrl = `https://map.kakao.com/link/to/${name},${lat},${lng}?mode=car`;
-          break;
-        default:
-          routeUrl = `https://map.kakao.com/link/to/${name},${lat},${lng}`;
-      }
-      
-      console.log(`🗺️ 기본 길찏기: ${routeType} 모드`, {
-        도착지: `${name} (${lat}, ${lng})`,
-        URL: routeUrl
-      });
     }
-    
-    window.open(routeUrl, '_blank');
-    setShowRouteModal(false);
-    setSelectedStore(null);
+  };
+
+  // 경로 안내 모달 닫기
+  const closeRouteInfo = () => {
+    setShowRouteInfo(false);
+    setRouteInfo(null);
   };
 
   // 하단 리스트 토글
@@ -510,7 +580,7 @@ export default function App() {
 
       {mode === 'map' && (
         <>
-          <div className="map-wrap flex-1">
+          <div className="map-wrap flex-1 relative">
             <div ref={mapRef} className="map" />
             
             {/* 내 위치 버튼 */}
@@ -525,6 +595,21 @@ export default function App() {
                 <circle cx="12" cy="12" r="3"></circle>
               </svg>
             </button>
+            
+            {/* 재검색 버튼 */}
+            {showResearchButton && (
+              <button 
+                className="research-btn"
+                onClick={handleResearch}
+                aria-label="현재 위치에서 재검색"
+                title="현재 위치에서 재검색"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <span>재검색</span>
+              </button>
+            )}
           </div>
           
           <BottomList
@@ -580,11 +665,42 @@ export default function App() {
         </footer>
       )}
 
+      {/* 경로 안내 모달 */}
+      {showRouteInfo && routeInfo && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="text-center">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">경로 안내</h3>
+              <div className="space-y-3 mb-6">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">이동 방식:</span>
+                  <span className="font-medium">{routeInfo.type}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">거리:</span>
+                  <span className="font-medium">{routeInfo.distance}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">소요시간:</span>
+                  <span className="font-medium">{routeInfo.duration}</span>
+                </div>
+              </div>
+              <button
+                onClick={closeRouteInfo}
+                className="w-full bg-carrot text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <RouteModal
         isOpen={showRouteModal}
         store={selectedStore}
         onClose={() => setShowRouteModal(false)}
-        onRouteSelect={handleRouteSelect}
+        onRouteSelect={handleRoute}
       />
     </div>
   );

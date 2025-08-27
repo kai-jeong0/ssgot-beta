@@ -62,6 +62,43 @@ body {
   transform: scale(0.95);
 }
 
+/* 재검색 버튼 */
+.research-btn {
+  position: absolute;
+  bottom: 80px;
+  right: 20px;
+  background: #fff;
+  border: 2px solid #FF7419;
+  border-radius: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  z-index: 10;
+  transition: all 0.2s ease;
+  color: #FF7419;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.research-btn:hover {
+  background: #FF7419;
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(255, 116, 25, 0.3);
+}
+
+.research-btn:active {
+  transform: scale(0.95);
+}
+
+.research-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
 .map-wrap {
   position: relative;
   width: 100%;

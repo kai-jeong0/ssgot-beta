@@ -23,6 +23,7 @@ const Header = React.forwardRef(({
     { id: "pharmacy", label: "약국", color: "green" },
     { id: "mart", label: "마트", color: "blue" },
     { id: "beauty", label: "미용", color: "purple" },
+    { id: "academy", label: "학원", color: "indigo" },
     { id: "etc", label: "기타", color: "secondary" },
   ];
 
