@@ -125,33 +125,83 @@ export const useKakaoMap = (mode) => {
 
   // 지도 초기화
   useEffect(() => {
-    if (!kakaoObj || mode !== 'map') return;
+    console.log('🗺️ 지도 초기화 useEffect 실행:', { 
+      hasKakaoObj: !!kakaoObj, 
+      mode, 
+      mapRef: !!mapRef.current,
+      mapRefElement: mapRef.current
+    });
     
-    console.log('지도 초기화 시작...', mapRef.current);
-    try {
-      const center = new kakaoObj.maps.LatLng(37.4138, 127.5183); // 경기도 중심
-      const newMap = new kakaoObj.maps.Map(mapRef.current, { 
-        center, 
-        level: 8, // 적절한 줌 레벨
-        draggable: true, // 드래그 가능
-        scrollwheel: true, // 마우스 휠 줌 가능
-        keyboardShortcuts: true, // 키보드 단축키 사용
-        disableDoubleClick: false, // 더블클릭 줌 활성화
-        disableDoubleTap: false, // 더블탭 줌 활성화 (모바일)
-        tileAnimation: true, // 타일 애니메이션 활성화
-        zoomControl: true, // 줌 컨트롤 표시
-        mapTypeControl: false, // 지도 타입 컨트롤 비활성화 (일반 지도만)
-        scaleControl: true, // 축척 표시
-        streetViewPanControl: false, // 거리뷰 컨트롤 비활성화
-        overviewMapControl: false, // 개요 지도 컨트롤 비활성화
-        fullscreenControl: false, // 전체화면 컨트롤 비활성화
-        searchControl: false // 검색 컨트롤 비활성화
-      });
-      console.log('지도 생성 완료');
-      setMap(newMap);
-    } catch (error) {
-      console.error('지도 초기화 실패:', error);
+    if (!kakaoObj) {
+      console.log('❌ kakaoObj가 없음 - 지도 초기화 건너뜀');
+      return;
     }
+    
+    if (mode !== 'map') {
+      console.log('❌ mode가 map이 아님:', mode, '- 지도 초기화 건너뜀');
+      return;
+    }
+    
+    if (!mapRef.current) {
+      console.error('❌ mapRef.current가 없음 - 지도 초기화 건너뜀');
+      return;
+    }
+    
+    console.log('✅ 지도 초기화 조건 충족, 지도 생성 시작...');
+    console.log('📍 mapRef 요소:', mapRef.current);
+    console.log('📍 mapRef 크기:', mapRef.current.offsetWidth, 'x', mapRef.current.offsetHeight);
+    
+    // DOM 마운트 완료를 보장하기 위해 약간의 지연
+    setTimeout(() => {
+      try {
+        const center = new kakaoObj.maps.LatLng(37.4138, 127.5183); // 경기도 중심
+        console.log('📍 지도 중심 좌표 설정:', center);
+        
+        const mapOptions = { 
+          center, 
+          level: 8, // 적절한 줌 레벨
+          draggable: true, // 드래그 가능
+          scrollwheel: true, // 마우스 휠 줌 가능
+          keyboardShortcuts: true, // 키보드 단축키 사용
+          disableDoubleClick: false, // 더블클릭 줌 활성화
+          disableDoubleTap: false, // 더블탭 줌 활성화 (모바일)
+          tileAnimation: true, // 타일 애니메이션 활성화
+          zoomControl: true, // 줌 컨트롤 표시
+          mapTypeControl: false, // 지도 타입 컨트롤 비활성화 (일반 지도만)
+          scaleControl: true, // 축척 표시
+          streetViewPanControl: false, // 거리뷰 컨트롤 비활성화
+          overviewMapControl: false, // 개요 지도 컨트롤 비활성화
+          fullscreenControl: false, // 전체화면 컨트롤 비활성화
+          searchControl: false // 검색 컨트롤 비활성화
+        };
+        
+        console.log('🗺️ 지도 옵션 설정 완료:', mapOptions);
+        
+        const newMap = new kakaoObj.maps.Map(mapRef.current, mapOptions);
+        console.log('✅ 지도 생성 완료:', newMap);
+        
+        setMap(newMap);
+        
+        // 지도 로드 완료 이벤트 리스너 추가
+        kakaoObj.maps.event.addListener(newMap, 'tilesloaded', () => {
+          console.log('✅ 지도 타일 로드 완료');
+        });
+        
+        kakaoObj.maps.event.addListener(newMap, 'zoom_changed', () => {
+          console.log('🔍 지도 줌 레벨 변경:', newMap.getLevel());
+        });
+        
+      } catch (error) {
+        console.error('❌ 지도 초기화 실패:', error);
+        console.error('에러 상세:', {
+          message: error.message,
+          stack: error.stack,
+          kakaoObj: !!kakaoObj,
+          kakaoMaps: !!(kakaoObj && kakaoObj.maps),
+          mapRef: !!mapRef.current
+        });
+      }
+    }, 100); // 100ms 지연으로 DOM 마운트 완료 보장
   }, [kakaoObj, mode]);
 
   // 마커 관리 (성능 최적화)
