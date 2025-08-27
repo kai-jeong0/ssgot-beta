@@ -65,9 +65,9 @@ body {
 /* 재검색 버튼 */
 .research-btn {
   position: absolute;
-  top: 50%;
+  bottom: 20px;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   background: #fff;
   border: 2px solid #FF7419;
   border-radius: 24px;
@@ -98,6 +98,41 @@ body {
 .research-btn svg {
   width: 16px;
   height: 16px;
+}
+
+/* 소요시간 표시 UI */
+.route-duration-info {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  z-index: 10;
+}
+
+.duration-badge {
+  background: rgba(255, 116, 25, 0.95);
+  border-radius: 20px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 60px;
+}
+
+.duration-text {
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.route-type {
+  color: white;
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0.9;
+  line-height: 1;
 }
 
 .map-wrap {

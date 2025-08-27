@@ -474,13 +474,15 @@ export default function App() {
             polyline.setMap(map);
             window.currentRoute = polyline;
             
-            // 경로 정보 모달 표시
+            // 소요시간을 상태에 저장하여 좌측 하단에 표시
+            const durationMinutes = Math.round(summary.duration / 60);
             setRouteInfo({
               distance: `${Math.round(summary.distance / 1000 * 10) / 10}km`,
-              duration: `${Math.round(summary.duration / 60)}분`,
+              duration: durationMinutes,
               type: routeType === 'walk' ? '도보' : routeType === 'transit' ? '대중교통' : '자동차'
             });
-            setShowRouteInfo(true);
+            
+            // 경로 정보 모달은 표시하지 않음 (지도상에 직접 표시)
             setShowRouteModal(false);
             
             console.log(`🗺️ ${routeType} 경로 표시 완료:`, {
@@ -493,10 +495,9 @@ export default function App() {
             // 기본 정보라도 표시
             setRouteInfo({
               distance: '계산 불가',
-              duration: '계산 불가',
+              duration: 0,
               type: routeType === 'walk' ? '도보' : routeType === 'transit' ? '대중교통' : '자동차'
             });
-            setShowRouteInfo(true);
             setShowRouteModal(false);
           }
         });
@@ -506,10 +507,9 @@ export default function App() {
         // 기본 정보라도 표시
         setRouteInfo({
           distance: '계산 불가',
-          duration: '계산 불가',
+          duration: 0,
           type: routeType === 'walk' ? '도보' : routeType === 'transit' ? '대중교통' : '자동차'
         });
-        setShowRouteInfo(true);
         setShowRouteModal(false);
       }
     }
@@ -651,6 +651,16 @@ export default function App() {
                 <span>재검색</span>
               </button>
             )}
+            
+            {/* 소요시간 표시 (좌측 하단) */}
+            {routeInfo && routeInfo.duration > 0 && (
+              <div className="route-duration-info">
+                <div className="duration-badge">
+                  <span className="duration-text">{routeInfo.duration}분</span>
+                  <span className="route-type">{routeInfo.type}</span>
+                </div>
+              </div>
+            )}
           </div>
           
           <BottomList
@@ -723,7 +733,7 @@ export default function App() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">소요시간:</span>
-                  <span className="font-medium">{routeInfo.duration}</span>
+                  <span className="font-medium">{routeInfo.duration}분</span>
                 </div>
               </div>
               <button
