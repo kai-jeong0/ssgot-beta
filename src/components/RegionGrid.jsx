@@ -52,23 +52,23 @@ const RegionGrid = ({ onCitySelect }) => {
 
   return (
     <div className="bg-white min-h-screen flex flex-col">
-      {/* 상단 헤더 */}
-      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-8 flex-shrink-0">
+      {/* 상단 헤더 - 여백 최소화 */}
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex-shrink-0">
         <div className="max-w-6xl mx-auto text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
+          <div className="flex items-center justify-center gap-3 mb-3">
             <h1 className="text-2xl sm:text-3xl font-bold text-primary-text">쓰곳</h1>
             <div className="w-8 h-8 bg-carrot rounded-full flex items-center justify-center">
               <MapPin className="w-4 h-4 text-white" />
             </div>
           </div>
-          <h2 className="text-lg sm:text-xl font-bold text-primary-text mb-2">
+          <h2 className="text-lg sm:text-xl font-bold text-primary-text mb-0">
             지역화폐를 쓸 곳을 선택해주세요
           </h2>
         </div>
       </div>
 
-      {/* 메인 콘텐츠 */}
-      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
+      {/* 메인 콘텐츠 - 상단 여백 최소화 */}
+      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-4">
         {/* 지역 카드 그리드 */}
         <div className="grid grid-cols-3 gap-3 max-w-6xl mx-auto">
           {regions.map((region) => (

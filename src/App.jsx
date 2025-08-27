@@ -122,32 +122,32 @@ export default function App() {
     // 가게 정보 먼저 로드
     const loadedStores = await loadStoresByCity(city);
     
-              // 첫 번째 업체 자동 선택 (업체가 있는 경우)
-          if (loadedStores && loadedStores.length > 0) {
-            const firstStore = loadedStores[0];
-            setSelectedId(firstStore.id);
-            console.log(`🎯 ${city} 첫 번째 업체 자동 선택:`, firstStore.name);
-            
-            // 지도 중심을 첫 번째 업체로 이동
-            if (kakaoObj && map) {
-              const center = new kakaoObj.maps.LatLng(firstStore.lat, firstStore.lng);
-              map.setCenter(center);
-              map.setLevel(6); // 업체 주변을 잘 보이도록 줌 레벨 조정
-              console.log(`🗺️ ${city} 첫 번째 업체로 지도 중심 이동:`, firstStore.name);
-              
-              // 마커 강조 처리는 useEffect에서 자동으로 처리됨
-              console.log(`📍 ${firstStore.name} 마커 강조 처리 준비 완료`);
-            }
-            
-            // 첫 번째 업체로 하단 리스트 앵커링 (즉시)
-            setTimeout(() => {
-              const el = document.querySelector(`[data-card-id="${CSS.escape(firstStore.id)}"]`);
-              if (el) {
-                el.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
-                console.log(`📍 ${firstStore.name} 하단 리스트 앵커링 완료`);
-              }
-            }, 100);
-          } else {
+    // 첫 번째 업체 자동 선택 (업체가 있는 경우)
+    if (loadedStores && loadedStores.length > 0) {
+      const firstStore = loadedStores[0];
+      setSelectedId(firstStore.id);
+      console.log(`🎯 ${city} 첫 번째 업체 자동 선택:`, firstStore.name);
+      
+      // 지도 중심을 첫 번째 업체로 이동
+      if (kakaoObj && map) {
+        const center = new kakaoObj.maps.LatLng(firstStore.lat, firstStore.lng);
+        map.setCenter(center);
+        map.setLevel(6); // 업체 주변을 잘 보이도록 줌 레벨 조정
+        console.log(`🗺️ ${city} 첫 번째 업체로 지도 중심 이동:`, firstStore.name);
+        
+        // 마커 강조 처리는 useEffect에서 자동으로 처리됨
+        console.log(`📍 ${firstStore.name} 마커 강조 처리 준비 완료`);
+      }
+      
+      // 첫 번째 업체로 하단 리스트 앵커링 (즉시)
+      setTimeout(() => {
+        const el = document.querySelector(`[data-card-id="${CSS.escape(firstStore.id)}"]`);
+        if (el) {
+          el.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
+          console.log(`📍 ${firstStore.name} 하단 리스트 앵커링 완료`);
+        }
+      }, 100);
+    } else {
       // 업체가 없는 경우 시청/군청으로 이동
       if (kakaoObj && map) {
         const ps = new kakaoObj.maps.services.Places();
@@ -454,7 +454,7 @@ export default function App() {
         onBack={onBack}
         category={category}
         setCategory={setCategory}
-
+        stores={stores} // 업체 목록 전달
         ref={headerRef}
       />
 

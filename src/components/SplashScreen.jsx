@@ -132,7 +132,7 @@ const SplashScreen = ({ onComplete }) => {
           {/* 스킵 안내 */}
           {animationPhase >= 2 && (
             <p className="text-xs text-gray-400 mt-4 animate-fade-in">
-              화면을 터치하면 건너뛸 수 있습니다
+              
             </p>
           )}
 
