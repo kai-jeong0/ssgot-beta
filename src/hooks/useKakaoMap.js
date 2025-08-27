@@ -3,6 +3,19 @@ import { useState, useEffect, useRef } from 'react';
 // 환경 변수에서 API 키 가져오기 (빌드 시점에 대체됨)
 const KAKAO_JAVASCRIPT_KEY = import.meta.env.VITE_KAKAO_JS_KEY || "cf29dccdc1b81db907bf3cab84679703";
 
+// API 키 유효성 검사
+const validateApiKey = (key) => {
+  if (!key || key === "cf29dccdc1b81db907bf3cab84679703") {
+    console.warn('⚠️ 기본 API 키가 사용되고 있습니다. 환경 변수 VITE_KAKAO_JS_KEY를 설정해주세요.');
+    return false;
+  }
+  if (key.length < 20) {
+    console.error('❌ API 키가 너무 짧습니다.');
+    return false;
+  }
+  return true;
+};
+
 export const useKakaoMap = (mode) => {
   const [kakaoObj, setKakaoObj] = useState(null);
   const [map, setMap] = useState(null);
@@ -18,11 +31,23 @@ export const useKakaoMap = (mode) => {
       console.log('카카오맵 로딩 시작...', key);
       if (window.kakao && window.kakao.maps) {
         console.log('이미 로드된 카카오맵 사용');
-        resolve(window.kakao);
-        return;
+        // 기존 로드된 객체에서 services 확인
+        if (window.kakao.maps.services && window.kakao.maps.services.Directions) {
+          console.log('✅ 기존 Directions 서비스 사용 가능');
+          resolve(window.kakao);
+        } else {
+          console.warn('⚠️ 기존 객체에 Directions 서비스가 없음, 재로드 필요');
+          // 기존 스크립트 제거 후 재로드
+          const existingScript = document.querySelector('script[src*="dapi.kakao.com"]');
+          if (existingScript) {
+            existingScript.remove();
+          }
+          delete window.kakao;
+        }
       }
       
       const script = document.createElement('script');
+      // 카카오맵 가이드에 따라 services 라이브러리 명시적 포함
       script.src = `https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=${key}&libraries=services`;
       script.async = true;
       
@@ -33,14 +58,39 @@ export const useKakaoMap = (mode) => {
           return reject(new Error('no kakao'));
         }
         
+        // 카카오맵 초기화
         window.kakao.maps.load(() => {
           console.log('카카오맵 초기화 완료');
-          // services 라이브러리 로드 확인
-          if (window.kakao.maps.services && window.kakao.maps.services.Directions) {
-            console.log('✅ Directions 서비스 로드 완료');
+          
+          // services 라이브러리 로드 확인 및 초기화
+          if (window.kakao.maps.services) {
+            console.log('✅ Services 라이브러리 로드 완료');
+            
+            // Directions 서비스 사용 가능 여부 확인
+            if (window.kakao.maps.services.Directions) {
+              console.log('✅ Directions 서비스 사용 가능');
+            } else {
+              console.warn('⚠️ Directions 서비스가 로드되지 않음');
+            }
+            
+            // Places 서비스 사용 가능 여부 확인
+            if (window.kakao.maps.services.Places) {
+              console.log('✅ Places 서비스 사용 가능');
+            } else {
+              console.warn('⚠️ Places 서비스가 로드되지 않음');
+            }
+            
+            // Geocoder 서비스 사용 가능 여부 확인
+            if (window.kakao.maps.services.Geocoder) {
+              console.log('✅ Geocoder 서비스 사용 가능');
+            } else {
+              console.warn('⚠️ Geocoder 서비스가 로드되지 않음');
+            }
           } else {
-            console.warn('⚠️ Directions 서비스 로드 실패');
+            console.error('❌ Services 라이브러리 로드 실패');
+            return reject(new Error('services library load failed'));
           }
+          
           resolve(window.kakao);
         });
       };
@@ -58,6 +108,13 @@ export const useKakaoMap = (mode) => {
   useEffect(() => {
     (async () => {
       try {
+        // API 키 유효성 검사
+        if (!validateApiKey(KAKAO_JAVASCRIPT_KEY)) {
+          console.error('❌ 유효하지 않은 API 키입니다.');
+          return;
+        }
+        
+        console.log('🔑 API 키 검증 완료:', KAKAO_JAVASCRIPT_KEY.substring(0, 10) + '...');
         const kakao = await loadKakao(KAKAO_JAVASCRIPT_KEY);
         setKakaoObj(kakao);
       } catch (error) {

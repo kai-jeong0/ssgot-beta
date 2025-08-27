@@ -479,7 +479,18 @@ export default function App() {
         // Directions 서비스 사용 가능 여부 확인
         if (!kakaoObj.maps.services || !kakaoObj.maps.services.Directions) {
           console.error('❌ Directions 서비스를 사용할 수 없습니다');
-          alert('경로 검색 서비스를 사용할 수 없습니다. 카카오맵 API를 확인해주세요.');
+          console.error('서비스 상태:', {
+            hasServices: !!kakaoObj.maps.services,
+            hasDirections: !!(kakaoObj.maps.services && kakaoObj.maps.services.Directions),
+            availableServices: kakaoObj.maps.services ? Object.keys(kakaoObj.maps.services) : []
+          });
+          
+          // 사용자에게 더 구체적인 안내
+          if (!kakaoObj.maps.services) {
+            alert('카카오맵 서비스 라이브러리가 로드되지 않았습니다. 페이지를 새로고침해주세요.');
+          } else if (!kakaoObj.maps.services.Directions) {
+            alert('경로 검색 서비스가 로드되지 않았습니다. 카카오맵 API 설정을 확인해주세요.');
+          }
           return;
         }
         
@@ -583,11 +594,15 @@ export default function App() {
               fallbackPolyline.setMap(map);
               window.currentRoute = fallbackPolyline;
               
-              // 대략적인 거리 계산
-              const distance = Math.sqrt(
-                Math.pow((endLat - startLat) * 111000, 2) + 
-                Math.pow((endLng - startLng) * 88800, 2)
-              );
+              // 대략적인 거리 계산 (Haversine 공식)
+              const R = 6371; // 지구 반지름 (km)
+              const dLat = (endLat - startLat) * Math.PI / 180;
+              const dLng = (endLng - startLng) * Math.PI / 180;
+              const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                        Math.cos(startLat * Math.PI / 180) * Math.cos(endLat * Math.PI / 180) *
+                        Math.sin(dLng/2) * Math.sin(dLng/2);
+              const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+              const distance = R * c * 1000; // 미터 단위
               
               setRouteInfo({
                 distance: `${Math.round(distance / 1000 * 10) / 10}km`,
@@ -597,6 +612,9 @@ export default function App() {
               
               console.log('✅ 대안 경로 표시 완료 (직선)');
               
+              // 사용자에게 안내
+              alert(`경로 검색 서비스에 일시적인 문제가 있어 직선 경로로 표시합니다.\n거리: ${Math.round(distance / 1000 * 10) / 10}km`);
+              
             } catch (fallbackError) {
               console.error('❌ 대안 경로 표시도 실패:', fallbackError);
               setRouteInfo({
@@ -604,6 +622,8 @@ export default function App() {
                 duration: 0,
                 type: routeType === 'walk' ? '도보' : routeType === 'transit' ? '대중교통' : '자동차'
               });
+              
+              alert('경로를 표시할 수 없습니다. 잠시 후 다시 시도해주세요.');
             }
             
             setShowRouteModal(false);
