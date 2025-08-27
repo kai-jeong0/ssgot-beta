@@ -122,33 +122,36 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
     {/* 이동수단 선택 팝업 */}
     {showTransitModal && (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
+        <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl border border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6 text-center">
             이동수단을 선택해주세요
           </h3>
           <div className="space-y-3">
             <button
               onClick={() => handleTransitSelect('도보')}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
             >
-              🚶 도보
+              <span className="text-2xl">🚶</span>
+              <span className="font-medium">도보</span>
             </button>
             <button
               onClick={() => handleTransitSelect('대중교통')}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+              className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
             >
-              🚌 대중교통
+              <span className="text-2xl">🚌</span>
+              <span className="font-medium">대중교통</span>
             </button>
             <button
               onClick={() => handleTransitSelect('자차')}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+              className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
             >
-              🚗 자차
+              <span className="text-2xl">🚗</span>
+              <span className="font-medium">자차</span>
             </button>
           </div>
           <button
             onClick={() => setShowTransitModal(false)}
-            className="w-full mt-4 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+            className="w-full mt-6 px-4 py-3 text-gray-600 hover:text-gray-800 transition-colors border border-gray-200 rounded-lg hover:bg-gray-50"
           >
             취소
           </button>

@@ -356,7 +356,7 @@ export default function App() {
   };
 
   // 경로 안내 (딥링크 기반)
-  const handleDirections = async (store) => {
+  const handleDirections = async (store, transitMode) => {
     try {
       console.log('🗺️ 딥링크 길찾기 시작:', { store, transitMode });
       
@@ -439,10 +439,8 @@ export default function App() {
 
   // 딥링크 기반 길찾기
   const handleRoute = async (store, transitMode = '자차') => {
-    // 이동수단 설정
-    setTransitMode(transitMode);
-    // 딥링크 길찾기 실행
-    await handleDirections(store);
+    // 딥링크 길찾기 실행 (이동수단 직접 전달)
+    await handleDirections(store, transitMode);
   };
 
   // 경로 선택 처리 (딥링크 기반)
@@ -466,7 +464,7 @@ export default function App() {
     setTransitMode(newTransitMode);
     
     // 딥링크 길찾기 실행
-    await handleDirections(selectedStore);
+    await handleDirections(selectedStore, newTransitMode);
     
     // 모달 닫기
     setShowRouteModal(false);
