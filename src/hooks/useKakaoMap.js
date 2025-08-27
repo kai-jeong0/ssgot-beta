@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
-const KAKAO_JAVASCRIPT_KEY = "cf29dccdc1b81db907bf3cab84679703";
+// 환경 변수에서 API 키 가져오기 (빌드 시점에 대체됨)
+const KAKAO_JAVASCRIPT_KEY = import.meta.env.VITE_KAKAO_JS_KEY || "cf29dccdc1b81db907bf3cab84679703";
 
 export const useKakaoMap = (mode) => {
   const [kakaoObj, setKakaoObj] = useState(null);

@@ -105,7 +105,7 @@ export default function App() {
         onTimeDisplay: handleTimeDisplay
       });
     }
-  }, [markers, kakaoObj, currentTransitMode]); // currentTransitMode 변경 시에도 재설정
+  }, [markers, kakaoObj]); // currentTransitMode 의존성 제거
 
   // 검색 필터링 (학원 카테고리 포함)
   useEffect(() => {
