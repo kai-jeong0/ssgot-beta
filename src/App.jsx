@@ -1,17 +1,12 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Header from './components/Header';
 import RegionGrid from './components/RegionGrid';
-import RegionPickerGyeonggi from './components/region/RegionPickerGyeonggi';
-import NaverStyleRegionPicker from './components/region/NaverStyleRegionPicker';
-import NaverStyleTest from './components/region/NaverStyleTest';
-import DebugTopo from './components/debug/DebugTopo';
 import BottomList from './components/BottomList';
+import StoreCard from './components/StoreCard';
 import RouteModal from './components/RouteModal';
-import SplashScreen from './components/SplashScreen';
-import { useKakaoMap } from './hooks/useKakaoMap';
-import { useStores } from './hooks/useStores';
-import { setupDirectionsForMarkers } from './utils/directions';
 import { buildKakaoDirectionsUrl, getUserLocOrFallback, uiModeToApi } from './utils/directionsLink';
+import useKakaoMap from './hooks/useKakaoMap';
+import useStores from './hooks/useStores';
 import './App.css';
 
 export default function App() {
@@ -38,7 +33,7 @@ export default function App() {
   const [showTimeDisplay, setShowTimeDisplay] = useState(false); // 소요시간 표시 여부
   
   // 이동수단 선택 상태
-  const [transitMode, setTransitMode] = useState<'도보' | '대중교통' | '자차'>('자차');
+  const [transitMode, setTransitMode] = useState('자차');
   
   // Feature flags for region pickers (can be toggled via env or prop)
   const enableGyeonggiPicker = false; // 기존 그리드 스타일
@@ -55,32 +50,6 @@ export default function App() {
   const { stores, filtered, loading, loadStoresByCity, setFiltered } = useStores();
   const { kakaoObj, map, mapRef, markers, markerMap, updateMarkers, clearMarkerHighlight, selectedMarkerId } = useKakaoMap(mode);
 
-  // 현재 선택된 이동 수단 모드 가져오기 (기본값: 자차)
-  const getSelectedTransitMode = () => {
-    return 'car';
-  };
-
-  // 경로 미리보기 콜백
-  const handleRoutePreview = (previewData) => {
-    setRoutePreview(previewData);
-    console.log('🗺️ 경로 미리보기 데이터:', previewData);
-  };
-
-  // 소요시간 표시 콜백
-  const handleTimeDisplay = (timeData) => {
-    setRouteInfo({
-      distance: `${(timeData.distance/1000).toFixed(1)}km`,
-      duration: timeData.time,
-      type: timeData.mode === 'walk' ? '도보' : timeData.mode === 'traffic' ? '대중교통' : '자차'
-    });
-    setShowTimeDisplay(true);
-    
-    // 5초 후 자동으로 숨기기
-    setTimeout(() => {
-      setShowTimeDisplay(false);
-    }, 5000);
-  };
-
   // 마커에 길찾기 기능 설정
   useEffect(() => {
     if (markers && markers.length > 0 && kakaoObj) {
@@ -96,20 +65,8 @@ export default function App() {
           };
         }
       });
-
-      // 길찾기 기능 설정
-      setupDirectionsForMarkers(markers, {
-        fallbackFrom: { 
-          name: '판교역', 
-          lat: 37.3948, 
-          lng: 127.1111 
-        },
-        getSelectedTransitMode,
-        onRoutePreview: handleRoutePreview,
-        onTimeDisplay: handleTimeDisplay
-      });
     }
-  }, [markers, kakaoObj]); // currentTransitMode 의존성 제거
+  }, [markers, kakaoObj]);
 
   // 검색 필터링 (학원 카테고리 포함)
   useEffect(() => {
