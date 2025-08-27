@@ -10,11 +10,13 @@ const Header = React.forwardRef(({
   onBack, 
   category, 
   setCategory,
-  stores = [] // 업체 목록을 props로 받음
+  stores = [], // 업체 목록을 props로 받음
+  onTransitModeChange // 이동 수단 모드 변경 콜백
 }, ref) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredStores, setFilteredStores] = useState([]);
   const searchRef = useRef(null);
+  const [transitMode, setTransitMode] = useState('car'); // 기본값: 자차
 
   const CATS = [
     { id: "all", label: "전체", color: "default" },
@@ -26,6 +28,14 @@ const Header = React.forwardRef(({
     { id: "academy", label: "학원", color: "indigo" },
     { id: "etc", label: "기타", color: "secondary" },
   ];
+
+  // 이동 수단 모드 변경 핸들러
+  const handleTransitModeChange = (newMode) => {
+    setTransitMode(newMode);
+    if (onTransitModeChange) {
+      onTransitModeChange(newMode);
+    }
+  };
 
   // 검색어 변경 시 자동완성 필터링
   useEffect(() => {
@@ -124,10 +134,10 @@ const Header = React.forwardRef(({
           )}
         </div>
         
-        {/* 카테고리 칩 */}
+        {/* 카테고리 칩 및 이동 수단 선택 */}
         {mode === 'map' && (
           <div className="px-3 pb-3">
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mb-3">
               {CATS.map(cat => (
                 <Badge
                   key={cat.id}
@@ -140,6 +150,40 @@ const Header = React.forwardRef(({
                   {cat.label}
                 </Badge>
               ))}
+            </div>
+            
+            {/* 이동 수단 선택 UI */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleTransitModeChange('walk')}
+                className={`px-3 py-1 text-xs rounded-full transition-all duration-200 ${
+                  transitMode === 'walk'
+                    ? 'bg-orange-500 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                🚶 도보
+              </button>
+              <button
+                onClick={() => handleTransitModeChange('traffic')}
+                className={`px-3 py-1 text-xs rounded-full transition-all duration-200 ${
+                  transitMode === 'traffic'
+                    ? 'bg-orange-500 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                🚌 대중교통
+              </button>
+              <button
+                onClick={() => handleTransitModeChange('car')}
+                className={`px-3 py-1 text-xs rounded-full transition-all duration-200 ${
+                  transitMode === 'car'
+                    ? 'bg-orange-500 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                🚗 자차
+              </button>
             </div>
           </div>
         )}

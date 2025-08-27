@@ -10,6 +10,7 @@ import RouteModal from './components/RouteModal';
 import SplashScreen from './components/SplashScreen';
 import { useKakaoMap } from './hooks/useKakaoMap';
 import { useStores } from './hooks/useStores';
+import { setupDirectionsForMarkers } from './utils/directions';
 import './App.css';
 
 export default function App() {
@@ -32,6 +33,7 @@ export default function App() {
   const [currentMapCenter, setCurrentMapCenter] = useState(null);
   const [showRouteInfo, setShowRouteInfo] = useState(false);
   const [routeInfo, setRouteInfo] = useState(null);
+  const [currentTransitMode, setCurrentTransitMode] = useState('car'); // 현재 선택된 이동 수단 모드
   
   // Feature flags for region pickers (can be toggled via env or prop)
   const enableGyeonggiPicker = false; // 기존 그리드 스타일
@@ -47,6 +49,45 @@ export default function App() {
   // 커스텀 훅 사용
   const { stores, filtered, loading, loadStoresByCity, setFiltered } = useStores();
   const { kakaoObj, map, mapRef, markers, markerMap, updateMarkers, clearMarkerHighlight, selectedMarkerId } = useKakaoMap(mode);
+
+  // 현재 선택된 이동 수단 모드 가져오기
+  const getSelectedTransitMode = () => {
+    return currentTransitMode;
+  };
+
+  // 이동 수단 모드 변경 핸들러
+  const handleTransitModeChange = (newMode) => {
+    setCurrentTransitMode(newMode);
+    console.log(`🚗 이동 수단 모드 변경: ${newMode}`);
+  };
+
+  // 마커에 길찾기 기능 설정
+  useEffect(() => {
+    if (markers && markers.length > 0 && kakaoObj) {
+      // 각 마커에 목적지 정보 추가
+      markers.forEach(marker => {
+        const store = marker.__store;
+        if (store) {
+          marker.__to = {
+            name: store.name,
+            lat: store.lat,
+            lng: store.lng,
+            placeId: store.placeId // placeId가 있다면 사용
+          };
+        }
+      });
+
+      // 길찾기 기능 설정
+      setupDirectionsForMarkers(markers, {
+        fallbackFrom: { 
+          name: '판교역', 
+          lat: 37.3948, 
+          lng: 127.1111 
+        },
+        getSelectedTransitMode
+      });
+    }
+  }, [markers, kakaoObj, currentTransitMode]); // currentTransitMode 변경 시에도 재설정
 
   // 검색 필터링 (학원 카테고리 포함)
   useEffect(() => {
@@ -530,6 +571,7 @@ export default function App() {
         category={category}
         setCategory={setCategory}
         stores={stores} // 업체 목록 전달
+        onTransitModeChange={handleTransitModeChange} // 이동 수단 모드 변경 핸들러
         ref={headerRef}
       />
 
