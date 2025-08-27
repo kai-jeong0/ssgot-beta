@@ -3,8 +3,6 @@ import React, { useState, useEffect } from 'react';
 const SplashScreen = ({ onComplete }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [animationPhase, setAnimationPhase] = useState(0);
-  const [isTyping, setIsTyping] = useState(false);
-  const [typedText, setTypedText] = useState('');
   const [showSubtitle, setShowSubtitle] = useState(false);
   const [showButton, setShowButton] = useState(false);
 
@@ -12,54 +10,32 @@ const SplashScreen = ({ onComplete }) => {
   const subtitleText = '지역화폐 쓰는 곳';
 
   useEffect(() => {
-    // 1단계: 타이핑 애니메이션
-    const timer1 = setTimeout(() => {
-      setIsTyping(true);
-      setAnimationPhase(1);
-    }, 500);
+    // 1단계: 즉시 텍스트 표시
+    setAnimationPhase(1);
 
-    // 2단계: 타이핑 완료 후 서브타이틀 표시
+    // 2단계: 서브타이틀 표시
     const timer2 = setTimeout(() => {
-      setIsTyping(false);
       setShowSubtitle(true);
       setAnimationPhase(2);
-    }, 2000);
+    }, 1000);
 
     // 3단계: 버튼 표시
     const timer3 = setTimeout(() => {
       setShowButton(true);
       setAnimationPhase(3);
-    }, 3000);
+    }, 2000);
 
-    // 4단계: 자동 전환 (5초 후)
+    // 4단계: 자동 전환 (4초 후)
     const timer4 = setTimeout(() => {
       handleComplete();
-    }, 5000);
+    }, 4000);
 
     return () => {
-      clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
       clearTimeout(timer4);
     };
   }, []);
-
-  // 타이핑 애니메이션
-  useEffect(() => {
-    if (!isTyping) return;
-
-    let currentIndex = 0;
-    const interval = setInterval(() => {
-      if (currentIndex <= fullText.length) {
-        setTypedText(fullText.slice(0, currentIndex));
-        currentIndex++;
-      } else {
-        clearInterval(interval);
-      }
-    }, 150);
-
-    return () => clearInterval(interval);
-  }, [isTyping]);
 
   const handleComplete = () => {
     setIsVisible(false);
@@ -92,12 +68,9 @@ const SplashScreen = ({ onComplete }) => {
         {/* 메인 로고 영역 */}
         <div className="mb-8">
           <div className="relative">
-            {/* 타이핑 애니메이션 */}
+            {/* 즉시 텍스트 표시 */}
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-gray-900 mb-4 relative">
-              {typedText}
-              {isTyping && (
-                <span className="animate-pulse text-orange-500">|</span>
-              )}
+              {fullText}
             </h1>
             
             {/* 서브타이틀 */}
@@ -140,7 +113,7 @@ const SplashScreen = ({ onComplete }) => {
           <div className="mt-6 sm:mt-8">
             <div className="w-24 sm:w-32 h-1 bg-gray-200 rounded-full mx-auto overflow-hidden">
               <div 
-                className="h-full bg-orange-500 rounded-full transition-all duration-5000 ease-out"
+                className="h-full bg-orange-500 rounded-full transition-all duration-4000 ease-out"
                 style={{
                   width: `${(animationPhase / 3) * 100}%`
                 }}

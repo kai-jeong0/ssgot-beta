@@ -53,9 +53,9 @@ const RegionGrid = ({ onCitySelect }) => {
   return (
     <div className="bg-white min-h-screen flex flex-col">
       {/* 상단 헤더 - 여백 완전 제거 */}
-      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-2 flex-shrink-0">
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 flex-shrink-0">
         <div className="max-w-6xl mx-auto text-center">
-          <div className="flex items-center justify-center gap-3 mb-2">
+          <div className="flex items-center justify-center gap-3 mb-3">
             <h1 className="text-2xl sm:text-3xl font-bold text-primary-text">쓰곳</h1>
             <div className="w-8 h-8 bg-carrot rounded-full flex items-center justify-center">
               <MapPin className="w-4 h-4 text-white" />
@@ -67,8 +67,8 @@ const RegionGrid = ({ onCitySelect }) => {
         </div>
       </div>
 
-      {/* 메인 콘텐츠 - 상단 여백 최소화 */}
-      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-2">
+      {/* 메인 콘텐츠 - 적절한 간격 조정 */}
+      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-6">
         {/* 지역 카드 그리드 */}
         <div className="grid grid-cols-3 gap-3 max-w-6xl mx-auto">
           {regions.map((region) => (

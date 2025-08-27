@@ -65,8 +65,9 @@ body {
 /* 재검색 버튼 */
 .research-btn {
   position: absolute;
-  bottom: 80px;
-  right: 20px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background: #fff;
   border: 2px solid #FF7419;
   border-radius: 24px;
