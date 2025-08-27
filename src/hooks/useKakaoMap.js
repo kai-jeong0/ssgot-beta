@@ -1,7 +1,25 @@
 import { useState, useEffect, useRef } from 'react';
 
-// 환경 변수에서 API 키 가져오기 (빌드 시점에 대체됨)
-const KAKAO_JAVASCRIPT_KEY = import.meta.env.VITE_KAKAO_JS_KEY;
+// 환경 변수에서 API 키 가져오기 (여러 방법으로 시도)
+const getKakaoApiKey = () => {
+  // 1. Vite 환경 변수 (우선)
+  if (import.meta.env.VITE_KAKAO_JS_KEY) {
+    console.log('🔑 Vite 환경 변수에서 API 키 로드됨');
+    return import.meta.env.VITE_KAKAO_JS_KEY;
+  }
+  
+  // 2. Vite define을 통한 전역 변수
+  if (typeof __KAKAO_API_KEY__ !== 'undefined' && __KAKAO_API_KEY__) {
+    console.log('🔑 Vite define에서 API 키 로드됨');
+    return __KAKAO_API_KEY__;
+  }
+  
+  // 3. 기본값 (개발용)
+  console.warn('⚠️ 환경 변수에서 API 키를 찾을 수 없음. 기본값 사용');
+  return "cf29dccdc1b81db907bf3cab84679703";
+};
+
+const KAKAO_JAVASCRIPT_KEY = getKakaoApiKey();
 
 // API 키 유효성 검사
 const validateApiKey = (key) => {
@@ -167,6 +185,16 @@ export const useKakaoMap = (mode) => {
       mode, 
       mapRef: !!mapRef.current,
       mapRefElement: mapRef.current
+    });
+    
+    // 환경 변수 디버깅 (임시)
+    console.log('🔍 환경 변수 상태:', {
+      VITE_KAKAO_JS_KEY: import.meta.env.VITE_KAKAO_JS_KEY,
+      __KAKAO_API_KEY__: typeof __KAKAO_API_KEY__ !== 'undefined' ? __KAKAO_API_KEY__ : 'undefined',
+      mode: import.meta.env.MODE,
+      dev: import.meta.env.DEV,
+      prod: import.meta.env.PROD,
+      currentKey: KAKAO_JAVASCRIPT_KEY ? KAKAO_JAVASCRIPT_KEY.substring(0, 10) + '...' : 'undefined'
     });
     
     if (!kakaoObj) {
