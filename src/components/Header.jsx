@@ -3,6 +3,19 @@ import { ArrowLeft, Search, MapPin } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
 
+/**
+ * @typedef {Object} HeaderProps
+ * @property {'region' | 'map'} mode - 현재 모드
+ * @property {string} searchName - 검색어
+ * @property {function} setSearchName - 검색어 설정 함수
+ * @property {string} category - 선택된 카테고리
+ * @property {function} setCategory - 카테고리 설정 함수
+ * @property {Array} stores - 업체 목록
+ * @property {function} onBack - 뒤로가기 함수
+ * @property {'도보' | '대중교통' | '자차'} transitMode - 선택된 이동수단
+ * @property {function} onTransitModeChange - 이동수단 변경 함수
+ */
+
 const Header = React.forwardRef(({ 
   mode, 
   searchName, 
@@ -10,7 +23,9 @@ const Header = React.forwardRef(({
   onBack, 
   category, 
   setCategory,
-  stores = [] // 업체 목록을 props로 받음
+  stores = [], // 업체 목록을 props로 받음
+  transitMode,
+  onTransitModeChange
 }, ref) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredStores, setFilteredStores] = useState([]);
@@ -140,6 +155,44 @@ const Header = React.forwardRef(({
                   {cat.label}
                 </Badge>
               ))}
+            </div>
+          </div>
+        )}
+        
+        {/* 이동수단 선택 UI */}
+        {mode === 'map' && (
+          <div className="px-3 pb-3">
+            <div className="flex justify-center gap-2">
+              <button
+                onClick={() => onTransitModeChange('도보')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  transitMode === '도보' 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                }`}
+              >
+                🚶 도보
+              </button>
+              <button
+                onClick={() => onTransitModeChange('대중교통')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  transitMode === '대중교통' 
+                    ? 'bg-green-500 text-white' 
+                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                }`}
+              >
+                🚌 대중교통
+              </button>
+              <button
+                onClick={() => onTransitModeChange('자차')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  transitMode === '자차' 
+                    ? 'bg-purple-500 text-white' 
+                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                }`}
+              >
+                🚗 자차
+              </button>
             </div>
           </div>
         )}

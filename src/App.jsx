@@ -11,6 +11,7 @@ import SplashScreen from './components/SplashScreen';
 import { useKakaoMap } from './hooks/useKakaoMap';
 import { useStores } from './hooks/useStores';
 import { setupDirectionsForMarkers } from './utils/directions';
+import { buildKakaoDirectionsUrl, getUserLocOrFallback, uiModeToApi } from './utils/directionsLink';
 import './App.css';
 
 export default function App() {
@@ -35,6 +36,9 @@ export default function App() {
   const [routeInfo, setRouteInfo] = useState(null);
   const [routePreview, setRoutePreview] = useState(null); // 경로 미리보기 정보
   const [showTimeDisplay, setShowTimeDisplay] = useState(false); // 소요시간 표시 여부
+  
+  // 이동수단 선택 상태
+  const [transitMode, setTransitMode] = useState<'도보' | '대중교통' | '자차'>('자차');
   
   // Feature flags for region pickers (can be toggled via env or prop)
   const enableGyeonggiPicker = false; // 기존 그리드 스타일
@@ -393,263 +397,44 @@ export default function App() {
     }
   };
 
-  // 경로 안내 (새창 대신 모달 내에서 표시)
-  const handleRoute = async (store) => {
-    setSelectedStore(store);
-    setShowRouteModal(true);
-  };
-
-  // 경로 선택 처리
-  const handleRouteSelect = async (routeType) => {
-    console.log('🗺️ 경로 선택 시작:', { routeType, selectedStore, hasKakaoObj: !!kakaoObj, hasMap: !!map });
-    
-    if (!selectedStore || !kakaoObj || !map) {
-      console.error('❌ 필수 조건 누락:', { selectedStore: !!selectedStore, kakaoObj: !!kakaoObj, map: !!map });
-      return;
-    }
-    
-    // 현재 위치 정보 가져오기
-    if (!myPos) {
-      try {
-        console.log('📍 현재 위치 정보 가져오기 시작...');
-        if (!navigator.geolocation) {
-          alert('위치 정보를 사용할 수 없습니다.');
-          return;
-        }
-        
-        const pos = await new Promise((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 60000
-          });
-        });
-        
-        const latitude = pos.coords.latitude;
-        const longitude = pos.coords.longitude;
-        setMyPos({ lat: latitude, lng: longitude });
-        
-        // 지도 중심을 현재 위치로 이동
-        if (map && kakaoObj) {
-          const loc = new kakaoObj.maps.LatLng(latitude, longitude);
-          map.setCenter(loc);
-          
-          // 내 위치 표시 원 생성
-          if (circle) {
-            circle.setMap(null);
-          }
-          const newCircle = new kakaoObj.maps.Circle({
-            center: loc,
-            radius: radius,
-            strokeWeight: 2,
-            strokeColor: '#FF7419',
-            strokeOpacity: 0.9,
-            fillColor: '#FF7419',
-            fillOpacity: 0.15
-          });
-          newCircle.setMap(map);
-          setCircle(newCircle);
-        }
-        
-        console.log('✅ 현재 위치 정보 가져오기 완료:', { latitude, longitude });
-        
-      } catch (error) {
-        console.error('❌ 경로 안내 위치 정보 가져오기 실패:', error);
-        alert('위치 정보를 가져오는데 실패했습니다. 경로 안내 기능을 사용할 수 없습니다.');
-        return;
+  // 경로 안내 (딥링크 기반)
+  const handleDirections = async (store) => {
+    try {
+      console.log('🗺️ 딥링크 길찾기 시작:', { store, transitMode });
+      
+      // 현재 위치 또는 폴백 좌표 가져오기
+      const from = await getUserLocOrFallback({ 
+        name: '판교역', 
+        lat: 37.3948, 
+        lng: 127.1111 
+      });
+      
+      const to = { 
+        name: store.name, 
+        lat: store.lat, 
+        lng: store.lng 
+      };
+      
+      // UI 모드를 API 모드로 변환
+      const apiMode = uiModeToApi(transitMode);
+      console.log('🔀 이동수단 변환:', { uiMode: transitMode, apiMode });
+      
+      // 카카오맵 길찾기 URL 생성
+      const directionsUrl = buildKakaoDirectionsUrl(apiMode, from, to);
+      console.log('🔗 길찾기 URL:', directionsUrl);
+      
+      // 새 탭에서 카카오맵 길찾기 열기
+      window.open(directionsUrl, '_blank', 'noopener');
+      
+      // 자동차 모드일 때 서버 기반 경로 시각화 (확장 포인트)
+      if (apiMode === 'car') {
+        console.log('🚗 자동차 모드 - 서버 기반 경로 시각화 가능');
+        // TODO: useServerDirections 옵션이 활성화되면 여기서 경로 시각화 구현
       }
-    }
-    
-    // 경로 정보 가져오기 및 지도에 표시
-    if (myPos && kakaoObj) {
-      try {
-        const { lat: startLat, lng: startLng } = myPos;
-        const { lat: endLat, lng: endLng, name } = selectedStore;
-        
-        console.log('🗺️ 경로 검색 시작:', {
-          출발지: { lat: startLat, lng: startLng },
-          목적지: { lat: endLat, lng: endLng, name }
-        });
-        
-        // 기존 경로 제거
-        if (window.currentRoute) {
-          window.currentRoute.setMap(null);
-        }
-        
-        // Directions 서비스 사용 가능 여부 확인
-        if (!kakaoObj.maps.services || !kakaoObj.maps.services.Directions) {
-          console.error('❌ Directions 서비스를 사용할 수 없습니다');
-          console.error('서비스 상태:', {
-            hasServices: !!kakaoObj.maps.services,
-            hasDirections: !!(kakaoObj.maps.services && kakaoObj.maps.services.Directions),
-            availableServices: kakaoObj.maps.services ? Object.keys(kakaoObj.maps.services) : []
-          });
-          
-          // 추가 디버깅 정보
-          console.error('🔍 카카오맵 객체 상세 상태:', {
-            kakaoObj: !!kakaoObj,
-            maps: !!(kakaoObj && kakaoObj.maps),
-            services: !!(kakaoObj && kakaoObj.maps && kakaoObj.maps.services),
-            Directions: !!(kakaoObj && kakaoObj.maps && kakaoObj.maps.services && kakaoObj.maps.services.Directions),
-            Places: !!(kakaoObj && kakaoObj.maps && kakaoObj.maps.services && kakaoObj.maps.services.Places),
-            Geocoder: !!(kakaoObj && kakaoObj.maps && kakaoObj.maps.services && kakaoObj.maps.services.Geocoder)
-          });
-          
-          // 사용자에게 더 구체적인 안내
-          if (!kakaoObj.maps.services) {
-            alert('카카오맵 서비스 라이브러리가 로드되지 않았습니다. 페이지를 새로고침해주세요.');
-          } else if (!kakaoObj.maps.services.Directions) {
-            alert('경로 검색 서비스가 로드되지 않았습니다. 카카오맵 API 설정을 확인해주세요.');
-          }
-          return;
-        }
-        
-        // 카카오맵 경로 검색 API 사용
-        const directions = new kakaoObj.maps.services.Directions();
-        
-        // 경로 검색
-        directions.route({
-          origin: new kakaoObj.maps.LatLng(startLat, startLng),
-          destination: new kakaoObj.maps.LatLng(endLat, endLng),
-          priority: kakaoObj.maps.services.RoutePriority.FIRST
-        }, (result, status) => {
-          console.log('🗺️ 경로 검색 결과:', { status, result });
-          
-          if (status === kakaoObj.maps.services.Status.OK) {
-            try {
-              const route = result.routes[0];
-              const summary = route.summary;
-              
-              console.log('✅ 경로 검색 성공:', { summary, route });
-              
-              // 경로를 지도에 표시 (안전한 경로 데이터 처리)
-              if (route.sections && route.sections[0] && route.sections[0].roads && route.sections[0].roads[0]) {
-                const path = route.sections[0].roads[0].vertexes;
-                const points = [];
-                
-                if (path && path.length > 0) {
-                  for (let i = 0; i < path.length; i += 2) {
-                    if (path[i + 1] !== undefined && path[i] !== undefined) {
-                      points.push(new kakaoObj.maps.LatLng(path[i + 1], path[i]));
-                    }
-                  }
-                  
-                  if (points.length > 0) {
-                    const polyline = new kakaoObj.maps.Polyline({
-                      path: points,
-                      strokeWeight: 5,
-                      strokeColor: '#FF7419',
-                      strokeOpacity: 0.8,
-                      strokeStyle: 'solid'
-                    });
-                    
-                    polyline.setMap(map);
-                    window.currentRoute = polyline;
-                    console.log('✅ 경로 지도 표시 완료');
-                  } else {
-                    console.warn('⚠️ 경로 좌표가 비어있음');
-                  }
-                } else {
-                  console.warn('⚠️ 경로 데이터가 비어있음');
-                }
-              } else {
-                console.warn('⚠️ 경로 섹션 데이터 구조가 예상과 다름');
-              }
-              
-              // 소요시간을 상태에 저장하여 좌측 하단에 표시
-              const durationMinutes = Math.round(summary.duration / 60);
-              setRouteInfo({
-                distance: `${Math.round(summary.distance / 1000 * 10) / 10}km`,
-                duration: durationMinutes,
-                type: routeType === 'walk' ? '도보' : routeType === 'transit' ? '대중교통' : '자동차'
-              });
-              
-              // 경로 정보 모달은 표시하지 않음 (지도상에 직접 표시)
-              setShowRouteModal(false);
-              
-              console.log(`✅ ${routeType} 경로 표시 완료:`, {
-                거리: summary.distance,
-                시간: summary.duration
-              });
-              
-            } catch (routeError) {
-              console.error('❌ 경로 데이터 처리 실패:', routeError);
-              setRouteInfo({
-                distance: '계산 불가',
-                duration: 0,
-                type: routeType === 'walk' ? '도보' : routeType === 'transit' ? '대중교통' : '자동차'
-              });
-              setShowRouteModal(false);
-            }
-            
-          } else {
-            console.error('❌ 경로 검색 실패:', status);
-            
-            // 대안: 직선 경로 표시
-            try {
-              console.log('🔄 대안 경로 표시 시도...');
-              const points = [
-                new kakaoObj.maps.LatLng(startLat, startLng),
-                new kakaoObj.maps.LatLng(endLat, endLng)
-              ];
-              
-              const fallbackPolyline = new kakaoObj.maps.Polyline({
-                path: points,
-                strokeWeight: 3,
-                strokeColor: '#FFA500',
-                strokeOpacity: 0.6,
-                strokeStyle: 'dashed'
-              });
-              
-              fallbackPolyline.setMap(map);
-              window.currentRoute = fallbackPolyline;
-              
-              // 대략적인 거리 계산 (Haversine 공식)
-              const R = 6371; // 지구 반지름 (km)
-              const dLat = (endLat - startLat) * Math.PI / 180;
-              const dLng = (endLng - startLng) * Math.PI / 180;
-              const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                        Math.cos(startLat * Math.PI / 180) * Math.cos(endLat * Math.PI / 180) *
-                        Math.sin(dLng/2) * Math.sin(dLng/2);
-              const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-              const distance = R * c * 1000; // 미터 단위
-              
-              setRouteInfo({
-                distance: `${Math.round(distance / 1000 * 10) / 10}km`,
-                duration: 0,
-                type: routeType === 'walk' ? '도보' : routeType === 'transit' ? '대중교통' : '자동차'
-              });
-              
-              console.log('✅ 대안 경로 표시 완료 (직선)');
-              
-              // 사용자에게 안내
-              alert(`경로 검색 서비스에 일시적인 문제가 있어 직선 경로로 표시합니다.\n거리: ${Math.round(distance / 1000 * 10) / 10}km`);
-              
-            } catch (fallbackError) {
-              console.error('❌ 대안 경로 표시도 실패:', fallbackError);
-              setRouteInfo({
-                distance: '계산 불가',
-                duration: 0,
-                type: routeType === 'walk' ? '도보' : routeType === 'transit' ? '대중교통' : '자동차'
-              });
-              
-              alert('경로를 표시할 수 없습니다. 잠시 후 다시 시도해주세요.');
-            }
-            
-            setShowRouteModal(false);
-          }
-        });
-        
-      } catch (error) {
-        console.error('❌ 경로 검색 실패:', error);
-        // 기본 정보라도 표시
-        setRouteInfo({
-          distance: '계산 불가',
-          duration: 0,
-          type: routeType === 'walk' ? '도보' : routeType === 'transit' ? '대중교통' : '자동차'
-        });
-        setShowRouteModal(false);
-      }
+      
+    } catch (error) {
+      console.error('❌ 딥링크 길찾기 실패:', error);
+      alert('길찾기를 시작할 수 없습니다. 다시 시도해주세요.');
     }
   };
 
@@ -694,17 +479,50 @@ export default function App() {
     );
   }
 
+  // 딥링크 기반 길찾기
+  const handleRoute = async (store) => {
+    await handleDirections(store);
+  };
+
+  // 경로 선택 처리 (딥링크 기반)
+  const handleRouteSelect = async (routeType) => {
+    if (!selectedStore) return;
+    
+    // 이동수단을 routeType에 맞게 설정
+    let newTransitMode = transitMode;
+    switch (routeType) {
+      case 'walk':
+        newTransitMode = '도보';
+        break;
+      case 'transit':
+        newTransitMode = '대중교통';
+        break;
+      case 'car':
+        newTransitMode = '자차';
+        break;
+    }
+    
+    setTransitMode(newTransitMode);
+    
+    // 딥링크 길찾기 실행
+    await handleDirections(selectedStore);
+    
+    // 모달 닫기
+    setShowRouteModal(false);
+  };
+
   return (
     <div className="frame">
       <Header
         mode={mode}
         searchName={searchName}
         setSearchName={setSearchName}
-        onBack={onBack}
         category={category}
         setCategory={setCategory}
-        stores={stores} // 업체 목록 전달
-        ref={headerRef}
+        stores={stores}
+        onBack={() => setMode('region')}
+        transitMode={transitMode}
+        onTransitModeChange={setTransitMode}
       />
 
       {mode === 'region' && (

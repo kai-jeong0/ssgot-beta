@@ -73,9 +73,8 @@ export const useKakaoMap = (mode) => {
       }
       
       const script = document.createElement('script');
-      // 카카오맵 공식 문서에 따른 라이브러리 설정
-      // Directions 서비스를 포함한 모든 필요한 서비스 로드
-      script.src = `https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=${key}&libraries=services,places,geocoder,directions`;
+      // 카카오맵 가이드에 따라 services 라이브러리 명시적 포함
+      script.src = `https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=${key}&libraries=services`;
       script.async = true;
       
       // 로딩 타임아웃 설정
@@ -101,54 +100,29 @@ export const useKakaoMap = (mode) => {
           if (window.kakao.maps.services) {
             console.log('✅ Services 라이브러리 로드 완료');
             
-            // Directions 서비스가 로드될 때까지 잠시 대기
-            setTimeout(() => {
-              // Directions 서비스 사용 가능 여부 확인
-              if (window.kakao.maps.services.Directions) {
-                console.log('✅ Directions 서비스 사용 가능');
-              } else {
-                console.warn('⚠️ Directions 서비스가 로드되지 않음');
-                console.warn('⚠️ 로드된 서비스:', Object.keys(window.kakao.maps.services));
-                console.warn('⚠️ Directions 서비스를 별도로 로드 시도...');
-                
-                // Directions 서비스를 별도로 로드 시도
-                try {
-                  const directionsScript = document.createElement('script');
-                  directionsScript.src = 'https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=' + key + '&libraries=directions';
-                  directionsScript.onload = () => {
-                    console.log('✅ Directions 서비스 별도 로드 완료');
-                    if (window.kakao.maps.services.Directions) {
-                      console.log('✅ Directions 서비스 사용 가능');
-                    } else {
-                      console.error('❌ Directions 서비스 별도 로드 실패');
-                    }
-                  };
-                  directionsScript.onerror = () => {
-                    console.error('❌ Directions 서비스 별도 로드 실패');
-                  };
-                  document.head.appendChild(directionsScript);
-                } catch (error) {
-                  console.error('❌ Directions 서비스 별도 로드 중 오류:', error);
-                }
-              }
-              
-              // Places 서비스 사용 가능 여부 확인
-              if (window.kakao.maps.services.Places) {
-                console.log('✅ Places 서비스 사용 가능');
-              } else {
-                console.warn('⚠️ Places 서비스가 로드되지 않음');
-              }
-              
-              // Geocoder 서비스 사용 가능 여부 확인
-              if (window.kakao.maps.services.Geocoder) {
-                console.log('✅ Geocoder 서비스 사용 가능');
-              } else {
-                console.warn('⚠️ Geocoder 서비스가 로드되지 않음');
-              }
-              
-              // 모든 서비스 확인 후 resolve
-              resolve(window.kakao);
-            }, 1000); // 1초 대기
+            // Directions 서비스 사용 가능 여부 확인
+            if (window.kakao.maps.services.Directions) {
+              console.log('✅ Directions 서비스 사용 가능');
+            } else {
+              console.warn('⚠️ Directions 서비스가 로드되지 않음');
+              console.warn('⚠️ 로드된 서비스:', Object.keys(window.kakao.maps.services));
+            }
+            
+            // Places 서비스 사용 가능 여부 확인
+            if (window.kakao.maps.services.Places) {
+              console.log('✅ Places 서비스 사용 가능');
+            } else {
+              console.warn('⚠️ Places 서비스가 로드되지 않음');
+            }
+            
+            // Geocoder 서비스 사용 가능 여부 확인
+            if (window.kakao.maps.services.Geocoder) {
+              console.log('✅ Geocoder 서비스 사용 가능');
+            } else {
+              console.warn('⚠️ Geocoder 서비스가 로드되지 않음');
+            }
+            
+            resolve(window.kakao);
           } else {
             console.error('❌ Services 라이브러리 로드 실패');
             return reject(new Error('services library load failed'));
