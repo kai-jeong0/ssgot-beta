@@ -382,3 +382,5 @@ export const useKakaoMap = (mode) => {
     clearMarkerHighlight
   };
 };
+
+export default useKakaoMap;

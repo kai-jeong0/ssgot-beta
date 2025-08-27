@@ -6,7 +6,7 @@ import StoreCard from './components/StoreCard';
 import RouteModal from './components/RouteModal';
 import { buildKakaoDirectionsUrl, getUserLocOrFallback, uiModeToApi } from './utils/directionsLink';
 import useKakaoMap from './hooks/useKakaoMap';
-import useStores from './hooks/useStores';
+import { useStores } from './hooks/useStores';
 import './App.css';
 
 export default function App() {
