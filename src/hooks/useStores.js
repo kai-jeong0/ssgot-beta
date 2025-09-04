@@ -36,106 +36,9 @@ export const useStores = () => {
 
   // Python FastAPI 백엔드를 통한 카카오맵 업체 이미지 조회
   const fetchStoreImage = async (storeName, lat, lng) => {
-    try {
-      // Python FastAPI 백엔드 호출
-      const apiUrl = import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8000';
-      const fullApiUrl = `${apiUrl}/image`;
-      const params = new URLSearchParams({ keyword: storeName });
-      
-      console.log(`🔍 ${storeName} Python API 호출 시작`);
-      
-      const response = await fetch(`${fullApiUrl}?${params}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        // 타임아웃 설정 (5초)
-        signal: AbortSignal.timeout(5000)
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log(`🔍 ${storeName} Python API 응답:`, data);
-      
-      if (data.image_url) {
-        console.log(`✅ ${storeName} Python API 이미지 성공:`, data.image_url);
-        
-        // 이미지 로딩 테스트
-        const testImg = new Image();
-        testImg.onload = () => {
-          console.log(`✅ ${storeName} 이미지 로딩 성공`);
-        };
-        testImg.onerror = () => {
-          console.log(`❌ ${storeName} Python API 이미지 로딩 실패`);
-        };
-        testImg.src = data.image_url;
-        
-        return data.image_url;
-      } else {
-        console.log(`⚠️ ${storeName} Python API 이미지 없음, 기본 이미지 사용`);
-        return `https://picsum.photos/seed/${encodeURIComponent(storeName)}/400/300`;
-      }
-      
-    } catch (error) {
-      console.error(`❌ ${storeName} Python API 호출 실패:`, error);
-      
-      // Python API 실패 시 기존 카카오맵 SDK 방식으로 fallback
-      try {
-        if (!window.kakao || !window.kakao.maps) {
-          console.log('카카오맵 SDK가 로드되지 않음, 기본 이미지 사용');
-          return `https://picsum.photos/seed/${encodeURIComponent(storeName)}/400/300`;
-        }
-
-        const places = new window.kakao.maps.services.Places();
-        
-        return new Promise((resolve) => {
-          const searchQuery = storeName.trim();
-          places.keywordSearch(searchQuery, (data, status) => {
-            if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
-              let closestPlace = data[0];
-              let minDistance = Infinity;
-              
-              data.forEach(place => {
-                if (place.y && place.x) {
-                  const distance = Math.sqrt(
-                    Math.pow(place.y - lat, 2) + Math.pow(place.x - lng, 2)
-                  );
-                  if (distance < minDistance) {
-                    minDistance = distance;
-                    closestPlace = place;
-                  }
-                }
-              });
-              
-              console.log(`🔍 ${storeName} 카카오맵 SDK fallback:`, {
-                found: data.length,
-                closest: closestPlace.place_name,
-                distance: minDistance,
-                placeId: closestPlace.id
-              });
-              
-              if (closestPlace.id) {
-                const imageUrl = `https://img1.kakaocdn.net/cthumb/local/C400x300.q50/?fname=${encodeURIComponent(`https://t1.kakaocdn.net/mystore/${closestPlace.id}`)}`;
-                console.log(`✅ ${storeName} 카카오맵 SDK 이미지 생성:`, imageUrl);
-                resolve(imageUrl);
-              } else {
-                console.log(`⚠️ ${storeName} 카카오맵 SDK 이미지 정보 없음, 기본 이미지 사용`);
-                resolve(`https://picsum.photos/seed/${encodeURIComponent(storeName)}/400/300`);
-              }
-            } else {
-              console.log(`❌ ${storeName} 카카오맵 SDK 검색 실패:`, status);
-              resolve(`https://picsum.photos/seed/${encodeURIComponent(storeName)}/400/300`);
-            }
-          });
-        });
-      } catch (fallbackError) {
-        console.error(`❌ ${storeName} fallback도 실패:`, fallbackError);
-        return `https://picsum.photos/seed/${encodeURIComponent(storeName)}/400/300`;
-      }
-    }
+    // Python 백엔드가 없으므로 바로 기본 이미지 사용
+    console.log(`🖼️ ${storeName}: 기본 이미지 사용 (Python 백엔드 비활성화)`);
+    return `https://picsum.photos/seed/${encodeURIComponent(storeName)}/400/300`;
   };
 
   // 경기도 공공데이터 API로 가게 정보 조회
@@ -154,36 +57,77 @@ export const useStores = () => {
       const json = await res.json();
       const rows = json?.RegionMnyFacltStus?.[1]?.row ?? [];
       
-      // 업체 정보와 이미지를 병렬로 처리
-      const storesWithImages = await Promise.all(
-        rows
-          .filter(r => r.REFINE_WGS84_LAT && r.REFINE_WGS84_LOGT)
-          .map(async (r) => {
-            const rawCategory = r.INDUTY_CODE_SE_NM || r.INDUTY_CODE_SE || '';
-            const storeName = r.CMPNM_NM || '';
-            const category = mapIndustryToCategory(rawCategory + ' ' + storeName);
-            
-            // 카카오맵에서 이미지 조회
-            const photo = await fetchStoreImage(storeName, +r.REFINE_WGS84_LAT, +r.REFINE_WGS84_LOGT);
-            
-            return {
-              id: `${r.SIGUN_CD || ''}-${r.MGTNO || r.CMPNM_NM}-${r.REFINE_WGS84_LAT}-${r.REFINE_WGS84_LOGT}`,
-              name: r.CMPNM_NM,
-              address: r.REFINE_ROADNM_ADDR || r.REFINE_LOTNO_ADDR || '',
-              lat: +r.REFINE_WGS84_LAT,
-              lng: +r.REFINE_WGS84_LOGT,
-              rawCategory: rawCategory,
-              category: category,
-              photo: photo,
-              openNow: null, // TODO: Kakao Local REST로 영업시간 조회 필요
-            };
-          })
-      );
+      // 기본 업체 정보만 먼저 생성 (이미지 없이)
+      const basicStores = rows
+        .filter(r => r.REFINE_WGS84_LAT && r.REFINE_WGS84_LOGT)
+        .map((r) => {
+          const rawCategory = r.INDUTY_CODE_SE_NM || r.INDUTY_CODE_SE || '';
+          const storeName = r.CMPNM_NM || '';
+          const category = mapIndustryToCategory(rawCategory + ' ' + storeName);
+          
+          return {
+            id: `${r.SIGUN_CD || ''}-${r.MGTNO || r.CMPNM_NM}-${r.REFINE_WGS84_LAT}-${r.REFINE_WGS84_LOGT}`,
+            name: r.CMPNM_NM,
+            address: r.REFINE_ROADNM_ADDR || r.REFINE_LOTNO_ADDR || '',
+            lat: +r.REFINE_WGS84_LAT,
+            lng: +r.REFINE_WGS84_LOGT,
+            rawCategory: rawCategory,
+            category: category,
+            photo: `https://picsum.photos/seed/${encodeURIComponent(storeName)}/400/300`, // 기본 이미지로 시작
+            openNow: null, // TODO: Kakao Local REST로 영업시간 조회 필요
+          };
+        });
       
-      return storesWithImages;
+      // 기본 업체 정보를 먼저 반환 (빠른 화면 렌더링을 위해)
+      console.log(`✅ ${city} 기본 업체 정보 ${basicStores.length}개 생성 완료`);
+      
+      // 이미지는 백그라운드에서 비동기로 로드
+      setTimeout(async () => {
+        try {
+          console.log(`🔄 ${city} 이미지 로딩 시작 (백그라운드)`);
+          
+          // 이미지 로딩을 병렬로 처리 (최대 5개씩)
+          const batchSize = 5;
+          for (let i = 0; i < basicStores.length; i += batchSize) {
+            const batch = basicStores.slice(i, i + batchSize);
+            await Promise.all(
+              batch.map(async (store) => {
+                try {
+                  const photo = await fetchStoreImage(store.name, store.lat, store.lng);
+                  store.photo = photo;
+                  console.log(`✅ ${store.name} 이미지 로딩 완료`);
+                } catch (error) {
+                  console.warn(`⚠️ ${store.name} 이미지 로딩 실패, 기본 이미지 유지`);
+                }
+              })
+            );
+            
+            // 배치 처리 후 잠시 대기 (서버 부하 방지)
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+          
+          console.log(`✅ ${city} 모든 이미지 로딩 완료`);
+          
+          // 이미지가 로드된 업체 정보로 상태 업데이트
+          setStores(prevStores => {
+            const updatedStores = prevStores.map(prevStore => {
+              const updatedStore = basicStores.find(s => s.id === prevStore.id);
+              return updatedStore || prevStore;
+            });
+            return updatedStores;
+          });
+          
+        } catch (error) {
+          console.error(`❌ ${city} 이미지 로딩 중 오류:`, error);
+        }
+      }, 100);
+      
+      return basicStores;
     } catch (error) {
       console.error('가게 정보 조회 실패:', error);
       return [];
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -28,14 +28,16 @@ const Header = React.forwardRef(({
   const searchRef = useRef(null);
 
   const CATS = [
-    { id: "all", label: "전체", color: "default" },
-    { id: "restaurant", label: "음식점", color: "red" },
-    { id: "cafe", label: "카페", color: "yellow" },
-    { id: "pharmacy", label: "약국", color: "green" },
-    { id: "mart", label: "마트", color: "blue" },
-    { id: "beauty", label: "미용", color: "purple" },
-    { id: "academy", label: "학원", color: "indigo" },
-    { id: "etc", label: "기타", color: "secondary" },
+    { id: "all", label: "전체", color: "default", emoji: "🏪" },
+    { id: "restaurant", label: "음식점", color: "default", emoji: "🍽️" },
+    { id: "cafe", label: "카페", color: "default", emoji: "☕" },
+    { id: "pharmacy", label: "약국", color: "default", emoji: "💊" },
+    { id: "mart", label: "마트", color: "default", emoji: "🛒" },
+    { id: "beauty", label: "미용", color: "default", emoji: "💄" },
+    { id: "academy", label: "학원", color: "default", emoji: "📚" },
+    { id: "exercise", label: "운동", color: "default", emoji: "💪" },
+    { id: "bookstore", label: "서점", color: "default", emoji: "📖" },
+    { id: "etc", label: "기타", color: "default", emoji: "🔧" },
   ];
 
   // 검색어 변경 시 자동완성 필터링
@@ -80,11 +82,25 @@ const Header = React.forwardRef(({
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50" ref={ref}>
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 header-responsive" ref={ref}>
       <div className="max-w-6xl mx-auto">
+        {/* 지역 선택 화면 헤더 */}
+        {mode === 'region' && (
+          <div className="flex items-center justify-center py-2 px-4">
+            <div className="flex items-center justify-center">
+              <div className="w-6 h-6 bg-carrot rounded-full flex items-center justify-center mr-2">
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                </svg>
+              </div>
+                                <span className="text-sm font-bold text-gray-900">쓰곳</span>
+            </div>
+          </div>
+        )}
+        
         {/* 상단 바 */}
-        <div className="flex items-center justify-between px-3 py-3">
-          {mode === 'map' && (
+        {mode === 'map' && (
+          <div className="flex items-center justify-between px-3 py-3 header-top-responsive">
             <Button
               variant="ghost"
               size="icon"
@@ -94,24 +110,16 @@ const Header = React.forwardRef(({
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-          )}
-          
-          {mode !== 'map' && (
-            <div className="flex-1 text-center">
-              {/* 지역 선택 화면에서는 텍스트를 표시하지 않음 - RegionGrid에서 처리 */}
-            </div>
-          )}
-          
-          {mode === 'map' && (
-            <div className="flex-1 max-w-sm mx-3">
+            
+            <div className="flex-1 max-w-sm mx-3 search-container-responsive">
               <div className="relative" ref={searchRef}>
                 <input
-                  placeholder="런던 베이글 뮤지엄"
+                  placeholder="상호명을 검색해 보세요"
                   value={searchName}
                   onChange={(e) => setSearchName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && setSearchName(e.currentTarget.value)}
                   onFocus={() => searchName.trim() && filteredStores.length > 0 && setShowSuggestions(true)}
-                  className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-carrot focus:border-carrot transition-all duration-200 text-sm"
+                  className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-carrot focus:border-carrot transition-all duration-200 text-sm search-input-responsive"
                 />
                 <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 
@@ -132,13 +140,13 @@ const Header = React.forwardRef(({
                 )}
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
         
         {/* 카테고리 칩 */}
         {mode === 'map' && (
-          <div className="px-3 pb-3">
-            <div className="flex flex-wrap gap-2">
+          <div className="px-3 pb-3 category-container-responsive">
+            <div className="flex flex-wrap gap-2 category-chips-responsive">
               {CATS.map(cat => (
                 <Badge
                   key={cat.id}
@@ -148,7 +156,7 @@ const Header = React.forwardRef(({
                   }`}
                   onClick={() => setCategory(cat.id)}
                 >
-                  {cat.label}
+                  {cat.emoji} {cat.label}
                 </Badge>
               ))}
             </div>

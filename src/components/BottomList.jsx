@@ -11,7 +11,7 @@ const BottomList = ({
   onRoute 
 }) => {
   return (
-    <div className="bg-white border-t border-gray-200 h-80 flex-shrink-0">
+    <div className="bg-white border-t border-gray-200 h-80 flex-shrink-0 bottom-list-responsive">
       <div className="h-full flex flex-col">
         {/* 헤더 */}
         <div className="px-4 py-3 border-b border-gray-200 flex-shrink-0">
@@ -44,7 +44,19 @@ const BottomList = ({
 
         {/* 가맹점 리스트 - 가로 스크롤 */}
         <div className="flex-1 overflow-hidden">
-          {(!stores || stores.length === 0) ? (
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+              </div>
+              <p className="text-sm font-medium text-primary-text mb-1">
+                업체 정보를 불러오는 중...
+              </p>
+              <p className="text-xs text-primary-body">
+                잠시만 기다려주세요
+              </p>
+            </div>
+          ) : (!stores || stores.length === 0) ? (
             <div className="text-center py-8">
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Store className="w-6 h-6 text-gray-400" />
@@ -58,9 +70,9 @@ const BottomList = ({
             </div>
           ) : (
             <div className="h-full overflow-x-auto">
-              <div className="flex gap-3 p-4 min-w-max">
+              <div className="flex gap-3 p-4 min-w-max store-list-responsive">
                 {stores.map(store => (
-                  <div key={store.id} className="w-40 flex-shrink-0">
+                  <div key={store.id} className="w-40 flex-shrink-0 store-card-responsive">
                     <StoreCard
                       store={store}
                       isSelected={selectedId === store.id}

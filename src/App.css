@@ -31,6 +31,97 @@ body {
   overflow-y: auto; /* 세로 스크롤 */
 }
 
+/* PC 해상도 대응 (768px 이상) */
+@media (min-width: 768px) {
+  .frame {
+    max-width: 1200px; /* PC에서 최대 너비 설정 */
+    border-left: none;
+    border-right: none;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    margin: 20px auto;
+    height: calc(100vh - 40px);
+    overflow: hidden; /* 세로 스크롤 방지 */
+  }
+  
+  /* PC에서 헤더 높이 조정 */
+  :root {
+    --headerH: 80px;
+  }
+  
+  /* PC에서 하단 리스트 높이를 화면에 맞게 조정 */
+  .bottom-list-responsive {
+    height: calc(100vh - 40px - 80px - 20px); /* 전체 높이 - 마진 - 헤더 - 여백 */
+    max-height: 600px; /* 최대 높이 제한 */
+  }
+  
+  /* PC에서 헤더 패딩 조정 */
+  .header-responsive {
+    padding: 0.75rem 1rem;
+  }
+  
+  /* PC에서 카테고리 컨테이너 패딩 조정 */
+  .category-container-responsive {
+    padding: 0 1rem 0.5rem;
+  }
+}
+
+/* 태블릿 해상도 대응 (481px ~ 767px) */
+@media (min-width: 481px) and (max-width: 767px) {
+  .frame {
+    max-width: 600px;
+    margin: 10px auto;
+    height: calc(100vh - 20px);
+    border-radius: 8px;
+    overflow: hidden; /* 세로 스크롤 방지 */
+  }
+  
+  /* 태블릿에서 하단 리스트 높이 조정 */
+  .bottom-list-responsive {
+    height: calc(100vh - 20px - 96px - 20px); /* 전체 높이 - 마진 - 헤더 - 여백 */
+    max-height: 400px; /* 최대 높이 제한 */
+  }
+  
+  /* 태블릿에서 헤더 패딩 조정 */
+  .header-responsive {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  /* 태블릿에서 카테고리 컨테이너 패딩 조정 */
+  .category-container-responsive {
+    padding: 0 0.75rem 0.5rem;
+  }
+}
+
+/* 모바일 해상도 (320px ~ 480px) */
+@media (max-width: 480px) {
+  .frame {
+    max-width: 100%;
+    margin: 0;
+    height: 100vh;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    overflow: hidden; /* 세로 스크롤 방지 */
+  }
+  
+  /* 모바일에서 하단 리스트 높이 조정 */
+  .bottom-list-responsive {
+    height: calc(100vh - 96px - 20px); /* 전체 높이 - 헤더 - 여백 */
+    max-height: 300px; /* 최대 높이 제한 */
+  }
+  
+  /* 모바일에서 헤더 패딩 조정 */
+  .header-responsive {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  /* 모바일에서 카테고리 컨테이너 패딩 조정 */
+  .category-container-responsive {
+    padding: 0 0.75rem 0.5rem;
+  }
+}
+
 /* 내 위치 버튼 */
 .my-location-btn {
   position: absolute;
@@ -299,20 +390,46 @@ body {
   }
 }
 
+/* 지도 영역 반응형 높이 설정 */
 .map-wrap {
-  position: relative;
-  width: 100%;
   flex: 1;
-  min-height: 400px; /* 최소 높이 설정 */
-  height: calc(100vh - var(--headerH, 0px)); /* 헤더 높이를 제외한 전체 높이 */
+  position: relative;
+  overflow: hidden;
 }
 
 .map {
-  position: absolute;
-  inset: 0;
-  width: 100% !important;
-  height: 100% !important;
-  min-height: 400px; /* 최소 높이 보장 */
+  width: 100%;
+  height: 100%;
+  min-height: 0; /* flex 아이템이 부모 컨테이너에 맞게 조정되도록 */
+  /* 지도 드래그를 위한 터치 이벤트 활성화 */
+  touch-action: pan-x pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* PC 해상도에서 지도 영역 조정 */
+@media (min-width: 768px) {
+  .map-wrap {
+    height: calc(100vh - 40px - 80px - 20px - 400px); /* 전체 높이 - 마진 - 헤더 - 여백 - 하단리스트(400px) */
+    min-height: 600px; /* 최소 높이 보장 (지도 영역 확대) */
+  }
+}
+
+/* 태블릿 해상도에서 지도 영역 조정 */
+@media (min-width: 481px) and (max-width: 767px) {
+  .map-wrap {
+    height: calc(100vh - 20px - 96px - 20px - 400px); /* 전체 높이 - 마진 - 헤더 - 여백 - 하단리스트(400px) */
+    min-height: 300px; /* 최소 높이 보장 */
+  }
+}
+
+/* 모바일 해상도에서 지도 영역 조정 */
+@media (max-width: 480px) {
+  .map-wrap {
+    height: calc(100vh - 96px - 20px - 300px); /* 전체 높이 - 헤더 - 여백 - 하단리스트 */
+    min-height: 250px; /* 최소 높이 보장 */
+  }
 }
 
 /* 기존 card 스타일 (호환성 유지) */
@@ -505,4 +622,1166 @@ body {
   .text-lg { font-size: 1rem; } /* 16px */
   .text-base { font-size: 0.875rem; } /* 14px */
   .text-sm { font-size: 0.75rem; } /* 12px */
+}
+
+/* Header 컴포넌트 PC 해상도 대응 */
+.header-responsive {
+  /* 기본 스타일 */
+}
+
+/* PC 해상도에서 헤더 조정 */
+@media (min-width: 768px) {
+  .header-top-responsive {
+    padding: 1rem 1.5rem; /* PC에서 패딩 증가 */
+  }
+  
+  .search-container-responsive {
+    max-width: none; /* PC에서 최대 너비 제한 해제 */
+    flex: 1; /* PC에서 플렉시블하게 늘어남 */
+  }
+  
+  .search-input-responsive {
+    font-size: 1rem; /* PC에서 폰트 크기 증가 */
+    padding: 0.75rem 1rem 0.75rem 2.5rem; /* PC에서 왼쪽 패딩 증가하여 돋보기와 겹치지 않도록 */
+  }
+  
+  .category-container-responsive {
+    padding: 0 1.5rem 1rem; /* PC에서 패딩 증가 */
+  }
+  
+  .category-chips-responsive {
+    gap: 0.75rem; /* PC에서 칩 간격 증가 */
+  }
+}
+
+/* 태블릿 해상도에서 헤더 조정 */
+@media (min-width: 481px) and (max-width: 767px) {
+  .header-top-responsive {
+    padding: 0.75rem 1rem;
+  }
+  
+  .search-container-responsive {
+    max-width: 400px;
+  }
+  
+  .category-container-responsive {
+    padding: 0 1rem 0.75rem;
+  }
+}
+
+/* RegionGrid 컴포넌트 PC 해상도 대응 */
+.region-grid-responsive {
+  /* 기본 스타일 */
+}
+
+/* PC 해상도에서 RegionGrid 조정 */
+@media (min-width: 768px) {
+  .header-section-responsive {
+    padding: 3rem 2rem; /* PC에서 패딩 증가 */
+  }
+  
+  .header-section-responsive h1 {
+    font-size: 2.5rem; /* PC에서 제목 크기 증가 */
+  }
+  
+  .header-section-responsive h2 {
+    font-size: 1.5rem; /* PC에서 부제목 크기 증가 */
+  }
+  
+  .main-content-responsive {
+    padding: 2rem 2rem; /* PC에서 패딩 증가 */
+  }
+  
+  .regions-grid-responsive {
+    grid-template-columns: repeat(4, 1fr); /* PC에서 4열 그리드 */
+    gap: 1.5rem; /* PC에서 간격 증가 */
+    max-width: 1000px; /* PC에서 최대 너비 설정 */
+    margin: 0 auto;
+  }
+}
+
+/* 태블릿 해상도에서 RegionGrid 조정 */
+@media (min-width: 481px) and (max-width: 767px) {
+  .header-section-responsive {
+    padding: 2rem 1.5rem;
+  }
+  
+  .main-content-responsive {
+    padding: 1.5rem 1.5rem;
+  }
+  
+  .regions-grid-responsive {
+    grid-template-columns: repeat(3, 1fr); /* 태블릿에서 3열 그리드 */
+    gap: 1rem;
+  }
+}
+
+/* 하단 리스트 반응형 높이 설정 */
+
+/* 카카오맵 마커 기본 스타일 */
+.kakao-map-marker {
+  /* 카카오맵 마커는 기본적으로 SVG 이미지로 처리되므로 
+     CSS 스타일링은 제한적입니다. 마커 상태는 이미지 변경으로 구분됩니다. */
+}
+
+/* PC 해상도에서 하단 리스트 높이 조정 */
+@media (min-width: 768px) {
+  .bottom-list-responsive {
+    height: calc(100vh - 40px - 80px - 20px - 200px); /* 전체 높이 - 마진 - 헤더 - 여백 - 지도영역 확보 */
+    max-height: 400px; /* 최대 높이 제한 (모바일 기준으로 조정) */
+  }
+  
+  .store-list-responsive {
+    gap: 1rem; /* PC에서 카드 간격 증가 */
+    padding: 1.5rem; /* PC에서 패딩 증가 */
+  }
+  
+  .store-card-responsive {
+    width: 11rem; /* PC에서 카드 너비 증가 */
+  }
+}
+
+/* 태블릿 해상도에서 하단 리스트 조정 */
+@media (min-width: 481px) and (max-width: 767px) {
+  .bottom-list-responsive {
+    height: calc(100vh - 20px - 96px - 20px); /* 전체 높이 - 마진 - 헤더 - 여백 */
+    max-height: 400px; /* 최대 높이 제한 */
+  }
+  
+  .store-card-responsive {
+    width: 160px;
+    height: 256px; /* 이미지 128px + 정보 95.97px + 하단 여백 32px */
+  }
+  
+  /* 태블릿에서 검색 영역 최적화 */
+  .search-container-responsive {
+    padding: 0.75rem 1rem; /* 태블릿에서 검색 영역 패딩 */
+    gap: 0.75rem; /* 태블릿에서 검색 요소 간격 */
+  }
+  
+  .search-input-responsive {
+    font-size: 0.875rem; /* 태블릿에서 검색 입력 폰트 크기 */
+    padding: 0.625rem 0.875rem; /* 태블릿에서 검색 입력 패딩 */
+    height: 44px; /* 태블릿에서 검색 입력 높이 */
+    min-width: 250px; /* 태블릿에서 검색 입력 최소 너비 */
+  }
+  
+  .search-button-responsive {
+    padding: 0.625rem 1.25rem; /* 태블릿에서 검색 버튼 패딩 */
+    font-size: 0.875rem; /* 태블릿에서 검색 버튼 폰트 크기 */
+    height: 44px; /* 태블릿에서 검색 버튼 높이 */
+    min-width: 70px; /* 태블릿에서 검색 버튼 최소 너비 */
+  }
+  
+  /* 태블릿에서 카테고리 영역 최적화 */
+  .category-container-responsive {
+    padding: 0 1rem 0.75rem; /* 태블릿에서 카테고리 영역 패딩 */
+    gap: 0.5rem; /* 태블릿에서 카테고리 칩 간격 */
+  }
+  
+  .category-chip-responsive {
+    padding: 0.375rem 0.875rem; /* 태블릿에서 카테고리 칩 패딩 */
+    font-size: 0.8125rem; /* 태블릿에서 카테고리 칩 폰트 크기 */
+    height: 32px; /* 태블릿에서 카테고리 칩 높이 */
+    min-width: 70px; /* 태블릿에서 카테고리 칩 최소 너비 */
+  }
+}
+
+/* 모바일 해상도에서 하단 리스트 조정 */
+@media (max-width: 480px) {
+  .bottom-list-responsive {
+    height: calc(100vh - 96px - 20px - 20px + 40px); /* 전체 높이 - 헤더 - 여백 - 추가 여백 + 40px 확장 */
+    max-height: 320px; /* 최대 높이 제한 (40px 증가) */
+  }
+  
+  /* 모바일에서 업체 카드 크기 조정 */
+  .store-card-responsive {
+    width: 140px; /* 모바일에서 카드 너비 축소 */
+    height: 256px; /* 이미지 128px + 정보 95.97px + 하단 여백 32px */
+    min-height: 256px; /* 모바일에서 카드 높이 고정 */
+  }
+  
+  /* 모바일에서 업체 리스트 패딩 조정 */
+  .store-list-responsive {
+    padding: 1rem; /* 모바일에서 패딩 축소 */
+    gap: 0.75rem; /* 모바일에서 간격 축소 */
+  }
+  
+  /* 모바일에서 검색 영역 최적화 */
+  .search-container-responsive {
+    padding: 0.5rem 0.75rem; /* 모바일에서 검색 영역 패딩 */
+    gap: 0.5rem; /* 모바일에서 검색 요소 간격 */
+  }
+  
+  .search-input-responsive {
+    font-size: 0.8125rem; /* 모바일에서 검색 입력 폰트 크기 */
+    padding: 0.5rem 0.75rem; /* 모바일에서 검색 입력 패딩 */
+    height: 40px; /* 모바일에서 검색 입력 높이 */
+    min-width: 200px; /* 모바일에서 검색 입력 최소 너비 */
+  }
+  
+  .search-button-responsive {
+    padding: 0.5rem 1rem; /* 모바일에서 검색 버튼 패딩 */
+    font-size: 0.8125rem; /* 모바일에서 검색 버튼 폰트 크기 */
+    height: 40px; /* 모바일에서 검색 버튼 높이 */
+    min-width: 60px; /* 모바일에서 검색 버튼 최소 너비 */
+  }
+  
+  /* 모바일에서 카테고리 영역 최적화 */
+  .category-container-responsive {
+    padding: 0 0.75rem 0.5rem; /* 모바일에서 카테고리 영역 패딩 */
+    gap: 0.375rem; /* 모바일에서 카테고리 칩 간격 */
+  }
+  
+  .category-chip-responsive {
+    padding: 0.25rem 0.75rem; /* 모바일에서 카테고리 칩 패딩 */
+    font-size: 0.75rem; /* 모바일에서 카테고리 칩 폰트 크기 */
+    height: 28px; /* 모바일에서 카테고리 칩 높이 */
+    min-width: 60px; /* 모바일에서 카테고리 칩 최소 너비 */
+  }
+}
+
+/* 푸터 스타일 최적화 */
+footer {
+  background-color: #ffffff !important;
+  border-top: 1px solid #e5e7eb !important;
+  padding: 0.5rem 0 !important;
+  margin-top: auto !important;
+  z-index: 10 !important;
+  position: relative !important;
+}
+
+footer .max-w-6xl {
+  max-width: 72rem !important;
+  margin: 0 auto !important;
+  padding: 0 1rem !important;
+}
+
+footer .text-xs {
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
+}
+
+footer .text-gray-500 {
+  color: #6b7280 !important;
+}
+
+/* 지역 선택 화면 푸터 최적화 */
+.region-page footer {
+  margin-top: auto !important;
+  background-color: #ffffff !important;
+  border-top: 1px solid #e5e7eb !important;
+}
+
+/* 업체 검색화면 푸터 최적화 */
+.frame:not(.region-page) footer {
+  margin-top: 0 !important;
+  background-color: #ffffff !important;
+  border-top: 1px solid #e5e7eb !important;
+}
+
+/* 모바일에서 푸터 최적화 */
+@media (max-width: 767px) {
+  footer {
+    padding: 0.5rem 0 !important;
+  }
+  
+  footer .max-w-6xl {
+    padding: 0 0.75rem !important;
+  }
+  
+  footer .text-xs {
+    font-size: 0.6875rem !important;
+  }
+}
+
+/* PC에서 푸터 최적화 */
+@media (min-width: 768px) {
+  footer {
+    padding: 0.75rem 0 !important;
+  }
+  
+  footer .max-w-6xl {
+    padding: 0 1.5rem !important;
+  }
+}
+
+/* 대형 PC에서 푸터 최적화 */
+@media (min-width: 1200px) {
+  footer {
+    padding: 1rem 0 !important;
+  }
+  
+  footer .max-w-6xl {
+    padding: 0 2rem !important;
+  }
+}
+
+/* PC 해상도에서 지역 선택 화면 UI 조정 */
+@media (min-width: 768px) {
+  .frame.region-page {
+    overflow-y: auto;
+    height: 100vh; /* 전체 화면 높이 사용 */
+    margin: 0; /* 마진 제거하여 전체 화면 활용 */
+    border-radius: 0; /* 모서리 둥글기 제거 */
+    box-shadow: none; /* 그림자 제거 */
+  }
+  
+  /* PC에서 지역 선택 화면 헤더 섹션 조정 */
+  .region-page .header-section-responsive {
+    padding: 2rem 3rem; /* PC에서 적절한 패딩 */
+  }
+  
+  .region-page .header-section-responsive h1 {
+    font-size: 3rem; /* PC에서 제목 크기 증가 */
+  }
+  
+  .region-page .header-section-responsive h2 {
+    font-size: 1.75rem; /* PC에서 부제목 크기 증가 */
+  }
+  
+  /* PC에서 지역 선택 화면 메인 컨텐츠 조정 */
+  .region-page .main-content-responsive {
+    padding: 2rem 3rem; /* PC에서 적절한 패딩 */
+    flex: 1; /* 남은 공간 모두 사용 */
+  }
+  
+  /* PC에서 지역 그리드 조정 */
+  .region-page .regions-grid-responsive {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* 반응형 그리드 */
+    gap: 2rem; /* PC에서 간격 증가 */
+    max-width: 1920px; /* PC에서 최대 너비 설정 (1200px → 1920px) */
+    margin: 0 auto;
+  }
+}
+
+/* 대형 PC 해상도에서 지역 선택 화면 추가 최적화 (1200px 이상) */
+@media (min-width: 1200px) {
+  .frame.region-page {
+    max-width: 1920px;
+    margin: 0 auto;
+  }
+  
+  /* 대형 화면에서 지역 선택 화면 헤더 섹션 조정 */
+  .region-page .header-section-responsive {
+    padding: 3rem 4rem; /* 대형 화면에서 패딩 증가 */
+  }
+  
+  .region-page .header-section-responsive h1 {
+    font-size: 4rem; /* 대형 화면에서 제목 크기 증가 */
+  }
+  
+  .region-page .header-section-responsive h2 {
+    font-size: 2.25rem; /* 대형 화면에서 부제목 크기 증가 */
+  }
+  
+  /* 대형 화면에서 지역 선택 화면 메인 컨텐츠 조정 */
+  .region-page .main-content-responsive {
+    padding: 3rem 4rem; /* 대형 화면에서 패딩 증가 */
+  }
+  
+  /* 대형 화면에서 지역 그리드 조정 */
+  .region-page .regions-grid-responsive {
+    max-width: 1920px; /* 대형 화면에서 최대 너비 확장 */
+    gap: 3rem; /* 대형 화면에서 간격 증가 */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* 대형 화면에서 카드 최소 너비 증가 */
+  }
+}
+
+/* 태블릿 해상도에서 지역 선택 화면 최적화 (481px ~ 767px) */
+@media (min-width: 481px) and (max-width: 767px) {
+  .frame.region-page {
+    overflow-y: auto;
+    height: 100vh;
+    margin: 10px auto;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  /* 태블릿에서 지역 선택 화면 헤더 섹션 조정 */
+  .region-page .header-section-responsive {
+    padding: 1.5rem 2rem; /* 태블릿에서 적절한 패딩 */
+  }
+  
+  .region-page .header-section-responsive h1 {
+    font-size: 2.5rem; /* 태블릿에서 제목 크기 */
+  }
+  
+  .region-page .header-section-responsive h2 {
+    font-size: 1.5rem; /* 태블릿에서 부제목 크기 */
+  }
+  
+  /* 태블릿에서 지역 선택 화면 메인 컨텐츠 조정 */
+  .region-page .main-content-responsive {
+    padding: 1.5rem 2rem; /* 태블릿에서 적절한 패딩 */
+    flex: 1;
+  }
+  
+  /* 태블릿에서 지역 그리드 조정 */
+  .region-page .regions-grid-responsive {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* 태블릿에서 그리드 */
+    gap: 1.5rem; /* 태블릿에서 간격 */
+    max-width: 600px; /* 태블릿에서 최대 너비 */
+    margin: 0 auto;
+  }
+}
+
+/* 모바일 해상도에서 지역 선택 화면 최적화 (≤480px) */
+@media (max-width: 480px) {
+  .frame.region-page {
+    overflow-y: auto;
+    height: 100vh;
+    margin: 0;
+    border-radius: 0;
+    overflow: hidden;
+  }
+  
+  /* 모바일에서 지역 선택 화면 헤더 섹션 조정 */
+  .region-page .header-section-responsive {
+    padding: 1rem 1.5rem; /* 모바일에서 적절한 패딩 */
+  }
+  
+  .region-page .header-section-responsive h1 {
+    font-size: 2rem; /* 모바일에서 제목 크기 */
+  }
+  
+  .region-page .header-section-responsive h2 {
+    font-size: 1.25rem; /* 모바일에서 부제목 크기 */
+  }
+  
+  /* 모바일에서 지역 선택 화면 메인 컨텐츠 조정 */
+  .region-page .main-content-responsive {
+    padding: 1rem 1.5rem; /* 모바일에서 적절한 패딩 */
+    flex: 1;
+  }
+  
+  /* 모바일에서 지역 그리드 조정 */
+  .region-page .regions-grid-responsive {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* 모바일에서 그리드 */
+    gap: 1rem; /* 모바일에서 간격 */
+    max-width: 100%; /* 모바일에서 전체 너비 */
+    margin: 0;
+  }
+}
+
+/* 대형 PC 해상도에서 업체 검색 화면 추가 최적화 (1200px 이상) */
+@media (min-width: 1200px) {
+  .frame:not(.region-page) {
+    max-width: 1920px;
+    margin: 0 auto;
+  }
+  
+  /* 대형 화면에서 헤더 상단 영역 조정 */
+  .header-top-responsive {
+    padding: 1.5rem 3rem; /* 대형 화면에서 패딩 증가 */
+    gap: 2rem; /* 뒤로가기 버튼과 검색창 간격 증가 */
+  }
+  
+  /* 대형 화면에서 뒤로가기 버튼 조정 */
+  .header-top-responsive .mr-2 {
+    height: 56px; /* 검색창과 동일한 높이 */
+    width: 56px; /* 정사각형 버튼 */
+    padding: 1rem; /* 적절한 패딩 */
+  }
+  
+  .header-top-responsive .mr-2 svg {
+    height: 1.75rem; /* 아이콘 크기 증가 */
+    width: 1.75rem;
+  }
+  
+  /* 대형 화면에서 검색 컨테이너 조정 */
+  .search-container-responsive {
+    max-width: 500px; /* 검색창 최대 너비 증가 */
+  }
+  
+  /* 대형 화면에서 검색 입력창 조정 */
+  .search-input-responsive {
+    font-size: 1.125rem; /* 대형 화면에서 검색 입력 폰트 크기 증가 */
+    padding: 1rem 1.25rem 1rem 3.5rem; /* 왼쪽 패딩 증가 */
+    height: 56px; /* 대형 화면에서 검색 입력 높이 */
+    min-width: 400px; /* 대형 화면에서 검색 입력 최소 너비 */
+    border-radius: 16px; /* 모서리 둥글기 증가 */
+  }
+  
+  /* 대형 화면에서 검색 아이콘 위치 조정 */
+  .search-container-responsive .relative svg {
+    left: 1.25rem; /* 왼쪽 여백 증가 */
+    height: 1.5rem; /* 아이콘 크기 증가 */
+    width: 1.5rem;
+  }
+  
+  /* 대형 화면에서 하단 리스트 높이 조정 */
+  .bottom-list-responsive {
+    height: calc(100vh - 80px - 30px - 30px);
+    max-height: 600px;
+  }
+  
+  /* 대형 화면에서 지도 영역 조정 */
+  .map-wrap {
+    height: calc(100vh - 80px - 30px - 600px - 30px);
+    min-height: 600px;
+  }
+  
+  /* 대형 화면에서 업체 카드 크기 증가 */
+  .store-card-responsive {
+    width: 13rem; /* 대형 화면에서 카드 너비 증가 */
+    height: 256px; /* 이미지 128px + 정보 95.97px + 하단 여백 32px */
+  }
+  
+  /* 대형 화면에서 카드 간격 증가 */
+  .store-list-responsive {
+    gap: 1.5rem;
+    padding: 2rem;
+  }
+  
+  /* 대형 화면에서 카테고리 영역 최적화 */
+  .category-container-responsive {
+    padding: 0 3rem 2rem; /* 대형 화면에서 카테고리 영역 패딩 증가 */
+  }
+  
+  /* 대형 화면에서 카테고리 칩 컨테이너 조정 */
+  .category-chips-responsive {
+    gap: 1rem; /* 대형 화면에서 카테고리 칩 간격 증가 */
+  }
+  
+  .category-chip-responsive {
+    padding: 1rem 1.5rem; /* 대형 화면에서 카테고리 칩 패딩 증가 */
+    font-size: 1rem; /* 대형 화면에서 카테고리 칩 폰트 크기 증가 */
+    height: 48px; /* 대형 화면에서 카테고리 칩 높이 증가 */
+    min-width: 110px; /* 대형 화면에서 카테고리 칩 최소 너비 증가 */
+    border-radius: 24px; /* 모서리 둥글기 증가 */
+  }
+}
+
+/* 업체 검색화면 카드 내부 요소 최적화 */
+.store-card-responsive {
+  /* 카드 내부 요소들의 높이를 조정하여 세로 스크롤 방지 */
+  display: flex;
+  flex-direction: column;
+}
+
+/* 카드 이미지 영역 고정 높이 */
+.store-card-responsive .card-header {
+  flex-shrink: 0;
+}
+
+.store-card-responsive .card-header img,
+.store-card-responsive .card-header .bg-gray-200 {
+  height: 128px !important; /* 이미지 높이 고정 */
+  width: 100%;
+  object-fit: cover;
+}
+
+/* 카드 내용 영역 최적화 */
+.store-card-responsive .card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.75rem !important; /* 패딩 조정 */
+}
+
+/* 업체 정보 영역 */
+.store-card-responsive .store-info {
+  flex: 1;
+  min-height: 0;
+}
+
+/* 업체명과 주소 영역 */
+.store-card-responsive .store-name-address {
+  margin-bottom: 0.5rem;
+}
+
+.store-card-responsive .store-name {
+  font-size: 0.875rem !important;
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.store-card-responsive .store-address {
+  font-size: 0.75rem !important;
+  line-height: 1.2;
+  color: #6b7280;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 하단 영역 (거리 + 찾아가기 버튼) */
+.store-card-responsive .card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+/* 거리 표시 */
+.store-card-responsive .distance {
+  font-size: 0.75rem !important;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+/* 찾아가기 버튼 - 카드 영역 내에서 중앙 정렬 및 반응형 가로값 */
+.store-card-responsive .route-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.25rem !important;
+  font-size: 0.75rem !important;
+  padding: 0.25rem 0.5rem !important;
+  height: 1.5rem !important;
+  min-width: 60px !important;
+  max-width: 100% !important;
+  width: auto !important;
+  border-radius: 0.375rem !important;
+  background-color: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #374151 !important;
+  transition: all 0.2s ease-in-out !important;
+  flex-shrink: 0;
+}
+
+.store-card-responsive .route-button:hover {
+  background-color: #f9fafb !important;
+  border-color: #9ca3af !important;
+  transform: scale(1.05) !important;
+}
+
+.store-card-responsive .route-button svg {
+  width: 0.75rem !important;
+  height: 0.75rem !important;
+  flex-shrink: 0;
+}
+
+/* 모바일에서 찾아가기 버튼 최적화 */
+@media (max-width: 767px) {
+  .store-card-responsive .route-button {
+    min-width: 50px !important;
+    padding: 0.25rem 0.375rem !important;
+    font-size: 0.6875rem !important;
+  }
+  
+  .store-card-responsive .route-button svg {
+    width: 0.6875rem !important;
+    height: 0.6875rem !important;
+  }
+}
+
+/* PC에서 찾아가기 버튼 최적화 */
+@media (min-width: 768px) {
+  .store-card-responsive .route-button {
+    min-width: 70px !important;
+    padding: 0.375rem 0.75rem !important;
+    font-size: 0.8125rem !important;
+    height: 1.75rem !important;
+  }
+  
+  .store-card-responsive .route-button svg {
+    width: 0.8125rem !important;
+    height: 0.8125rem !important;
+  }
+}
+
+/* 대형 PC에서 찾아가기 버튼 최적화 */
+@media (min-width: 1200px) {
+  .store-card-responsive .route-button {
+    min-width: 80px !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem !important;
+    height: 2rem !important;
+  }
+  
+  .store-card-responsive .route-button svg {
+    width: 0.875rem !important;
+    height: 0.875rem !important;
+  }
+}
+
+/* 모바일에서 store-info 영역 축소 */
+@media (max-width: 767px) {
+  .store-card-responsive .store-info {
+    margin-bottom: 0.25rem !important; /* 기존 0.5rem에서 0.25rem으로 축소 */
+  }
+  
+  .store-card-responsive .store-name-address {
+    margin-bottom: 0.25rem !important; /* 기존 0.5rem에서 0.25rem으로 축소 */
+  }
+  
+  .store-card-responsive .store-name {
+    font-size: 0.8125rem !important; /* 모바일에서 폰트 크기 축소 */
+    margin-bottom: 0.125rem !important; /* 기존 0.25rem에서 0.125rem으로 축소 */
+  }
+  
+  .store-card-responsive .store-address {
+    font-size: 0.6875rem !important; /* 모바일에서 폰트 크기 축소 */
+  }
+  
+  .store-card-responsive .card-content {
+    padding: 0.5rem !important; /* 모바일에서 패딩 축소 */
+  }
+  
+  .store-card-responsive .card-bottom {
+    padding-top: 0.25rem !important; /* 모바일에서 상단 패딩 축소 */
+  }
+  
+  /* 모바일에서 검색창 내 플레이스 홀더 텍스트와 돋보기 아이콘 겹치지 않도록 조정 */
+  .search-container-responsive input {
+    padding-left: 2.5rem !important; /* 왼쪽 패딩 증가하여 아이콘과 텍스트 겹침 방지 */
+  }
+  
+  .search-container-responsive .relative svg,
+  .search-container-responsive svg {
+    left: 0.75rem !important; /* 아이콘 위치 조정 */
+    z-index: 10 !important; /* 아이콘이 텍스트 위에 표시되도록 z-index 설정 */
+  }
+  
+  /* 모바일에서 업체 리스트 세로크기 10% 축소 */
+  .bottom-list-responsive {
+    height: calc((100vh - 80px - 20px - 20px) * 0.9) !important; /* 기존 높이의 90%로 축소 */
+    max-height: calc(450px * 0.9) !important; /* 최대 높이도 90%로 축소 */
+  }
+  
+  /* 모바일에서 지도 영역 조정 (업체 리스트 축소에 맞춰) */
+  .map-wrap {
+    height: calc(100vh - 80px - 20px - calc((100vh - 80px - 20px - 20px) * 0.9) - 20px) !important;
+    min-height: calc(500px * 0.9) !important; /* 최소 높이도 90%로 축소 */
+  }
+  
+  /* 모바일에서 업체 카드 세로길이를 모바일 세로 해상도에 반응하도록 조정 */
+  .store-card-responsive {
+    height: calc((100vh - 80px - 20px - 20px - 60px) / 3) !important; /* 전체 높이에서 헤더, 여백, 푸터를 제외하고 3개 카드로 나눔 */
+    min-height: 200px !important; /* 최소 높이 보장 */
+    max-height: 300px !important; /* 최대 높이 제한 */
+  }
+  
+  /* 모바일에서 카드 이미지 높이를 카드 크기에 맞게 조정 */
+  .store-card-responsive .card-header img,
+  .store-card-responsive .card-header .bg-gray-200 {
+    height: calc((100vh - 80px - 20px - 20px - 60px) / 3 * 0.6) !important; /* 카드 높이의 60% */
+    min-height: 120px !important; /* 최소 이미지 높이 보장 */
+    max-height: 180px !important; /* 최대 이미지 높이 제한 */
+  }
+  
+  /* 모바일에서 카드 내용 영역을 남은 공간에 맞게 조정 */
+  .store-card-responsive .card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0.5rem !important;
+    min-height: 0;
+  }
+  
+  /* 모바일에서 업체 정보 영역을 동적으로 조정 */
+  .store-card-responsive .store-info {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  
+  /* 모바일에서 하단 영역을 카드 하단에 고정 */
+  .store-card-responsive .card-bottom {
+    margin-top: auto;
+    padding-top: 0.25rem;
+    flex-shrink: 0;
+  }
+}
+
+/* 모바일에서 세로스크롤 방지 및 푸터 표시 최적화 */
+@media (max-width: 767px) {
+  /* 전체 앱 컨테이너를 화면 높이에 맞춤 */
+  .frame {
+    height: 100vh !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  /* 지역 선택 화면 모바일 최적화 */
+  .frame.region-page {
+    height: 100vh !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  /* 지역 선택 화면 내부 컨테이너 */
+  .frame.region-page > div {
+    height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+  
+  /* 지역 선택 화면 헤더 섹션 */
+  .region-page .header-section-responsive {
+    flex-shrink: 0 !important;
+    padding: 1rem 0.75rem !important;
+  }
+  
+  /* 지역 선택 화면 메인 컨텐츠 */
+  .region-page .main-content-responsive {
+    flex: 1 !important;
+    padding: 1rem 0.75rem !important;
+    overflow: hidden !important;
+  }
+  
+  /* 지역 그리드 모바일 최적화 */
+  .regions-grid-responsive {
+    height: 100% !important;
+    overflow-y: auto !important;
+    padding: 0.5rem 0 !important;
+  }
+  
+  /* 지역 선택 화면 푸터 */
+  .region-page footer {
+    flex-shrink: 0 !important;
+    margin-top: auto !important;
+    background-color: #ffffff !important;
+    border-top: 1px solid #e5e7eb !important;
+    padding: 0.5rem 0 !important;
+  }
+  
+  /* 업체 검색화면 모바일 최적화 */
+  .frame:not(.region-page) {
+    height: 100vh !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  /* 헤더 영역 고정 */
+  .header-responsive {
+    flex-shrink: 0 !important;
+    z-index: 50 !important;
+  }
+  
+  /* 지도 영역을 남은 공간에 맞춤 */
+  .map-wrap {
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  
+  /* 하단 리스트 영역을 적절한 높이로 조정 */
+  .bottom-list-responsive {
+    flex-shrink: 0 !important;
+    height: auto !important;
+    max-height: 35vh !important; /* 화면 높이의 35%로 제한 */
+    overflow-y: auto !important;
+  }
+  
+  /* 업체 검색화면 푸터 */
+  .frame:not(.region-page) footer {
+    flex-shrink: 0 !important;
+    background-color: #ffffff !important;
+    border-top: 1px solid #e5e7eb !important;
+    padding: 0.5rem 0 !important;
+  }
+  
+  /* 업체 카드 모바일 최적화 */
+  .store-card-responsive {
+    height: auto !important;
+    min-height: 180px !important;
+    max-height: 200px !important;
+  }
+  
+  /* 카드 이미지 높이 조정 */
+  .store-card-responsive .card-header img,
+  .store-card-responsive .card-header .bg-gray-200 {
+    height: 100px !important; /* 모바일에서 이미지 높이 축소 */
+    min-height: 80px !important;
+    max-height: 120px !important;
+  }
+  
+  /* 카드 내용 영역 최적화 */
+  .store-card-responsive .card-content {
+    padding: 0.5rem !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+  }
+  
+  /* 업체 정보 영역 축소 */
+  .store-card-responsive .store-info {
+    margin-bottom: 0.25rem !important;
+  }
+  
+  .store-card-responsive .store-name-address {
+    margin-bottom: 0.25rem !important;
+  }
+  
+  .store-card-responsive .store-name {
+    font-size: 0.75rem !important;
+    margin-bottom: 0.125rem !important;
+  }
+  
+  .store-card-responsive .store-address {
+    font-size: 0.625rem !important;
+  }
+  
+  /* 하단 영역 최적화 */
+  .store-card-responsive .card-bottom {
+    padding-top: 0.25rem !important;
+    margin-top: auto !important;
+  }
+  
+  /* 찾아가기 버튼 모바일 최적화 */
+  .store-card-responsive .route-button {
+    min-width: 45px !important;
+    padding: 0.25rem 0.375rem !important;
+    font-size: 0.625rem !important;
+    height: 1.25rem !important;
+  }
+  
+  .store-card-responsive .route-button svg {
+    width: 0.625rem !important;
+    height: 0.625rem !important;
+  }
+  
+  /* 거리 표시 모바일 최적화 */
+  .store-card-responsive .distance {
+    font-size: 0.625rem !important;
+  }
+  
+  /* 카테고리 칩 모바일 최적화 */
+  .category-chip-responsive {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.75rem !important;
+    height: 36px !important;
+    min-width: 80px !important;
+    border-radius: 18px !important;
+  }
+  
+  /* 검색창 모바일 최적화 */
+  .search-input-responsive {
+    padding: 0.5rem 0.75rem 0.5rem 2.5rem !important;
+    height: 40px !important;
+    font-size: 0.875rem !important;
+  }
+  
+  /* 검색 아이콘 모바일 최적화 */
+  .search-container-responsive .relative svg,
+  .search-container-responsive svg {
+    left: 0.75rem !important;
+    height: 1rem !important;
+    width: 1rem !important;
+  }
+  
+  /* 뒤로가기 버튼 모바일 최적화 */
+  .header-top-responsive .mr-2,
+  .header-top-responsive button {
+    height: 40px !important;
+    width: 40px !important;
+    padding: 0.5rem !important;
+  }
+  
+  .header-top-responsive .mr-2 svg,
+  .header-top-responsive button svg {
+    height: 1.25rem !important;
+    width: 1.25rem !important;
+  }
+}
+
+/* PC 해상도에서 지역 선택 화면 최적화 */
+@media (min-width: 768px) {
+  .frame.region-page {
+    height: 100vh !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  /* 지역 선택 화면 내부 컨테이너 */
+  .frame.region-page > div {
+    height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+  
+
+  
+  /* 지역 선택 화면 메인 컨텐츠 */
+  .region-page .main-content-responsive {
+    flex: 1 !important;
+    padding: 2rem 3rem 1rem 3rem !important;
+    overflow: hidden !important;
+    background-color: #ffffff !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  /* 지역 그리드 PC 최적화 */
+  .regions-grid-responsive {
+    height: 100% !important;
+    overflow-y: auto !important;
+    padding: 1rem 0 !important;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+    gap: 2rem !important;
+    align-content: start !important;
+    max-width: 1920px !important;
+    margin: 0 auto !important;
+    flex: 1 !important;
+  }
+  
+  /* 지역 카드 PC 최적화 */
+  .region-card {
+    background-color: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 1rem !important;
+    padding: 1.5rem 1rem !important;
+    text-align: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease-in-out !important;
+    min-height: 100px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  /* 지역 카드 호버 효과 */
+  .region-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 8px 12px -1px rgba(0, 0, 0, 0.1) !important;
+    border-color: #d1d5db !important;
+  }
+  
+  /* 지역 카드 텍스트 */
+  .region-card span {
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    line-height: 1.25 !important;
+  }
+  
+  /* 지역 선택 화면 푸터 */
+.region-page footer {
+  flex-shrink: 0 !important;
+  margin-top: auto !important;
+  background-color: #ffffff !important;
+  border-top: 1px solid #e5e7eb !important;
+  padding: 0.75rem 0 !important;
+  z-index: 10 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+}
+}
+
+/* 대형 PC 해상도에서 지역 선택 화면 최적화 */
+@media (min-width: 1200px) {
+  .frame.region-page {
+    max-width: 1920px !important;
+    margin: 0 auto !important;
+  }
+  
+  /* 지역 선택 화면 헤더 섹션 */
+  .region-page .header-section-responsive {
+    padding: 3rem 4rem !important;
+  }
+  
+  /* 지역 선택 화면 헤더 제목 */
+  .region-page .header-section-responsive h1 {
+    font-size: 4rem !important;
+  }
+  
+  /* 지역 선택 화면 헤더 부제목 */
+  .region-page .header-section-responsive h2 {
+    font-size: 2.25rem !important;
+    margin-top: 2rem !important;
+  }
+  
+  /* 지역 선택 화면 메인 컨텐츠 */
+  .region-page .main-content-responsive {
+    padding: 3rem 4rem 1.5rem 4rem !important;
+  }
+  
+  /* 지역 그리드 대형 PC 최적화 */
+  .regions-grid-responsive {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    gap: 3rem !important;
+    max-width: 1920px !important;
+  }
+  
+  /* 지역 카드 대형 PC 최적화 */
+  .region-card {
+    padding: 2rem 1.5rem !important;
+    min-height: 120px !important;
+    border-radius: 1.25rem !important;
+  }
+  
+  /* 지역 카드 텍스트 */
+  .region-card span {
+    font-size: 1.25rem !important;
+  }
+  
+  /* 지역 선택 화면 푸터 */
+  .region-page footer {
+    padding: 1rem 0 !important;
+  }
+}
+
+/* Header 컴포넌트의 지역 선택화면 헤더 */
+.header-responsive .bg-carrot {
+  background-color: var(--carrot) !important;
+}
+
+/* 지역 선택 화면 메인 컨텐츠 */
+.region-page .main-content-responsive {
+  flex: 1 !important;
+  padding: 1rem 0.75rem 0.5rem 0.75rem !important;
+  overflow: hidden !important;
+  background-color: #ffffff !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* 지역 그리드 컨테이너 - 푸터와 100px 간격 보장 */
+.region-page .region-grid-container {
+  flex: 1 !important;
+  overflow: visible !important;
+  margin-bottom: 100px !important;
+}
+
+/* 모바일 지역 선택 화면 - 100px 간격 및 푸터 위치 보장 */
+@media (max-width: 767px) {
+  .region-page .region-grid-container {
+    flex: 1 !important;
+    overflow: visible !important;
+    margin-bottom: 100px !important;
+  }
+  
+  .region-page .region-grid-responsive {
+    overflow: visible !important;
+  }
+  
+  .region-page .region-grid-responsive .md\\:hidden {
+    overflow: visible !important;
+  }
+  
+  .region-page .region-grid-responsive .md\\:hidden .bg-white {
+    overflow: visible !important;
+  }
+  
+  /* 푸터가 항상 하단에 표시되도록 보장 */
+  .region-page footer {
+    flex-shrink: 0 !important;
+    background-color: #ffffff !important;
+    border-top: 1px solid #e5e7eb !important;
+    z-index: 10 !important;
+  }
 }

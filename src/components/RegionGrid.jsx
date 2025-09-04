@@ -130,92 +130,152 @@ const RegionGrid = ({ onCitySelect }) => {
   };
 
   return (
-    <div className="bg-white min-h-screen flex flex-col">
-      {/* 상단 헤더 - 여백 완전 제거 */}
-      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 flex-shrink-0">
-        <div className="max-w-6xl mx-auto text-center">
-          <div className="flex items-center justify-center gap-3 mb-3">
-            <h1 className="text-2xl sm:text-3xl font-bold text-primary-text">쓰곳</h1>
-            <div className="w-8 h-8 bg-carrot rounded-full flex items-center justify-center">
-              <MapPin className="w-4 h-4 text-white" />
+    <div className="flex-1 bg-gray-50 region-grid-responsive">
+      {/* 모바일용 이전 UI */}
+      <div className="md:hidden">
+        <div className="bg-white flex flex-col">
+
+
+          {/* 메인 콘텐츠 - 지역 카드 영역만 차지 */}
+          <div className="flex-1 px-4 sm:px-6 lg:px-8">
+            {/* 지역 카드 그리드 */}
+            <div className="grid grid-cols-3 gap-3 max-w-6xl mx-auto">
+              {regions.map((region) => (
+                <Card
+                  key={region.id}
+                  className={`cursor-pointer transition-all duration-200 hover:scale-105 hover:border-carrot hover:shadow-lg ${
+                    selectedRegion?.id === region.id
+                      ? 'ring-2 ring-carrot ring-offset-2'
+                      : nearestRegion?.id === region.id
+                      ? 'ring-2 ring-blue-400 ring-offset-2 bg-blue-50'
+                      : ''
+                  }`}
+                  onClick={() => {
+                    setSelectedRegion(region);
+                    onCitySelect(region.name);
+                  }}
+                >
+                  <CardContent className="p-3 text-center relative">
+                    <CardTitle className="text-sm sm:text-base font-bold mb-0">{region.name}</CardTitle>
+                    
+                    {/* 가장 가까운 지역 표시 */}
+                    {nearestRegion?.id === region.id && (
+                      <div className="absolute top-1 right-1">
+                        <div className="w-4 h-4 bg-blue-400 rounded-full flex items-center justify-center">
+                          <MapPin className="w-2 h-2 text-white" />
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* 선택 표시 */}
+                    {selectedRegion?.id === region.id && (
+                      <div className="mt-2">
+                        <div className="w-4 h-4 bg-carrot rounded-full flex items-center justify-center mx-auto">
+                          <Check className="w-2 h-2 text-white" />
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
             </div>
+
+            {/* 선택된 지역 정보 */}
+            {selectedRegion && (
+              <div className="mt-8 max-w-2xl mx-auto px-4">
+                <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-carrot">
+                  <CardHeader className="text-center pb-3">
+                    <div className="w-16 h-16 bg-carrot rounded-full flex items-center justify-center mx-auto mb-3">
+                      <MapPin className="w-8 h-8 text-white" />
+                    </div>
+                    <CardTitle className="text-xl text-primary-text">
+                      선택된 지역
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-center">
+                    <div className="text-2xl font-bold text-primary-text mb-2">
+                      {selectedRegion.name}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </div>
-          <h2 className="text-lg sm:text-xl font-bold text-primary-text mb-0">
-            지역화폐를 쓸 곳을 선택해주세요
-          </h2>
         </div>
       </div>
 
-      {/* 메인 콘텐츠 - 적절한 간격 조정 */}
-      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-6">
-        {/* 지역 카드 그리드 */}
-        <div className="grid grid-cols-3 gap-3 max-w-6xl mx-auto">
-          {regions.map((region) => (
-            <Card
-              key={region.id}
-              className={`cursor-pointer transition-all duration-200 hover:scale-105 hover:border-carrot hover:shadow-lg ${
-                selectedRegion?.id === region.id
-                  ? 'ring-2 ring-carrot ring-offset-2'
-                  : nearestRegion?.id === region.id
-                  ? 'ring-2 ring-blue-400 ring-offset-2 bg-blue-50'
-                  : ''
-              }`}
-              onClick={() => handleRegionSelect(region)}
-            >
-              <CardContent className="p-3 text-center relative">
-                <CardTitle className="text-sm sm:text-base font-bold mb-0">{region.name}</CardTitle>
-                
-                {/* 가장 가까운 지역 표시 */}
-                {nearestRegion?.id === region.id && (
-                  <div className="absolute top-1 right-1">
-                    <div className="w-4 h-4 bg-blue-400 rounded-full flex items-center justify-center">
-                      <MapPin className="w-2 h-2 text-white" />
+      {/* PC용 현재 UI */}
+      <div className="hidden md:block">
+        {/* 메인 컨텐츠 */}
+        <div className="flex-1 px-4 pb-4 main-content-responsive">
+          {/* 내 위치 기반 추천 */}
+          {nearestRegion && (
+            <div className="mb-6">
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  📍 내 위치 근처 추천
+                </h3>
+                <p className="text-sm text-gray-600">
+                  현재 위치에서 가장 가까운 지역입니다
+                </p>
+              </div>
+              <div className="flex justify-center">
+                <Card 
+                  className="w-full max-w-sm cursor-pointer hover:shadow-lg transition-all duration-200 border-2 border-carrot bg-gradient-to-r from-carrot/5 to-carrot/10"
+                  onClick={() => onCitySelect(nearestRegion.name)}
+                >
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg text-center text-carrot">
+                      {nearestRegion.name}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-carrot rounded-full flex items-center justify-center mx-auto mb-2">
+                        <MapPin className="w-6 h-6 text-white" />
+                      </div>
+                      <p className="text-sm text-gray-600">가장 가까운 지역</p>
                     </div>
-                  </div>
-                )}
-                
-                {/* 선택 표시 */}
-                {selectedRegion?.id === region.id && (
-                  <div className="mt-2">
-                    <div className="w-4 h-4 bg-carrot rounded-full flex items-center justify-center mx-auto">
-                      <Check className="w-2 h-2 text-white" />
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
 
-        {/* 선택된 지역 정보 */}
-        {selectedRegion && (
-          <div className="mt-8 max-w-2xl mx-auto px-4">
-            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-carrot">
-              <CardHeader className="text-center pb-3">
-                <div className="w-16 h-16 bg-carrot rounded-full flex items-center justify-center mx-auto mb-3">
-                  <MapPin className="w-8 h-8 text-white" />
-                </div>
-                <CardTitle className="text-xl text-primary-text">
-                  선택된 지역
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center">
-                <div className="text-2xl font-bold text-primary-text mb-2">
-                  {selectedRegion.name}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* 푸터 */}
-        <footer className="mt-auto pt-8 pb-4">
-          <div className="max-w-6xl mx-auto px-4 text-center">
-            <p className="text-xs text-gray-500">
-              © kai.jeong — Contact: kai.jeong0@gmail.com
+          {/* 지역 그리드 */}
+          <div className="text-center mb-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              🗺️ 그 외 지역
+            </h3>
+            <p className="text-sm text-gray-600">
+              지역화폐를 사용할 지역을 선택해 주세요
             </p>
           </div>
-        </footer>
+          
+          <div className="grid grid-cols-2 gap-3 regions-grid-responsive">
+            {regions.filter(region => region.id !== nearestRegion?.id).map(region => (
+              <Card
+                key={region.id}
+                className="cursor-pointer transition-all duration-200 hover:shadow-md hover:border-carrot/50"
+                onClick={() => {
+                  setSelectedRegion(region);
+                  onCitySelect(region.name);
+                }}
+              >
+                <CardContent className="p-4 text-center">
+                  <div className="font-medium text-sm text-gray-900">
+                    {region.name}
+                  </div>
+                  {selectedRegion?.id === region.id && (
+                    <div className="mt-2">
+                      <Check className="w-4 h-4 text-carrot mx-auto" />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

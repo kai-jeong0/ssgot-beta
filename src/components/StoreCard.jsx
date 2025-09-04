@@ -10,12 +10,15 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
   const [showTransitModal, setShowTransitModal] = useState(false);
   
   const onImgError = (e) => {
+    console.warn(`⚠️ 이미지 로딩 실패: ${store.name}`, e.currentTarget.src);
     setImageError(true);
-    e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect width='100%25' height='100%25' fill='%23f2f2f2'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E";
+    // 기본 이미지로 fallback
+    e.currentTarget.src = `https://picsum.photos/seed/${encodeURIComponent(store.name)}/400/300`;
   };
 
   const onImgLoad = () => {
     setImageLoaded(true);
+    console.log(`✅ 이미지 로딩 성공: ${store.name}`);
   };
 
   // 이동수단 선택 처리
@@ -44,17 +47,25 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
   return (
     <>
     <Card
-      className={`cursor-pointer transition-all duration-200 hover:scale-105 h-full ${
+      className={`cursor-pointer transition-all duration-200 hover:scale-105 h-full store-card-responsive ${
         isSelected ? 'ring-2 ring-carrot ring-offset-2 border-carrot' : ''
       }`}
       data-card-id={store.id}
       onClick={() => onSelect(store)}
     >
-      <CardHeader className="p-0">
+      <CardHeader className="p-0 card-header">
         <div className="relative">
           {!imageLoaded && !imageError && (
             <div className="w-full h-32 bg-gray-200 rounded-t-xl flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-carrot"></div>
+            </div>
+          )}
+          {imageError && (
+            <div className="w-full h-32 bg-gray-200 rounded-t-xl flex items-center justify-center">
+              <div className="text-center text-gray-500">
+                <div className="text-2xl mb-1">🏪</div>
+                <div className="text-xs">이미지 없음</div>
+              </div>
             </div>
           )}
           <img 
@@ -63,9 +74,9 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
             onError={onImgError}
             onLoad={onImgLoad}
             className={`w-full h-32 object-cover rounded-t-xl transition-opacity duration-300 ${
-              imageLoaded ? 'opacity-100' : 'opacity-0'
+              imageLoaded && !imageError ? 'opacity-100' : 'opacity-0'
             }`}
-            style={{ display: imageLoaded ? 'block' : 'none' }}
+            style={{ display: (imageLoaded && !imageError) ? 'block' : 'none' }}
           />
           <div className="absolute top-2 left-2">
             <Badge variant={categoryInfo.color} className="text-xs">
@@ -82,39 +93,39 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
         </div>
       </CardHeader>
       
-      <CardContent className="p-3">
-        <div className="space-y-2">
-          <div>
-            <h3 className="font-bold text-primary-text text-sm mb-1 truncate" title={store.name}>
+      <CardContent className="p-3 card-content">
+        <div className="space-y-2 store-info">
+          <div className="store-name-address">
+            <h3 className="font-bold text-primary-text text-sm mb-1 truncate store-name" title={store.name}>
               {store.name}
             </h3>
             {store.address && (
-              <div className="flex items-start gap-1 text-xs text-primary-body">
+              <div className="flex items-start gap-1 text-xs text-primary-body store-address">
                 <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
                 <span className="truncate" title={store.address}>{store.address}</span>
               </div>
             )}
           </div>
-          
-          <div className="flex items-center justify-between">
-            {store.distance && (
-              <span className="text-xs text-primary-body">
-                {store.distance}m
-              </span>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowTransitModal(true);
-              }}
-              className="flex items-center gap-1 text-xs px-2 py-1 h-6"
-            >
-              <Navigation className="w-3 h-3" />
-              찾아가기
-            </Button>
-          </div>
+        </div>
+        
+        <div className="flex items-center justify-between card-bottom">
+          {store.distance && (
+            <span className="text-xs text-primary-body distance">
+              {store.distance}m
+            </span>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowTransitModal(true);
+            }}
+            className="flex items-center gap-1 text-xs px-2 py-1 h-6 route-button"
+          >
+            <Navigation className="w-3 h-3" />
+            찾아가기
+          </Button>
         </div>
       </CardContent>
     </Card>

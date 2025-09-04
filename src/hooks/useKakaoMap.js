@@ -39,7 +39,9 @@ const validateApiKey = (key) => {
   return true;
 };
 
-export default function useKakaoMap(mode) {
+export default function useKakaoMap(mode, key = 'default') {
+  console.log('🔄 useKakaoMap 훅 실행, mode:', mode, 'key:', key);
+  
   const [kakaoObj, setKakaoObj] = useState(null);
   const [map, setMap] = useState(null);
   const [markers, setMarkers] = useState([]);
@@ -47,6 +49,11 @@ export default function useKakaoMap(mode) {
   const [currentInfo, setCurrentInfo] = useState(null);
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
   const mapRef = useRef(null);
+
+  // mode 변경 감지
+  useEffect(() => {
+    console.log('🔄 mode 변경 감지:', mode, 'key:', key);
+  }, [mode, key]);
 
   // 카카오맵 SDK 로드
   const loadKakao = (key) => {
@@ -188,28 +195,27 @@ export default function useKakaoMap(mode) {
       mapRefElement: mapRef.current
     });
     
-    // 환경 변수 디버깅 (임시)
-    console.log('🔍 환경 변수 상태:', {
-      VITE_KAKAO_JS_KEY: import.meta.env.VITE_KAKAO_JS_KEY,
-      __KAKAO_API_KEY__: typeof __KAKAO_API_KEY__ !== 'undefined' ? __KAKAO_API_KEY__ : 'undefined',
-      mode: import.meta.env.MODE,
-      dev: import.meta.env.DEV,
-      prod: import.meta.env.PROD,
-      currentKey: KAKAO_JAVASCRIPT_KEY ? KAKAO_JAVASCRIPT_KEY.substring(0, 10) + '...' : 'undefined'
-    });
-    
-    if (!kakaoObj) {
-      console.log('❌ kakaoObj가 없음 - 지도 초기화 건너뜀');
-      return;
-    }
-    
+    // mode가 map이 아니면 지도 초기화 건너뜀
     if (mode !== 'map') {
       console.log('❌ mode가 map이 아님:', mode, '- 지도 초기화 건너뜀');
       return;
     }
     
+    // kakaoObj가 없으면 지도 초기화 건너뜀
+    if (!kakaoObj) {
+      console.log('❌ kakaoObj가 없음 - 지도 초기화 건너뜀');
+      return;
+    }
+    
+    // mapRef가 없으면 지도 초기화 건너뜀
     if (!mapRef.current) {
       console.error('❌ mapRef.current가 없음 - 지도 초기화 건너뜀');
+      return;
+    }
+    
+    // 이미 지도가 있으면 초기화 건너뜀
+    if (map) {
+      console.log('✅ 이미 지도가 존재함 - 초기화 건너뜀');
       return;
     }
     
@@ -247,10 +253,15 @@ export default function useKakaoMap(mode) {
         console.log('✅ 지도 생성 완료:', newMap);
         
         setMap(newMap);
+        console.log('✅ 지도 상태 업데이트 완료');
         
         // 지도 로드 완료 이벤트 리스너 추가
         kakaoObj.maps.event.addListener(newMap, 'tilesloaded', () => {
           console.log('✅ 지도 타일 로드 완료');
+          // 지도 로드 완료 후 현재 위치 표시 (stores 데이터는 나중에 전달됨)
+          setTimeout(() => {
+            getCurrentLocation();
+          }, 500);
         });
         
         kakaoObj.maps.event.addListener(newMap, 'zoom_changed', () => {
@@ -268,83 +279,195 @@ export default function useKakaoMap(mode) {
         });
       }
     }, 100); // 100ms 지연으로 DOM 마운트 완료 보장
-  }, [kakaoObj, mode]);
+  }, [kakaoObj, mode, key]);
 
   // 마커 관리 (성능 최적화)
   const updateMarkers = (stores, onMarkerClick, showInfoWindow = false, selectedId = null) => {
-    if (!map || !kakaoObj) return;
+    if (!map || !kakaoObj) {
+      console.warn('⚠️ 마커 업데이트 실패: map 또는 kakaoObj가 없음');
+      return;
+    }
+    
+    if (!stores || !Array.isArray(stores) || stores.length === 0) {
+      console.warn('⚠️ 마커 업데이트 실패: 유효하지 않은 stores 데이터');
+      // 기존 마커 제거
+      markers.forEach(mk => mk.setMap(null));
+      setMarkers([]);
+      setMarkerMap({});
+      setSelectedMarkerId(null);
+      return;
+    }
     
     console.log(`마커 업데이트 시작: ${stores.length}개 업체, 선택된 ID: ${selectedId}`);
+    console.log('📍 지도 객체:', map);
+    console.log('📍 카카오 객체:', kakaoObj);
+    
+    // 업체 데이터 유효성 검사
+    const validStores = stores.filter(store => {
+      if (!store || !store.id || !store.name || 
+          typeof store.lat !== 'number' || typeof store.lng !== 'number' ||
+          isNaN(store.lat) || isNaN(store.lng)) {
+        console.warn('⚠️ 유효하지 않은 업체 데이터:', store);
+        return false;
+      }
+      return true;
+    });
+    
+    if (validStores.length === 0) {
+      console.warn('⚠️ 유효한 업체 데이터가 없음');
+      // 기존 마커 제거
+      markers.forEach(mk => mk.setMap(null));
+      setMarkers([]);
+      setMarkerMap({});
+      setSelectedMarkerId(null);
+      return;
+    }
+    
+    console.log(`📍 유효한 업체: ${validStores.length}개`);
     
     // 기존 마커 제거
     markers.forEach(mk => mk.setMap(null));
+    console.log(`📍 기존 마커 ${markers.length}개 제거 완료`);
     
-    // 기본 마커 이미지 (쓰곳 커스텀 아이콘)
-    const defaultMarker = new kakaoObj.maps.MarkerImage(
-      '/assets/marker-default.svg',
-      new kakaoObj.maps.Size(48, 49),
-      { offset: new kakaoObj.maps.Point(24, 49) }
-    );
+    // SVG 마커 이미지 생성 (일반적인 카카오맵 마커 방식)
+    const createMarkerImage = (svgPath) => {
+      try {
+        return new kakaoObj.maps.MarkerImage(
+          svgPath,
+          new kakaoObj.maps.Size(32, 32),
+          { offset: new kakaoObj.maps.Point(16, 32) }
+        );
+      } catch (error) {
+        console.error('⚠️ 마커 이미지 생성 실패:', error);
+        return null;
+      }
+    };
     
-    // 선택된 마커 이미지 (쓰곳 커스텀 선택 아이콘)
-    const selectedMarker = new kakaoObj.maps.MarkerImage(
-      '/assets/marker-selected.svg',
-      new kakaoObj.maps.Size(48, 49),
-      { offset: new kakaoObj.maps.Point(24, 49) }
-    );
+    // 마커 이미지 생성
+    const defaultMarker = createMarkerImage('/assets/marker-default.svg');
+    const selectedMarker = createMarkerImage('/assets/marker-selected.svg');
+    const unselectedMarker = createMarkerImage('/assets/marker-unselected.svg');
+    
+    if (!defaultMarker || !selectedMarker || !unselectedMarker) {
+      console.error('❌ 마커 이미지 생성 실패');
+      return;
+    }
     
     const mm = {};
-    const newMarkers = stores.map(store => {
-      // 선택된 업체인지 확인하여 마커 이미지 결정
-      const isSelected = selectedId === store.id;
-      const markerImage = isSelected ? selectedMarker : defaultMarker;
-      
-      const marker = new kakaoObj.maps.Marker({
-        position: new kakaoObj.maps.LatLng(store.lat, store.lng),
-        title: store.name,
-        image: markerImage
-      });
-      
-      marker.setMap(map);
-      
-      // 마커 클릭 이벤트
-      kakaoObj.maps.event.addListener(marker, 'click', () => {
-        console.log(`🎯 마커 클릭: ${store.name} (ID: ${store.id})`);
+    const newMarkers = validStores.map(store => {
+      try {
+        // 선택된 업체인지 확인하여 마커 이미지 결정
+        const isSelected = selectedId === store.id;
+        let markerImage;
         
-        // 기존 정보창 닫기
-        if (currentInfo) {
-          currentInfo.close();
-          setCurrentInfo(null);
+        if (isSelected) {
+          markerImage = selectedMarker;
+        } else {
+          // 선택되지 않은 마커는 약하게 표시
+          markerImage = unselectedMarker;
         }
         
-        // 모든 마커를 기본 이미지로 리셋
-        Object.values(mm).forEach(m => {
-          m.setImage(defaultMarker);
+        const marker = new kakaoObj.maps.Marker({
+          position: new kakaoObj.maps.LatLng(store.lat, store.lng),
+          title: store.name,
+          image: markerImage
         });
         
-        // 현재 마커를 선택된 이미지로 강조
-        marker.setImage(selectedMarker);
-        setSelectedMarkerId(store.id);
+        console.log(`📍 마커 생성: ${store.name}`, {
+          position: { lat: store.lat, lng: store.lng },
+          isSelected,
+          markerImage: markerImage ? '설정됨' : '설정되지 않음'
+        });
         
-        // 콜백 실행 (하단 리스트 앵커링)
-        onMarkerClick(store);
+        // 마커에 CSS 클래스 추가
+        if (isSelected) {
+          marker.setZIndex(1000); // 선택된 마커를 위에 표시
+        } else {
+          marker.setZIndex(100);
+        }
         
-        console.log(`📍 ${store.name} 마커 하이라이팅 완료`);
-      });
-      
-      mm[store.id] = marker;
-      return marker;
+        // 마커에 store 정보 저장
+        marker.__store = store;
+        
+        marker.setMap(map);
+        
+        console.log(`📍 마커 지도에 추가 완료: ${store.name}`);
+        
+        // 마커 클릭 이벤트
+        kakaoObj.maps.event.addListener(marker, 'click', (e) => {
+          console.log('🎯 마커 클릭 이벤트 발생!');
+          console.log('🎯 이벤트 객체:', e);
+          console.log(`🎯 마커 클릭: ${store.name} (ID: ${store.id})`);
+          
+          // 기존 정보창 닫기
+          if (currentInfo) {
+            currentInfo.close();
+            setCurrentInfo(null);
+          }
+          
+          // 모든 마커를 unselected 상태로 리셋
+          Object.values(mm).forEach(m => {
+            if (m && m !== marker) {
+              m.setImage(unselectedMarker);
+              m.setZIndex(100);
+              console.log(`📍 마커 리셋: ${m.__store?.name || 'unknown'}`);
+            }
+          });
+          
+          // 현재 마커를 선택된 이미지로 강조
+          marker.setImage(selectedMarker);
+          marker.setZIndex(1000); // 선택된 마커를 위에 표시
+          setSelectedMarkerId(store.id);
+          
+          // 콜백 실행 (하단 리스트 앵커링)
+          if (onMarkerClick && typeof onMarkerClick === 'function') {
+            onMarkerClick(store);
+            console.log('✅ onMarkerClick 콜백 실행 완료');
+          } else {
+            console.warn('⚠️ onMarkerClick 콜백이 함수가 아님:', onMarkerClick);
+          }
+          
+          console.log(`📍 ${store.name} 마커 하이라이팅 완료`);
+          console.log(`📍 현재 선택된 마커 ID: ${store.id}`);
+          console.log(`📍 총 마커 수: ${Object.keys(mm).length}`);
+        });
+        
+        mm[store.id] = marker;
+        return marker;
+      } catch (error) {
+        console.error(`❌ 마커 생성 실패 (${store.name}):`, error);
+        return null;
+      }
+    }).filter(Boolean); // null 값 제거
+    
+    // 선택 상태 업데이트 - 모든 마커를 먼저 unselected로 설정
+    Object.values(mm).forEach(m => {
+      m.setImage(unselectedMarker);
+      m.setZIndex(100);
+      console.log(`📍 마커 초기 상태 설정: ${m.__store.name}`);
     });
     
-    // 선택 상태 업데이트
+    // 선택된 마커가 있으면 해당 마커만 강조
     if (selectedId) {
       setSelectedMarkerId(selectedId);
+      
+      const selectedMarkerObj = mm[selectedId];
+      if (selectedMarkerObj) {
+        selectedMarkerObj.setImage(selectedMarker);
+        selectedMarkerObj.setZIndex(1000);
+        console.log(`📍 선택된 마커 강조: ${selectedMarkerObj.__store.name}`);
+      }
+    } else {
+      setSelectedMarkerId(null);
     }
     
     setMarkers(newMarkers);
     setMarkerMap(mm);
     
-    console.log(`마커 업데이트 완료: ${newMarkers.length}개 마커 생성, 선택된 마커 하이라이팅 완료`);
+    console.log(`📍 마커 업데이트 완료: ${newMarkers.length}개 마커 생성`);
+    console.log('📍 생성된 마커들:', newMarkers);
+    console.log('📍 마커 맵:', Object.keys(mm));
+    console.log('📍 선택된 마커 하이라이팅 완료');
   };
 
   // 마커 강조 해제
@@ -353,21 +476,136 @@ export default function useKakaoMap(mode) {
     
     console.log('마커 강조 해제 시작');
     
-    // 기본 마커 이미지 생성
-    const defaultMarker = new kakaoObj.maps.MarkerImage(
-      '/assets/marker-default.svg',
-      new kakaoObj.maps.Size(48, 49),
-      { offset: new kakaoObj.maps.Point(24, 49) }
-    );
+    // SVG 마커 이미지 생성 (일반적인 카카오맵 마커 방식)
+    const createMarkerImage = (svgPath) => {
+      try {
+        return new kakaoObj.maps.MarkerImage(
+          svgPath,
+          new kakaoObj.maps.Size(32, 32),
+          { offset: new kakaoObj.maps.Point(16, 32) }
+        );
+      } catch (error) {
+        console.error('⚠️ 마커 이미지 생성 실패:', error);
+        return null;
+      }
+    };
     
-    Object.values(markerMap).forEach(marker => {
-      marker.setImage(defaultMarker);
-    });
+    const unselectedMarker = createMarkerImage('/assets/marker-unselected.svg');
+    
+    if (!unselectedMarker) {
+      console.error('❌ unselected 마커 이미지 생성 실패');
+      return;
+    }
+    
+    // markerMap 상태를 사용하여 마커 리셋
+    if (markerMap && Object.keys(markerMap).length > 0) {
+      Object.values(markerMap).forEach(marker => {
+        if (marker && marker.setImage) {
+          marker.setImage(unselectedMarker);
+          marker.setZIndex(100); // Z-인덱스도 리셋
+          console.log(`📍 마커 강조 해제: ${marker.__store?.name || 'unknown'}`);
+        }
+      });
+      console.log(`마커 강조 해제 완료 - ${Object.keys(markerMap).length}개 마커를 unselected 마커로 표시`);
+    } else {
+      console.log('마커 강조 해제 완료 - 마커가 없음');
+    }
     
     // 선택 상태 리셋
     setSelectedMarkerId(null);
+  };
+
+  // 현재 위치 가져오기 및 표시
+  const getCurrentLocation = () => {
+    if (!map || !kakaoObj) return;
     
-    console.log('마커 강조 해제 완료');
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const location = new kakaoObj.maps.LatLng(latitude, longitude);
+          
+          console.log('📍 현재 위치 획득:', { latitude, longitude });
+          
+          // 현재 위치 마커 생성 (SVG 사용)
+          const createCurrentLocationMarker = () => {
+            return new kakaoObj.maps.MarkerImage(
+              '/assets/marker-current-location.svg',
+              new kakaoObj.maps.Size(32, 32),
+              { offset: new kakaoObj.maps.Point(16, 32) }
+            );
+          };
+          
+          // 새 현재 위치 마커 생성
+          const newCurrentLocationMarker = new kakaoObj.maps.Marker({
+            position: location,
+            map: map,
+            image: createCurrentLocationMarker(),
+            zIndex: 1000
+          });
+          
+          // 현재 위치 마커 클릭 이벤트 추가
+          kakaoObj.maps.event.addListener(newCurrentLocationMarker, 'click', () => {
+            console.log('📍 현재 위치 마커 클릭 - 1km 반경내 업체 필터링 시작');
+            
+            // 1km 반경내 업체만 필터링
+            const nearbyStores = stores.filter(store => {
+              const storeLocation = new kakaoObj.maps.LatLng(store.lat, store.lng);
+              const distance = kakaoObj.maps.geometry.distance(location, storeLocation);
+              return distance <= radius;
+            });
+            
+            console.log(`📍 1km 반경내 업체: ${nearbyStores.length}개`);
+            
+            // 1km 반경내 업체만 필터링하여 마커 업데이트
+            // 이 함수는 외부에서 호출되어야 하므로 콜백으로 처리
+            if (window.onCurrentLocationClick) {
+              window.onCurrentLocationClick(location, 1000);
+            }
+          });
+          
+          // 1km 반경 원 생성
+          const newCurrentLocationCircle = new kakaoObj.maps.Circle({
+            center: location,
+            radius: 1000, // 1km로 증가
+            strokeWeight: 2,
+            strokeColor: '#3B82F6',
+            strokeOpacity: 0.8,
+            strokeStyle: 'dashed',
+            fillColor: '#3B82F6',
+            fillOpacity: 0.1,
+            map: map,
+            zIndex: 999
+          });
+          
+          // 현재 위치 텍스트 라벨 추가
+          const currentLocationLabel = new kakaoObj.maps.InfoWindow({
+            content: '<div style="padding: 5px; background: #3B82F6; color: white; border-radius: 4px; font-size: 12px; font-weight: bold;">내 위치</div>',
+            position: location,
+            zIndex: 1001
+          });
+          
+          // 라벨을 마커 위에 표시
+          currentLocationLabel.open(map, newCurrentLocationMarker);
+          
+          // 지도 중심을 현재 위치로 이동 (첫 로드 시에만)
+          if (!map.getCenter().equals(location)) {
+            map.setCenter(location);
+            map.setLevel(4);
+          }
+        },
+        (error) => {
+          console.warn('⚠️ 위치 정보를 가져올 수 없습니다:', error.message);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
+        }
+      );
+    } else {
+      console.warn('⚠️ 이 브라우저는 위치 정보를 지원하지 않습니다');
+    }
   };
 
   return {
@@ -379,6 +617,7 @@ export default function useKakaoMap(mode) {
     currentInfo,
     selectedMarkerId,
     updateMarkers,
-    clearMarkerHighlight
+    clearMarkerHighlight,
+    getCurrentLocation
   };
 };

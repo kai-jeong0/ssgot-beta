@@ -43,13 +43,38 @@ export default function App() {
   const enableDebugTopo = false; // TopoJSON 디버그 페이지 비활성화 (서비스 모드)
   
   const headerRef = useRef(null);
-  const radius = 500;
+  const radius = 1000; // 1km로 수정
 
   // 서비스 모드: 디버그 라우팅 비활성화
 
   // 커스텀 훅 사용
   const { stores, filtered, loading, loadStoresByCity, setFiltered } = useStores();
-  const { kakaoObj, map, mapRef, markers, markerMap, updateMarkers, clearMarkerHighlight, selectedMarkerId } = useKakaoMap(mode);
+  const { kakaoObj, map, mapRef, markers, markerMap, updateMarkers, clearMarkerHighlight, selectedMarkerId } = useKakaoMap(mode, mode === 'map' ? 'map-active' : 'map-inactive');
+
+  // mode 변경 감지 및 디버깅
+  useEffect(() => {
+    console.log('🏙️ App.jsx에서 mode 변경 감지:', mode);
+    console.log('🏙️ kakaoObj 상태:', !!kakaoObj);
+    console.log('🏙️ map 상태:', !!map);
+    
+    // DOM 렌더링 상태 확인
+    setTimeout(() => {
+      const frameElement = document.querySelector('.frame');
+      console.log('🏙️ DOM 렌더링 상태 확인:');
+      console.log('- frame 요소:', !!frameElement);
+      console.log('- frame 클래스:', frameElement?.className);
+      console.log('- body 직계 자식:', Array.from(document.body.children).map(child => ({
+        tagName: child.tagName,
+        className: child.className,
+        id: child.id
+      })));
+    }, 100);
+    
+    // mode가 map으로 변경되었는데 map이 없으면 강제로 useKakaoMap 재실행
+    if (mode === 'map' && !map && kakaoObj) {
+      console.log('🏙️ mode가 map인데 map이 없음 - useKakaoMap 재실행 필요');
+    }
+  }, [mode, kakaoObj, map]);
 
   // 마커에 길찾기 기능 설정
   useEffect(() => {
@@ -79,6 +104,52 @@ export default function App() {
     setFiltered(stores.filter(s => s.name && s.name.includes(query)));
   }, [searchName, stores, setFiltered]);
 
+  // 현재 위치 마커 클릭 시 1km 반경내 업체 필터링
+  useEffect(() => {
+    window.onCurrentLocationClick = (location, radius) => {
+      console.log('📍 현재 위치 마커 클릭 - 1km 반경내 업체 필터링 시작');
+      
+      if (!kakaoObj || !map || !stores || stores.length === 0) {
+        console.warn('⚠️ 필터링을 위한 데이터가 준비되지 않았습니다');
+        return;
+      }
+      
+      // 1km 반경내 업체만 필터링
+      const nearbyStores = stores.filter(store => {
+        const storeLocation = new kakaoObj.maps.LatLng(store.lat, store.lng);
+        const distance = kakaoObj.maps.geometry.distance(location, storeLocation);
+        return distance <= radius;
+      });
+      
+      console.log(`📍 1km 반경내 업체: ${nearbyStores.length}개`);
+      
+      // 필터링된 업체로 상태 업데이트
+      setFiltered(nearbyStores);
+      
+      // 마커 업데이트
+      if (updateMarkers) {
+        updateMarkers(nearbyStores, (store) => {
+          setSelectedId(store.id);
+          // 하단 리스트에서 해당 업체로 즉시 스크롤
+          const el = document.querySelector(`[data-card-id="${CSS.escape(store.id)}"]`);
+          if (el) {
+            el.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
+          }
+        }, false, null);
+      }
+      
+      // 지도 중심을 현재 위치로 이동
+      map.setCenter(location);
+      map.setLevel(4);
+      
+      console.log('✅ 현재 위치 기반 필터링 완료');
+    };
+    
+    return () => {
+      delete window.onCurrentLocationClick;
+    };
+  }, [kakaoObj, map, stores, updateMarkers]);
+
   // 카테고리 필터링 (학원 카테고리 포함)
   const finalShown = useMemo(() => {
     let result = filtered;
@@ -103,6 +174,24 @@ export default function App() {
     console.log('최종 결과:', result.length);
     return result;
   }, [filtered, isNearbyEnabled, myPos, circle, radius, category]);
+
+  // finalShown이 변경될 때마다 마커 업데이트
+  useEffect(() => {
+    if (map && kakaoObj && finalShown && finalShown.length > 0) {
+      console.log('🔄 finalShown 변경으로 마커 업데이트:', finalShown.length);
+      updateMarkers(finalShown, (selectedStore) => {
+        setSelectedId(selectedStore.id);
+        // 하단 리스트에서 해당 업체로 즉시 스크롤
+        const el = document.querySelector(`[data-card-id="${CSS.escape(selectedStore.id)}"]`);
+        if (el) {
+          el.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
+        }
+      }, false, selectedId);
+    } else if (map && kakaoObj && (!finalShown || finalShown.length === 0)) {
+      console.log('🔄 업체가 없어서 마커 강조 해제');
+      clearMarkerHighlight();
+    }
+  }, [finalShown, map, kakaoObj, updateMarkers, selectedId, clearMarkerHighlight]);
 
   // 지도 이동 감지 및 재검색 버튼 표시
   useEffect(() => {
@@ -171,20 +260,29 @@ export default function App() {
 
   // 마커 업데이트 (성능 최적화)
   useEffect(() => {
-    if (finalShown.length > 0) {
-      console.log(`마커 업데이트: ${finalShown.length}개 업체`);
-      updateMarkers(finalShown, (store) => {
-        setSelectedId(store.id);
-        // 하단 리스트에서 해당 업체로 즉시 스크롤 (애니메이션 제거)
-        const el = document.querySelector(`[data-card-id="${CSS.escape(store.id)}"]`);
-        if (el) {
-          el.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
-        }
-      }, false, selectedId); // 정보창 표시 비활성화, selectedId 전달
+    if (finalShown && finalShown.length > 0 && map && kakaoObj) {
+      console.log(`🔄 마커 업데이트 실행: ${finalShown.length}개 업체`);
       
-              // 첫 번째 업체가 선택되지 않은 경우 자동 선택
-        if (!selectedId && finalShown.length > 0) {
-          const firstStore = finalShown[0];
+      // 업체 데이터 유효성 검사
+      const validStores = finalShown.filter(store => 
+        store && store.id && store.name && 
+        typeof store.lat === 'number' && typeof store.lng === 'number' &&
+        !isNaN(store.lat) && !isNaN(store.lng)
+      );
+      
+      if (validStores.length > 0) {
+        updateMarkers(validStores, (store) => {
+          setSelectedId(store.id);
+          // 하단 리스트에서 해당 업체로 즉시 스크롤 (애니메이션 제거)
+          const el = document.querySelector(`[data-card-id="${CSS.escape(store.id)}"]`);
+          if (el) {
+            el.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
+          }
+        }, false, selectedId); // 정보창 표시 비활성화, selectedId 전달
+        
+        // 첫 번째 업체가 선택되지 않은 경우 자동 선택
+        if (!selectedId && validStores.length > 0) {
+          const firstStore = validStores[0];
           setSelectedId(firstStore.id);
           console.log(`🎯 첫 번째 업체 자동 선택:`, firstStore.name);
           
@@ -195,19 +293,30 @@ export default function App() {
             console.log(`📍 ${firstStore.name} 하단 리스트 앵커링 완료`);
           }
         }
+      } else {
+        console.warn('⚠️ 유효한 업체 데이터가 없음');
+        if (clearMarkerHighlight) {
+          clearMarkerHighlight();
+        }
+      }
     } else {
       // 업체가 없으면 마커 강조 해제
-      if (kakaoObj && map) {
-        console.log('업체가 없어서 마커 강조 해제');
+      if (kakaoObj && map && clearMarkerHighlight) {
+        console.log('🔄 업체가 없어서 마커 강조 해제');
         clearMarkerHighlight();
       }
     }
-  }, [finalShown, updateMarkers, kakaoObj, map, markerMap, selectedId]);
+  }, [finalShown, map, kakaoObj, updateMarkers, clearMarkerHighlight]);
 
   // 도시 선택
   const enterCity = async (city) => {
+    console.log('🏙️ 도시 선택 시작:', city);
+    console.log('🏙️ 현재 mode:', mode);
+    
     setSelectedCity(city);
     setMode('map');
+    console.log('🏙️ mode를 map으로 변경');
+    
     setCategory('all');
     setSelectedId(null);
     setShowResearchButton(false);
@@ -230,6 +339,13 @@ export default function App() {
         
         // 마커 강조 처리는 useEffect에서 자동으로 처리됨
         console.log(`📍 ${firstStore.name} 마커 강조 처리 준비 완료`);
+        
+        // 현재 위치 표시 (stores 데이터가 로드된 후)
+        if (getCurrentLocation) {
+          setTimeout(() => {
+            getCurrentLocation(loadedStores);
+          }, 1000);
+        }
       }
       
       // 첫 번째 업체로 하단 리스트 앵커링 (즉시)
@@ -448,7 +564,7 @@ export default function App() {
     if (!selectedStore) return;
     
     // 이동수단을 routeType에 맞게 설정
-    let newTransitMode = transitMode;
+    let newTransitMode = '자차';
     switch (routeType) {
       case 'walk':
         newTransitMode = '도보';
@@ -461,8 +577,6 @@ export default function App() {
         break;
     }
     
-    setTransitMode(newTransitMode);
-    
     // 딥링크 길찾기 실행
     await handleDirections(selectedStore, newTransitMode);
     
@@ -471,7 +585,7 @@ export default function App() {
   };
 
   return (
-    <div className="frame">
+    <div className={`frame ${mode === 'region' ? 'region-page' : ''}`}>
       <Header
         mode={mode}
         searchName={searchName}
@@ -488,46 +602,37 @@ export default function App() {
             <DebugTopo />
           ) : enableNaverStyleTest ? (
             <NaverStyleTest />
-          ) : enableNaverStylePicker ? (
-            <div className="min-h-screen bg-gray-50 flex flex-col">
-              {/* 네이버 스타일 지역 선택 */}
-              <NaverStyleRegionPicker 
-                initialProvince="경기도"
-                onSelect={(selection) => {
-                  console.log('🎯 최종 선택:', selection);
-                  // 읍면동 단위로 지역화폐 상점 검색
-                  const cityName = selection.emd.name;
-                  enterCity(cityName);
-                }}
-                className="flex-1"
-              />
-            </div>
-          ) : enableGyeonggiPicker ? (
-            <div className="min-h-screen bg-gray-50 flex flex-col">
-              {/* 헤더 섹션 */}
-              <div className="bg-white py-8 px-4 text-center border-b">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">쓰곳</h1>
-                <p className="text-sm sm:text-base text-gray-600">지역화폐 쓰는 곳</p>
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mt-6">
-                  💰 오늘은 어디서 지역화폐를 써볼까?
-                </h2>
-              </div>
-              
-              {/* 메인 컨텐츠 */}
-              <div className="flex-1 py-8 px-4">
-                <RegionPickerGyeonggi 
-                  onSelectCity={(city) => {
-                    console.log('선택된 도시:', city);
-                    enterCity(city.label); // 기존 enterCity 함수 사용
-                  }}
-                  className="mb-8"
-                />
-              </div>
-              
-              {/* 푸터는 기존 위치에서 렌더링됨 */}
-            </div>
           ) : (
-            <RegionGrid onCitySelect={enterCity} />
+            <div className="min-h-screen bg-white flex flex-col">
+              {/* 메인 컨텐츠 */}
+              <div className="flex-1 px-4 main-content-responsive">
+                <div className="text-center mb-2">
+                  <p className="text-2xl font-bold text-gray-600">지역화폐를 쓸 곳을 선택해주세요.</p>
+                </div>
+                {enableNaverStylePicker ? (
+                  <RegionPickerGyeonggi 
+                    onSelectCity={(city) => {
+                      console.log('선택된 도시:', city);
+                      enterCity(city.label); // 기존 enterCity 함수 사용
+                    }}
+                    className="mb-8"
+                  />
+                ) : (
+                  <div className="region-grid-container">
+                    <RegionGrid onCitySelect={enterCity} />
+                  </div>
+                )}
+              </div>
+              
+              {/* 지역 선택 화면 푸터 - 업체 검색화면과 동일한 스타일 */}
+              <footer className="bg-white border-t border-gray-200 py-2 flex-shrink-0">
+                <div className="max-w-6xl mx-auto px-4 text-center">
+                  <p className="text-xs text-gray-500">
+                    © kai.jeong — Contact: kai.jeong0@gmail.com
+                  </p>
+                </div>
+              </footer>
+            </div>
           )}
         </>
       )}
@@ -678,46 +783,34 @@ export default function App() {
               if (map && kakaoObj) {
                 const position = new kakaoObj.maps.LatLng(store.lat, store.lng);
                 map.setCenter(position);
-                map.setLevel(4); // 적절한 줌 레벨로 조정
+                map.setLevel(4); /* 적절한 줌 레벨로 조정 */
                 
-                // 마커 강조 효과 개선 (쓰곳 커스텀 아이콘 사용)
-                const defaultMarker = new kakaoObj.maps.MarkerImage(
-                  '/assets/marker-default.svg',
-                  new kakaoObj.maps.Size(48, 49),
-                  { offset: new kakaoObj.maps.Point(24, 49) }
-                );
+                // 마커 강조 효과는 useKakaoMap 훅에서 자동으로 처리됨
+                // 마커 업데이트를 통해 선택된 마커 하이라이팅
+                updateMarkers(finalShown, (selectedStore) => {
+                  setSelectedId(selectedStore.id);
+                  // 하단 리스트에서 해당 업체로 즉시 스크롤 (애니메이션 제거)
+                  const el = document.querySelector(`[data-card-id="${CSS.escape(selectedStore.id)}"]`);
+                  if (el) {
+                    el.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
+                  }
+                }, false, store.id); // 정보창 표시 비활성화, 선택된 업체 ID 전달
                 
-                const selectedMarker = new kakaoObj.maps.MarkerImage(
-                  '/assets/marker-selected.svg',
-                  new kakaoObj.maps.Size(48, 49),
-                  { offset: new kakaoObj.maps.Point(24, 49) }
-                );
-                
-                // 모든 마커를 기본 이미지로 리셋
-                Object.values(markerMap).forEach(marker => {
-                  marker.setImage(defaultMarker);
-                });
-                
-                // 선택된 마커를 강조
-                if (markerMap[store.id]) {
-                  markerMap[store.id].setImage(selectedMarker);
-                  console.log(`📍 ${store.name} 마커 하이라이팅 처리 완료`);
-                }
+                console.log(`📍 ${store.name} 마커 하이라이팅 처리 완료`);
               }
             }}
             onRoute={handleRoute}
           />
+          
+          {/* 업체 검색화면 푸터 */}
+          <footer className="bg-white border-t border-gray-200 py-2">
+            <div className="max-w-6xl mx-auto px-4 text-center">
+              <p className="text-xs text-gray-500">
+                © kai.jeong — Contact: kai.jeong0@gmail.com
+              </p>
+            </div>
+          </footer>
         </>
-      )}
-
-      {mode !== 'region' && (
-        <footer className="bg-white border-t border-gray-200 py-2">
-          <div className="max-w-6xl mx-auto px-4 text-center">
-            <p className="text-xs text-gray-500">
-              © kai.jeong — Contact: kai.jeong0@gmail.com
-            </p>
-          </div>
-        </footer>
       )}
 
       {/* 경로 안내 모달 */}
