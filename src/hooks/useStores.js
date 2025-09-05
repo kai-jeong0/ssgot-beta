@@ -4,7 +4,6 @@ const GG_KEY = import.meta.env.VITE_GG_KEY || "your_gg_api_key_here";
 
 export const useStores = () => {
   const [stores, setStores] = useState([]);
-  const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // 업종을 카테고리로 매핑
@@ -60,13 +59,13 @@ export const useStores = () => {
       // 기본 업체 정보만 먼저 생성 (이미지 없이)
       const basicStores = rows
         .filter(r => r.REFINE_WGS84_LAT && r.REFINE_WGS84_LOGT)
-        .map((r) => {
+        .map((r, index) => {
           const rawCategory = r.INDUTY_CODE_SE_NM || r.INDUTY_CODE_SE || '';
           const storeName = r.CMPNM_NM || '';
           const category = mapIndustryToCategory(rawCategory + ' ' + storeName);
           
           return {
-            id: `${r.SIGUN_CD || ''}-${r.MGTNO || r.CMPNM_NM}-${r.REFINE_WGS84_LAT}-${r.REFINE_WGS84_LOGT}`,
+            id: `${r.SIGUN_CD || ''}-${r.MGTNO || r.CMPNM_NM || 'unknown'}-${r.REFINE_WGS84_LAT}-${r.REFINE_WGS84_LOGT}-${index}`,
             name: r.CMPNM_NM,
             address: r.REFINE_ROADNM_ADDR || r.REFINE_LOTNO_ADDR || '',
             lat: +r.REFINE_WGS84_LAT,
@@ -138,7 +137,6 @@ export const useStores = () => {
       const pages = await Promise.all([1, 2, 3].map(p => fetchGgStoresByCity(city, p, 100)));
       const all = pages.flat();
       setStores(all);
-      setFiltered(all);
       return all; // 로드된 업체 정보 반환
     } catch (error) {
       console.error('도시별 가게 정보 로드 실패:', error);
@@ -150,9 +148,7 @@ export const useStores = () => {
 
   return {
     stores,
-    filtered,
     loading,
-    loadStoresByCity,
-    setFiltered
+    loadStoresByCity
   };
 };

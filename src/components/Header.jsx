@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ArrowLeft, Search, MapPin } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
@@ -24,7 +24,6 @@ const Header = React.forwardRef(({
   stores = [], // 업체 목록을 props로 받음
 }, ref) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [filteredStores, setFilteredStores] = useState([]);
   const searchRef = useRef(null);
 
   const CATS = [
@@ -41,20 +40,19 @@ const Header = React.forwardRef(({
   ];
 
   // 검색어 변경 시 자동완성 필터링
-  useEffect(() => {
+  const filteredStores = useMemo(() => {
     if (!searchName.trim()) {
-      setFilteredStores([]);
-      setShowSuggestions(false);
-      return;
+      return [];
     }
 
-    const filtered = stores
+    return stores
       .filter(store => store.name && store.name.toLowerCase().includes(searchName.toLowerCase()))
       .slice(0, 5); // 최대 5개만 표시
-    
-    setFilteredStores(filtered);
-    setShowSuggestions(filtered.length > 0);
   }, [searchName, stores]);
+
+  useEffect(() => {
+    setShowSuggestions(filteredStores.length > 0);
+  }, [filteredStores]);
 
   // 검색창 외부 클릭 시 자동완성 닫기
   useEffect(() => {
@@ -151,7 +149,7 @@ const Header = React.forwardRef(({
                 <Badge
                   key={cat.id}
                   variant={category === cat.id ? cat.color : "outline"}
-                  className={`cursor-pointer transition-all duration-200 text-xs ${
+                  className={`cursor-pointer transition-all duration-200 category-chip-responsive ${
                     category === cat.id ? 'scale-105' : 'hover:scale-105'
                   }`}
                   onClick={() => setCategory(cat.id)}

@@ -44,10 +44,10 @@ export default function useKakaoMap(mode, key = 'default') {
   
   const [kakaoObj, setKakaoObj] = useState(null);
   const [map, setMap] = useState(null);
-  const [markers, setMarkers] = useState([]);
   const [markerMap, setMarkerMap] = useState({});
   const [currentInfo, setCurrentInfo] = useState(null);
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
+  const [showSearchButton, setShowSearchButton] = useState(false);
   const mapRef = useRef(null);
 
   // mode 변경 감지
@@ -107,12 +107,12 @@ export default function useKakaoMap(mode, key = 'default') {
           if (window.kakao.maps.services) {
             console.log('✅ Services 라이브러리 로드 완료');
             
-            // Directions 서비스 사용 가능 여부 확인
+            // Directions 서비스 확인 (현재 사용하지 않음)
             if (window.kakao.maps.services.Directions) {
               console.log('✅ Directions 서비스 사용 가능');
             } else {
-              console.warn('⚠️ Directions 서비스가 로드되지 않음');
-              console.warn('⚠️ 로드된 서비스:', Object.keys(window.kakao.maps.services));
+              // Directions 서비스는 현재 사용하지 않으므로 경고 제거
+              console.log('ℹ️ Directions 서비스는 현재 사용하지 않음');
             }
             
             // Places 서비스 사용 가능 여부 확인
@@ -226,48 +226,104 @@ export default function useKakaoMap(mode, key = 'default') {
     // DOM 마운트 완료를 보장하기 위해 약간의 지연
     setTimeout(() => {
       try {
-        const center = new kakaoObj.maps.LatLng(37.4138, 127.5183); // 경기도 중심
-        console.log('📍 지도 중심 좌표 설정:', center);
+        // 현재 위치를 중심으로 설정 (실패 시 성남시 중심으로 대체)
+        const defaultCenter = new kakaoObj.maps.LatLng(37.4201, 127.1267); // 성남시 중심 (더 정확한 좌표)
+        let center = defaultCenter;
         
-        const mapOptions = { 
-          center, 
-          level: 8, // 적절한 줌 레벨
-          draggable: true, // 드래그 가능
-          scrollwheel: true, // 마우스 휠 줌 가능
-          keyboardShortcuts: true, // 키보드 단축키 사용
-          disableDoubleClick: false, // 더블클릭 줌 활성화
-          disableDoubleTap: false, // 더블탭 줌 활성화 (모바일)
-          tileAnimation: true, // 타일 애니메이션 활성화
-          zoomControl: true, // 줌 컨트롤 표시
-          mapTypeControl: false, // 지도 타입 컨트롤 비활성화 (일반 지도만)
-          scaleControl: true, // 축척 표시
-          streetViewPanControl: false, // 거리뷰 컨트롤 비활성화
-          overviewMapControl: false, // 개요 지도 컨트롤 비활성화
-          fullscreenControl: false, // 전체화면 컨트롤 비활성화
-          searchControl: false // 검색 컨트롤 비활성화
-        };
+        // 현재 위치를 먼저 시도
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const { latitude, longitude } = position.coords;
+              center = new kakaoObj.maps.LatLng(latitude, longitude);
+              console.log('📍 현재 위치로 지도 중심 설정:', { latitude, longitude });
+              initializeMapWithCenter(center);
+            },
+            (error) => {
+              console.warn('⚠️ 위치 정보를 가져올 수 없어 기본 위치로 설정:', error.message);
+              initializeMapWithCenter(defaultCenter);
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 5000, // 5초 타임아웃
+              maximumAge: 300000 // 5분 캐시
+            }
+          );
+        } else {
+          console.log('📍 위치 서비스 미지원, 기본 위치로 설정');
+          initializeMapWithCenter(defaultCenter);
+        }
         
-        console.log('🗺️ 지도 옵션 설정 완료:', mapOptions);
-        
-        const newMap = new kakaoObj.maps.Map(mapRef.current, mapOptions);
-        console.log('✅ 지도 생성 완료:', newMap);
-        
-        setMap(newMap);
-        console.log('✅ 지도 상태 업데이트 완료');
-        
-        // 지도 로드 완료 이벤트 리스너 추가
-        kakaoObj.maps.event.addListener(newMap, 'tilesloaded', () => {
-          console.log('✅ 지도 타일 로드 완료');
-          // 지도 로드 완료 후 현재 위치 표시 (stores 데이터는 나중에 전달됨)
-          setTimeout(() => {
-            getCurrentLocation();
-          }, 500);
-        });
-        
-        kakaoObj.maps.event.addListener(newMap, 'zoom_changed', () => {
-          console.log('🔍 지도 줌 레벨 변경:', newMap.getLevel());
-        });
-        
+        function initializeMapWithCenter(mapCenter) {
+          try {
+            console.log('📍 지도 중심 좌표 설정:', mapCenter);
+          
+            const mapOptions = { 
+              center: mapCenter, 
+              level: 8, // 적절한 줌 레벨
+              draggable: true, // 드래그 가능
+              scrollwheel: true, // 마우스 휠 줌 가능
+              keyboardShortcuts: true, // 키보드 단축키 사용
+              disableDoubleClick: false, // 더블클릭 줌 활성화
+              disableDoubleTap: false, // 더블탭 줌 활성화 (모바일)
+              tileAnimation: true, // 타일 애니메이션 활성화
+              zoomControl: true, // 줌 컨트롤 표시
+              mapTypeControl: false, // 지도 타입 컨트롤 비활성화 (일반 지도만)
+              scaleControl: true, // 축척 표시
+              streetViewPanControl: false, // 거리뷰 컨트롤 비활성화
+              overviewMapControl: false, // 개요 지도 컨트롤 비활성화
+              fullscreenControl: false, // 전체화면 컨트롤 비활성화
+              searchControl: false, // 검색 컨트롤 비활성화
+              // 모바일 터치 최적화
+              draggable: true,
+              scrollwheel: true,
+              disableDoubleClick: false,
+              disableDoubleTap: false
+            };
+            
+            console.log('🗺️ 지도 옵션 설정 완료:', mapOptions);
+            
+            const newMap = new kakaoObj.maps.Map(mapRef.current, mapOptions);
+            console.log('✅ 지도 생성 완료:', newMap);
+            
+            setMap(newMap);
+            console.log('✅ 지도 상태 업데이트 완료');
+            
+            // 지도 로드 완료 이벤트 리스너 추가
+            kakaoObj.maps.event.addListener(newMap, 'tilesloaded', () => {
+              console.log('✅ 지도 타일 로드 완료');
+              // 지도 로드 완료 후 현재 위치 표시 (stores 데이터는 나중에 전달됨)
+              setTimeout(() => {
+                getCurrentLocation();
+              }, 500);
+            });
+            
+            kakaoObj.maps.event.addListener(newMap, 'zoom_changed', () => {
+              console.log('🔍 지도 줌 레벨 변경:', newMap.getLevel());
+            });
+            
+            // 지도 이동/줌 시 검색 버튼 표시 (수동 업데이트)
+            kakaoObj.maps.event.addListener(newMap, 'dragend', () => {
+              console.log('📍 지도 드래그 완료 - 검색 버튼 표시');
+              setShowSearchButton(true);
+            });
+            
+            kakaoObj.maps.event.addListener(newMap, 'zoom_changed', () => {
+              console.log('🔍 지도 줌 레벨 변경:', newMap.getLevel());
+              setShowSearchButton(true);
+            });
+            
+          } catch (error) {
+            console.error('❌ 지도 초기화 실패:', error);
+            console.error('에러 상세:', {
+              message: error.message,
+              stack: error.stack,
+              kakaoObj: !!kakaoObj,
+              kakaoMaps: !!(kakaoObj && kakaoObj.maps),
+              mapRef: !!mapRef.current
+            });
+          }
+        }
       } catch (error) {
         console.error('❌ 지도 초기화 실패:', error);
         console.error('에러 상세:', {
@@ -281,26 +337,58 @@ export default function useKakaoMap(mode, key = 'default') {
     }, 100); // 100ms 지연으로 DOM 마운트 완료 보장
   }, [kakaoObj, mode, key]);
 
-  // 마커 관리 (성능 최적화)
-  const updateMarkers = (stores, onMarkerClick, showInfoWindow = false, selectedId = null) => {
+  // 마커 이미지 생성 함수
+  const createMarkerImage = (imagePath, size = 32) => {
+    try {
+      return new kakaoObj.maps.MarkerImage(
+        imagePath,
+        new kakaoObj.maps.Size(size, size),
+        { offset: new kakaoObj.maps.Point(size/2, size) }
+      );
+    } catch (error) {
+      console.error('⚠️ 마커 이미지 생성 실패:', error);
+      return null;
+    }
+  };
+
+  // 마커 관리 (성능 최적화) - 단일 선택 상태 관리
+  const updateMarkers = (stores, onMarkerClick, showInfoWindow = false, selectedId = null, category = 'all') => {
     if (!map || !kakaoObj) {
       console.warn('⚠️ 마커 업데이트 실패: map 또는 kakaoObj가 없음');
       return;
     }
     
+    // 중복 업데이트 방지 (동일한 stores와 selectedId면 스킵)
+    const currentKey = `${stores.length}-${selectedId}-${category}`;
+    if (window.lastMarkerUpdateKey === currentKey) {
+      console.log('📍 중복 마커 업데이트 방지:', currentKey);
+      return;
+    }
+    window.lastMarkerUpdateKey = currentKey;
+    
     if (!stores || !Array.isArray(stores) || stores.length === 0) {
       console.warn('⚠️ 마커 업데이트 실패: 유효하지 않은 stores 데이터');
       // 기존 마커 제거
-      markers.forEach(mk => mk.setMap(null));
-      setMarkers([]);
+      Object.values(markerMap).forEach(mk => {
+        if (mk && mk.setMap) {
+          mk.setMap(null);
+          // 클릭 영역 오버레이도 제거
+          if (mk.__clickAreaOverlay && mk.__clickAreaOverlay.setMap) {
+            mk.__clickAreaOverlay.setMap(null);
+          }
+        }
+      });
       setMarkerMap({});
       setSelectedMarkerId(null);
       return;
     }
     
-    console.log(`마커 업데이트 시작: ${stores.length}개 업체, 선택된 ID: ${selectedId}`);
-    console.log('📍 지도 객체:', map);
-    console.log('📍 카카오 객체:', kakaoObj);
+    console.log(`📍 마커 업데이트: ${stores.length}개 업체, 선택된 ID: ${selectedId}, 카테고리: ${category}`);
+    
+    // 현재 stores 정보를 전역 변수에 저장 (지도 이동 시 마커 업데이트용)
+    window.currentStores = stores;
+    window.currentOnMarkerClick = onMarkerClick;
+    window.currentCategory = category;
     
     // 업체 데이터 유효성 검사
     const validStores = stores.filter(store => {
@@ -313,91 +401,90 @@ export default function useKakaoMap(mode, key = 'default') {
       return true;
     });
     
-    if (validStores.length === 0) {
-      console.warn('⚠️ 유효한 업체 데이터가 없음');
-      // 기존 마커 제거
-      markers.forEach(mk => mk.setMap(null));
-      setMarkers([]);
+    // 뷰포트 내 마커만 생성 (전역 함수 사용)
+    const storesToRender = getVisibleStores(validStores);
+    
+    if (storesToRender.length === 0) {
+      console.warn('⚠️ 뷰포트 내에 표시할 업체가 없음');
+      Object.values(markerMap).forEach(mk => {
+        if (mk && mk.setMap) {
+          // 이벤트 리스너 제거
+          kakaoObj.maps.event.removeListener(mk, 'click');
+          kakaoObj.maps.event.removeListener(mk, 'mousedown');
+          kakaoObj.maps.event.removeListener(mk, 'mouseup');
+          kakaoObj.maps.event.removeListener(mk, 'touchstart');
+          // 마커 제거
+          mk.setMap(null);
+        }
+      });
       setMarkerMap({});
       setSelectedMarkerId(null);
       return;
     }
     
-    console.log(`📍 유효한 업체: ${validStores.length}개`);
-    
-    // 기존 마커 제거
-    markers.forEach(mk => mk.setMap(null));
-    console.log(`📍 기존 마커 ${markers.length}개 제거 완료`);
-    
-    // SVG 마커 이미지 생성 (일반적인 카카오맵 마커 방식)
-    const createMarkerImage = (svgPath) => {
-      try {
-        return new kakaoObj.maps.MarkerImage(
-          svgPath,
-          new kakaoObj.maps.Size(32, 32),
-          { offset: new kakaoObj.maps.Point(16, 32) }
-        );
-      } catch (error) {
-        console.error('⚠️ 마커 이미지 생성 실패:', error);
-        return null;
+    // 기존 마커 제거 (이벤트 리스너도 함께 제거)
+    Object.values(markerMap).forEach(mk => {
+      if (mk && mk.setMap) {
+        // 이벤트 리스너 제거
+        kakaoObj.maps.event.removeListener(mk, 'click');
+        kakaoObj.maps.event.removeListener(mk, 'mousedown');
+        kakaoObj.maps.event.removeListener(mk, 'mouseup');
+        kakaoObj.maps.event.removeListener(mk, 'touchstart');
+        // 마커 제거
+        mk.setMap(null);
       }
-    };
+    });
     
-    // 마커 이미지 생성
-    const defaultMarker = createMarkerImage('/assets/marker-default.svg');
-    const selectedMarker = createMarkerImage('/assets/marker-selected.svg');
-    const unselectedMarker = createMarkerImage('/assets/marker-unselected.svg');
+    // 마커 이미지 생성 - 원래 크기로 복원
+    const unselectedMarker = createMarkerImage('/assets/marker-unselected.svg', 32); // 50 → 32 (원래 크기)
+    const selectedMarker = createMarkerImage('/assets/marker-selected.svg', 38); // 60 → 38 (원래 크기)
     
-    if (!defaultMarker || !selectedMarker || !unselectedMarker) {
+    if (!unselectedMarker || !selectedMarker) {
       console.error('❌ 마커 이미지 생성 실패');
       return;
     }
     
     const mm = {};
-    const newMarkers = validStores.map(store => {
+    storesToRender.forEach(store => {
       try {
-        // 선택된 업체인지 확인하여 마커 이미지 결정
         const isSelected = selectedId === store.id;
-        let markerImage;
-        
-        if (isSelected) {
-          markerImage = selectedMarker;
-        } else {
-          // 선택되지 않은 마커는 약하게 표시
-          markerImage = unselectedMarker;
-        }
+        const markerImage = isSelected ? selectedMarker : unselectedMarker;
         
         const marker = new kakaoObj.maps.Marker({
           position: new kakaoObj.maps.LatLng(store.lat, store.lng),
           title: store.name,
-          image: markerImage
+          image: markerImage,
+          zIndex: isSelected ? 1000 : 100,
+          clickable: true // 클릭 가능하도록 명시적 설정
         });
-        
-        console.log(`📍 마커 생성: ${store.name}`, {
-          position: { lat: store.lat, lng: store.lng },
-          isSelected,
-          markerImage: markerImage ? '설정됨' : '설정되지 않음'
-        });
-        
-        // 마커에 CSS 클래스 추가
-        if (isSelected) {
-          marker.setZIndex(1000); // 선택된 마커를 위에 표시
-        } else {
-          marker.setZIndex(100);
-        }
         
         // 마커에 store 정보 저장
         marker.__store = store;
-        
         marker.setMap(map);
         
-        console.log(`📍 마커 지도에 추가 완료: ${store.name}`);
-        
-        // 마커 클릭 이벤트
-        kakaoObj.maps.event.addListener(marker, 'click', (e) => {
-          console.log('🎯 마커 클릭 이벤트 발생!');
-          console.log('🎯 이벤트 객체:', e);
-          console.log(`🎯 마커 클릭: ${store.name} (ID: ${store.id})`);
+        // 마커 클릭 이벤트 - 단일 선택만 허용
+        const handleMarkerClick = (e) => {
+          // 이벤트 전파 방지 (PC와 모바일 모두)
+          if (e && e.stopPropagation) {
+            e.stopPropagation();
+          }
+          
+          // PC 환경에서 기본 동작 방지
+          if (e && e.preventDefault) {
+            e.preventDefault();
+          }
+          
+          console.log(`🎯 마커 클릭 감지: ${store.name} (ID: ${store.id})`);
+          console.log(`🎯 현재 선택된 마커 ID: ${selectedMarkerId}`);
+          console.log(`🎯 이벤트 타입: ${e?.type || 'unknown'}`);
+          
+          // 이미 선택된 마커를 다시 클릭한 경우 무시
+          if (selectedMarkerId === store.id) {
+            console.log('📍 이미 선택된 마커 - 무시');
+            return;
+          }
+          
+          console.log(`📍 새로운 마커 선택: ${store.name}`);
           
           // 기존 정보창 닫기
           if (currentInfo) {
@@ -405,92 +492,66 @@ export default function useKakaoMap(mode, key = 'default') {
             setCurrentInfo(null);
           }
           
-          // 모든 마커를 unselected 상태로 리셋
+          // 먼저 상태 업데이트 (중복 방지)
+          setSelectedMarkerId(store.id);
+          
+          // 모든 기존 마커를 unselected 상태로 리셋 (현재 생성 중인 mm 사용)
           Object.values(mm).forEach(m => {
-            if (m && m !== marker) {
+            if (m && m !== marker && m.setImage) {
               m.setImage(unselectedMarker);
               m.setZIndex(100);
-              console.log(`📍 마커 리셋: ${m.__store?.name || 'unknown'}`);
             }
           });
           
-          // 현재 마커를 선택된 이미지로 강조
+          // 현재 마커를 선택된 상태로 강조
           marker.setImage(selectedMarker);
-          marker.setZIndex(1000); // 선택된 마커를 위에 표시
-          setSelectedMarkerId(store.id);
+          marker.setZIndex(1000);
           
-          // 콜백 실행 (하단 리스트 앵커링)
+          console.log(`✅ 마커 하이라이팅 완료: ${store.name}`);
+          
+          // 콜백 실행
           if (onMarkerClick && typeof onMarkerClick === 'function') {
             onMarkerClick(store);
-            console.log('✅ onMarkerClick 콜백 실행 완료');
-          } else {
-            console.warn('⚠️ onMarkerClick 콜백이 함수가 아님:', onMarkerClick);
           }
-          
-          console.log(`📍 ${store.name} 마커 하이라이팅 완료`);
-          console.log(`📍 현재 선택된 마커 ID: ${store.id}`);
-          console.log(`📍 총 마커 수: ${Object.keys(mm).length}`);
+        };
+        
+        // 마커에 클릭 이벤트 추가 (PC와 모바일 모두 지원)
+        kakaoObj.maps.event.addListener(marker, 'click', handleMarkerClick);
+        
+        // PC 환경에서 마우스 이벤트 추가 지원
+        kakaoObj.maps.event.addListener(marker, 'mousedown', (e) => {
+          console.log(`🖱️ 마우스 다운 감지: ${store.name}`);
+          if (e && e.stopPropagation) {
+            e.stopPropagation();
+          }
+        });
+        
+        kakaoObj.maps.event.addListener(marker, 'mouseup', (e) => {
+          console.log(`🖱️ 마우스 업 감지: ${store.name}`);
+          if (e && e.stopPropagation) {
+            e.stopPropagation();
+          }
         });
         
         mm[store.id] = marker;
-        return marker;
       } catch (error) {
         console.error(`❌ 마커 생성 실패 (${store.name}):`, error);
-        return null;
       }
-    }).filter(Boolean); // null 값 제거
-    
-    // 선택 상태 업데이트 - 모든 마커를 먼저 unselected로 설정
-    Object.values(mm).forEach(m => {
-      m.setImage(unselectedMarker);
-      m.setZIndex(100);
-      console.log(`📍 마커 초기 상태 설정: ${m.__store.name}`);
     });
     
-    // 선택된 마커가 있으면 해당 마커만 강조
-    if (selectedId) {
-      setSelectedMarkerId(selectedId);
-      
-      const selectedMarkerObj = mm[selectedId];
-      if (selectedMarkerObj) {
-        selectedMarkerObj.setImage(selectedMarker);
-        selectedMarkerObj.setZIndex(1000);
-        console.log(`📍 선택된 마커 강조: ${selectedMarkerObj.__store.name}`);
-      }
-    } else {
-      setSelectedMarkerId(null);
-    }
-    
-    setMarkers(newMarkers);
     setMarkerMap(mm);
+    setSelectedMarkerId(selectedId);
     
-    console.log(`📍 마커 업데이트 완료: ${newMarkers.length}개 마커 생성`);
-    console.log('📍 생성된 마커들:', newMarkers);
-    console.log('📍 마커 맵:', Object.keys(mm));
-    console.log('📍 선택된 마커 하이라이팅 완료');
+    console.log(`✅ 마커 업데이트 완료: ${Object.keys(mm).length}개 마커 생성 (전체 ${stores.length}개 중 뷰포트 내 마커만)`);
   };
 
   // 마커 강조 해제
   const clearMarkerHighlight = () => {
     if (!map || !kakaoObj) return;
     
-    console.log('마커 강조 해제 시작');
+    console.log('📍 마커 강조 해제 시작');
     
-    // SVG 마커 이미지 생성 (일반적인 카카오맵 마커 방식)
-    const createMarkerImage = (svgPath) => {
-      try {
-        return new kakaoObj.maps.MarkerImage(
-          svgPath,
-          new kakaoObj.maps.Size(32, 32),
-          { offset: new kakaoObj.maps.Point(16, 32) }
-        );
-      } catch (error) {
-        console.error('⚠️ 마커 이미지 생성 실패:', error);
-        return null;
-      }
-    };
-    
-    const unselectedMarker = createMarkerImage('/assets/marker-unselected.svg');
+    const unselectedMarker = createMarkerImage('/assets/marker-unselected.svg', 32);
     
     if (!unselectedMarker) {
       console.error('❌ unselected 마커 이미지 생성 실패');
@@ -502,16 +563,12 @@ export default function useKakaoMap(mode, key = 'default') {
       Object.values(markerMap).forEach(marker => {
         if (marker && marker.setImage) {
           marker.setImage(unselectedMarker);
-          marker.setZIndex(100); // Z-인덱스도 리셋
-          console.log(`📍 마커 강조 해제: ${marker.__store?.name || 'unknown'}`);
+          marker.setZIndex(100);
         }
       });
-      console.log(`마커 강조 해제 완료 - ${Object.keys(markerMap).length}개 마커를 unselected 마커로 표시`);
-    } else {
-      console.log('마커 강조 해제 완료 - 마커가 없음');
+      console.log(`📍 마커 강조 해제 완료 - ${Object.keys(markerMap).length}개 마커 리셋`);
     }
     
-    // 선택 상태 리셋
     setSelectedMarkerId(null);
   };
 
@@ -527,71 +584,42 @@ export default function useKakaoMap(mode, key = 'default') {
           
           console.log('📍 현재 위치 획득:', { latitude, longitude });
           
-          // 현재 위치 마커 생성 (SVG 사용)
-          const createCurrentLocationMarker = () => {
-            return new kakaoObj.maps.MarkerImage(
-              '/assets/marker-current-location.svg',
-              new kakaoObj.maps.Size(32, 32),
-              { offset: new kakaoObj.maps.Point(16, 32) }
-            );
-          };
+          // 현재 위치 마커 생성
+          const currentLocationMarker = createMarkerImage('/assets/marker-current-location.svg', 32);
           
-          // 새 현재 위치 마커 생성
-          const newCurrentLocationMarker = new kakaoObj.maps.Marker({
-            position: location,
-            map: map,
-            image: createCurrentLocationMarker(),
-            zIndex: 1000
-          });
-          
-          // 현재 위치 마커 클릭 이벤트 추가
-          kakaoObj.maps.event.addListener(newCurrentLocationMarker, 'click', () => {
-            console.log('📍 현재 위치 마커 클릭 - 1km 반경내 업체 필터링 시작');
-            
-            // 1km 반경내 업체만 필터링
-            const nearbyStores = stores.filter(store => {
-              const storeLocation = new kakaoObj.maps.LatLng(store.lat, store.lng);
-              const distance = kakaoObj.maps.geometry.distance(location, storeLocation);
-              return distance <= radius;
+          if (currentLocationMarker) {
+            const newCurrentLocationMarker = new kakaoObj.maps.Marker({
+              position: location,
+              map: map,
+              image: currentLocationMarker,
+              zIndex: 1000
             });
             
-            console.log(`📍 1km 반경내 업체: ${nearbyStores.length}개`);
+            // 1km 반경 원 생성
+            const newCurrentLocationCircle = new kakaoObj.maps.Circle({
+              center: location,
+              radius: 1000,
+              strokeWeight: 2,
+              strokeColor: '#3B82F6',
+              strokeOpacity: 0.8,
+              strokeStyle: 'dashed',
+              fillColor: '#3B82F6',
+              fillOpacity: 0.1,
+              map: map,
+              zIndex: 999
+            });
             
-            // 1km 반경내 업체만 필터링하여 마커 업데이트
-            // 이 함수는 외부에서 호출되어야 하므로 콜백으로 처리
-            if (window.onCurrentLocationClick) {
-              window.onCurrentLocationClick(location, 1000);
-            }
-          });
-          
-          // 1km 반경 원 생성
-          const newCurrentLocationCircle = new kakaoObj.maps.Circle({
-            center: location,
-            radius: 1000, // 1km로 증가
-            strokeWeight: 2,
-            strokeColor: '#3B82F6',
-            strokeOpacity: 0.8,
-            strokeStyle: 'dashed',
-            fillColor: '#3B82F6',
-            fillOpacity: 0.1,
-            map: map,
-            zIndex: 999
-          });
-          
-          // 현재 위치 텍스트 라벨 추가
-          const currentLocationLabel = new kakaoObj.maps.InfoWindow({
-            content: '<div style="padding: 5px; background: #3B82F6; color: white; border-radius: 4px; font-size: 12px; font-weight: bold;">내 위치</div>',
-            position: location,
-            zIndex: 1001
-          });
-          
-          // 라벨을 마커 위에 표시
-          currentLocationLabel.open(map, newCurrentLocationMarker);
-          
-          // 지도 중심을 현재 위치로 이동 (첫 로드 시에만)
-          if (!map.getCenter().equals(location)) {
-            map.setCenter(location);
-            map.setLevel(4);
+            // 현재 위치 텍스트 라벨 추가
+            const currentLocationLabel = new kakaoObj.maps.InfoWindow({
+              content: '<div style="padding: 5px; background: #3B82F6; color: white; border-radius: 4px; font-size: 12px; font-weight: bold;">내 위치</div>',
+              position: location,
+              zIndex: 1001
+            });
+            
+            currentLocationLabel.open(map, newCurrentLocationMarker);
+            
+            // 지도 중심은 이미 초기화 시 설정되었으므로 여기서는 마커만 추가
+            console.log('📍 현재 위치 마커 및 원 추가 완료');
           }
         },
         (error) => {
@@ -608,16 +636,238 @@ export default function useKakaoMap(mode, key = 'default') {
     }
   };
 
+  // 뷰포트 기반 마커 필터링 함수 (전역 접근 가능)
+  const getVisibleStores = (stores) => {
+    if (!map || !kakaoObj || !stores || stores.length === 0) {
+      return [];
+    }
+    
+    try {
+      const bounds = map.getBounds();
+      const sw = bounds.getSouthWest(); // 남서쪽 좌표
+      const ne = bounds.getNorthEast(); // 북동쪽 좌표
+      
+      // 뷰포트 키 생성 (캐싱용) - 더 정밀하게
+      const viewportKey = `${sw.getLat().toFixed(6)}-${sw.getLng().toFixed(6)}-${ne.getLat().toFixed(6)}-${ne.getLng().toFixed(6)}`;
+      
+      // 동일한 뷰포트면 캐시된 결과 사용 (하지만 더 엄격하게)
+      if (window.lastViewportKey === viewportKey && window.lastVisibleStores && window.lastStoresLength === stores.length) {
+        console.log(`📍 뷰포트 캐시 사용: ${stores.length}개 → ${window.lastVisibleStores.length}개 마커 생성`);
+        return window.lastVisibleStores;
+      }
+      
+      const visibleStores = stores.filter(store => {
+        const lat = store.lat;
+        const lng = store.lng;
+        
+        // 지도 뷰포트 내에 있는지 확인
+        return lat >= sw.getLat() && lat <= ne.getLat() && 
+               lng >= sw.getLng() && lng <= ne.getLng();
+      });
+      
+      // 캐시 저장 (stores 길이도 함께 저장)
+      window.lastViewportKey = viewportKey;
+      window.lastVisibleStores = visibleStores;
+      window.lastStoresLength = stores.length;
+      
+      console.log(`📍 뷰포트 필터링: ${stores.length}개 → ${visibleStores.length}개 마커 생성`);
+      return visibleStores;
+    } catch (error) {
+      console.warn('⚠️ 뷰포트 필터링 실패, 전체 마커 생성:', error);
+      return stores; // 필터링 실패 시 전체 마커 생성
+    }
+  };
+
+  // 현재 뷰포트에 표시된 업체 반환
+  const getVisibleStoresForList = () => {
+    if (!map || !kakaoObj || !window.currentStores || window.currentStores.length === 0) {
+      return [];
+    }
+    
+    try {
+      return getVisibleStores(window.currentStores);
+    } catch (error) {
+      console.warn('⚠️ 뷰포트 필터링 실패, 전체 업체 반환:', error);
+      return window.currentStores;
+    }
+  };
+
+  // 현재 지도 중심 좌표 기준으로 지역명 반환
+  const getCurrentLocationName = () => {
+    if (!map || !kakaoObj) {
+      return '지역 정보 없음';
+    }
+    
+    try {
+      const center = map.getCenter();
+      const lat = center.getLat();
+      const lng = center.getLng();
+      
+      // 간단한 지역명 매핑 (시/군 단위까지만 표시)
+      // 경기도 주요 지역 좌표 범위로 간단히 매핑
+      if (lat >= 37.2 && lat <= 37.8 && lng >= 126.5 && lng <= 127.5) {
+        // 성남시
+        if (lat >= 37.4 && lat <= 37.5 && lng >= 127.0 && lng <= 127.2) {
+          return '성남시';
+        }
+        // 수원시
+        if (lat >= 37.25 && lat <= 37.35 && lng >= 126.9 && lng <= 127.1) {
+          return '수원시';
+        }
+        // 안양시
+        if (lat >= 37.35 && lat <= 37.45 && lng >= 126.8 && lng <= 127.0) {
+          return '안양시';
+        }
+        // 의정부시
+        if (lat >= 37.7 && lat <= 37.8 && lng >= 127.0 && lng <= 127.2) {
+          return '의정부시';
+        }
+        // 고양시
+        if (lat >= 37.6 && lat <= 37.7 && lng >= 126.7 && lng <= 126.9) {
+          return '고양시';
+        }
+        // 용인시
+        if (lat >= 37.2 && lat <= 37.3 && lng >= 127.1 && lng <= 127.3) {
+          return '용인시';
+        }
+        // 안산시
+        if (lat >= 37.3 && lat <= 37.4 && lng >= 126.7 && lng <= 126.9) {
+          return '안산시';
+        }
+        // 부천시
+        if (lat >= 37.5 && lat <= 37.6 && lng >= 126.7 && lng <= 126.9) {
+          return '부천시';
+        }
+        // 광명시
+        if (lat >= 37.4 && lat <= 37.5 && lng >= 126.8 && lng <= 127.0) {
+          return '광명시';
+        }
+        // 평택시
+        if (lat >= 36.9 && lat <= 37.1 && lng >= 127.0 && lng <= 127.2) {
+          return '평택시';
+        }
+        // 시흥시
+        if (lat >= 37.3 && lat <= 37.4 && lng >= 126.8 && lng <= 127.0) {
+          return '시흥시';
+        }
+        // 김포시
+        if (lat >= 37.6 && lat <= 37.7 && lng >= 126.6 && lng <= 126.8) {
+          return '김포시';
+        }
+        // 하남시
+        if (lat >= 37.5 && lat <= 37.6 && lng >= 127.2 && lng <= 127.4) {
+          return '하남시';
+        }
+        // 오산시
+        if (lat >= 37.1 && lat <= 37.2 && lng >= 127.0 && lng <= 127.2) {
+          return '오산시';
+        }
+        // 의왕시
+        if (lat >= 37.3 && lat <= 37.4 && lng >= 126.9 && lng <= 127.1) {
+          return '의왕시';
+        }
+        // 이천시
+        if (lat >= 37.2 && lat <= 37.3 && lng >= 127.4 && lng <= 127.6) {
+          return '이천시';
+        }
+        // 안성시
+        if (lat >= 37.0 && lat <= 37.1 && lng >= 127.2 && lng <= 127.4) {
+          return '안성시';
+        }
+        // 여주시
+        if (lat >= 37.3 && lat <= 37.4 && lng >= 127.6 && lng <= 127.8) {
+          return '여주시';
+        }
+        // 양평군
+        if (lat >= 37.4 && lat <= 37.6 && lng >= 127.4 && lng <= 127.6) {
+          return '양평군';
+        }
+        // 연천군
+        if (lat >= 38.0 && lat <= 38.2 && lng >= 127.0 && lng <= 127.2) {
+          return '연천군';
+        }
+        // 가평군
+        if (lat >= 37.8 && lat <= 38.0 && lng >= 127.4 && lng <= 127.6) {
+          return '가평군';
+        }
+        // 포천시
+        if (lat >= 37.8 && lat <= 37.9 && lng >= 127.2 && lng <= 127.4) {
+          return '포천시';
+        }
+        // 남양주시
+        if (lat >= 37.6 && lat <= 37.7 && lng >= 127.2 && lng <= 127.4) {
+          return '남양주시';
+        }
+        // 구리시
+        if (lat >= 37.6 && lat <= 37.7 && lng >= 127.1 && lng <= 127.3) {
+          return '구리시';
+        }
+        // 기타 경기도 지역 (시/군 단위로 표시하지 않고 기본값 반환)
+        return '경기도';
+      }
+      
+      return '알 수 없는 지역';
+    } catch (error) {
+      console.warn('⚠️ 지역명 조회 실패:', error);
+      return '지역 정보 없음';
+    }
+  };
+
+  // 수동 마커 업데이트 함수 (검색 버튼 클릭 시)
+  const manualMarkerUpdate = (onListUpdate) => {
+    console.log('🔍 수동 마커 업데이트 시작');
+    console.log('🔍 map:', !!map);
+    console.log('🔍 kakaoObj:', !!kakaoObj);
+    console.log('🔍 window.currentStores:', window.currentStores?.length || 0);
+    console.log('🔍 window.currentOnMarkerClick:', !!window.currentOnMarkerClick);
+    console.log('🔍 window.currentCategory:', window.currentCategory);
+    console.log('🔍 selectedMarkerId:', selectedMarkerId);
+    
+    if (!map || !kakaoObj || !window.currentStores || window.currentStores.length === 0) {
+      console.warn('⚠️ 수동 마커 업데이트 실패: 필요한 데이터가 없음');
+      return;
+    }
+    
+    console.log('📍 수동 마커 업데이트 실행');
+    // 캐시 초기화 후 업데이트
+    window.lastViewportKey = null;
+    window.lastVisibleStores = null;
+    window.lastMarkerUpdateKey = null; // 중복 방지 키도 초기화
+    
+    // 뷰포트가 변경되었으므로 이전 선택된 마커는 초기화
+    const newSelectedId = null;
+    updateMarkers(window.currentStores, window.currentOnMarkerClick, false, newSelectedId, window.currentCategory);
+    setShowSearchButton(false); // 검색 버튼 숨기기
+    
+    // 리스트 업데이트 콜백 호출 (finalShown 재계산을 위해)
+    if (onListUpdate && typeof onListUpdate === 'function') {
+      onListUpdate();
+    }
+    
+    // 지역명 업데이트를 위한 추가 콜백 (지도 중심 변경 감지)
+    setTimeout(() => {
+      if (onListUpdate && typeof onListUpdate === 'function') {
+        onListUpdate();
+      }
+    }, 1000);
+  };
+
   return {
     kakaoObj,
     map,
     mapRef,
-    markers,
+    markers: Object.values(markerMap), // markerMap에서 배열 추출
     markerMap,
     currentInfo,
     selectedMarkerId,
+    setSelectedMarkerId,
     updateMarkers,
     clearMarkerHighlight,
-    getCurrentLocation
+    getCurrentLocation,
+    showSearchButton,
+    manualMarkerUpdate,
+    getVisibleStores,
+    getVisibleStoresForList,
+    getCurrentLocationName
   };
 };
