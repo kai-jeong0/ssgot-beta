@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { MapPin, Navigation } from 'lucide-react';
+import { MapPin, Navigation, Eye } from 'lucide-react';
 import { Card, CardContent, CardHeader } from './ui/Card';
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
 
-const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
+const StoreCard = ({ store, isSelected, onSelect, onRoute, onViewDetail }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [showTransitModal, setShowTransitModal] = useState(false);
@@ -114,18 +114,32 @@ const StoreCard = ({ store, isSelected, onSelect, onRoute }) => {
               {store.distance}m
             </span>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowTransitModal(true);
-            }}
-            className="flex items-center gap-1 text-xs px-2 py-1 h-6 route-button"
-          >
-            <Navigation className="w-3 h-3" />
-            찾아가기
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewDetail && onViewDetail(store);
+              }}
+              className="flex items-center gap-1 text-xs px-2 py-1 h-6 detail-button"
+            >
+              <Eye className="w-3 h-3" />
+              상세
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowTransitModal(true);
+              }}
+              className="flex items-center gap-1 text-xs px-2 py-1 h-6 route-button"
+            >
+              <Navigation className="w-3 h-3" />
+              찾아가기
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

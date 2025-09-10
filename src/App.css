@@ -402,6 +402,8 @@ body {
   overflow: hidden;
   /* 모바일 터치 최적화 - PC에서는 비활성화 */
   -webkit-overflow-scrolling: touch;
+  /* 지도 확대/축소/드래그 허용 */
+  touch-action: pan-x pan-y pinch-zoom;
 }
 
 /* 모바일에서만 터치 액션 적용 */
@@ -425,6 +427,8 @@ body {
   /* 모바일에서 지도 이동 최적화 */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  /* 지도 확대/축소/드래그 허용 */
+  touch-action: pan-x pan-y pinch-zoom;
 }
 
 /* PC 해상도에서 지도 영역 조정 */
@@ -1523,7 +1527,7 @@ footer .text-gray-500 {
   /* 지역 선택 화면 푸터 */
   .region-page footer {
     flex-shrink: 0 !important;
-    margin-top: auto !important;
+    margin-top: 0 !important; /* auto 제거하여 스크롤 방해하지 않도록 */
     background-color: #ffffff !important;
     border-top: 1px solid #e5e7eb !important;
     padding: 0.5rem 0 !important;
@@ -1674,35 +1678,39 @@ footer .text-gray-500 {
 /* PC 해상도에서 지역 선택 화면 최적화 */
 @media (min-width: 768px) {
   .frame.region-page {
-    height: 100vh !important;
+    min-height: 100vh !important;
     overflow-y: auto !important; /* 세로 스크롤 허용 */
-    display: flex !important;
-    flex-direction: column !important;
+    display: block !important; /* flex 제거 */
   }
   
   /* 지역 선택 화면 내부 컨테이너 */
   .frame.region-page > div {
     min-height: 100vh !important;
+    display: block !important; /* flex 제거 */
+    overflow: visible !important; /* 스크롤 허용 */
+  }
+  
+  /* 업체 검색화면은 기존 flex 구조 유지 */
+  .frame:not(.region-page) {
+    height: calc(100vh - 40px) !important; /* 고정 높이 */
+    overflow: hidden !important; /* 페이지 스크롤 방지 */
     display: flex !important;
     flex-direction: column !important;
-    overflow: visible !important; /* 스크롤 허용 */
   }
   
 
   
   /* 지역 선택 화면 메인 컨텐츠 */
   .region-page .main-content-responsive {
-    flex: 1 !important;
     padding: 2rem 3rem 1rem 3rem !important;
-    overflow: hidden !important;
+    overflow: visible !important; /* 스크롤 허용 */
     background-color: #ffffff !important;
-    display: flex !important;
-    flex-direction: column !important;
+    display: block !important; /* flex 제거 */
   }
   
   /* 지역 그리드 PC 최적화 */
   .regions-grid-responsive {
-    min-height: 100% !important;
+    height: auto !important; /* 내용에 맞게 높이 조정 */
     overflow-y: visible !important; /* 스크롤 허용 */
     padding: 1rem 0 !important;
     display: grid !important;
@@ -1711,7 +1719,7 @@ footer .text-gray-500 {
     align-content: start !important;
     max-width: 1400px !important; /* 충돌 방지를 위해 조정 */
     margin: 0 auto !important;
-    flex: 1 !important;
+    flex: none !important; /* flex 제거하여 자연스러운 높이 */
     width: 100% !important; /* 전체 너비 사용 */
   }
   
@@ -1750,7 +1758,7 @@ footer .text-gray-500 {
   /* 지역 선택 화면 푸터 */
 .region-page footer {
   flex-shrink: 0 !important;
-  margin-top: auto !important;
+  margin-top: 0 !important; /* auto 제거하여 스크롤 방해하지 않도록 */
   background-color: #ffffff !important;
   border-top: 1px solid #e5e7eb !important;
   padding: 0.75rem 0 !important;
@@ -1768,6 +1776,15 @@ footer .text-gray-500 {
     max-width: 1920px !important;
     margin: 0 auto !important;
     overflow-y: auto !important; /* 세로 스크롤 허용 */
+    display: block !important; /* flex 제거 */
+  }
+  
+  /* 업체 검색화면은 기존 flex 구조 유지 */
+  .frame:not(.region-page) {
+    height: calc(100vh - 40px) !important; /* 고정 높이 */
+    overflow: hidden !important; /* 페이지 스크롤 방지 */
+    display: flex !important;
+    flex-direction: column !important;
   }
   
   /* 지역 선택 화면 헤더 섹션 */
@@ -1793,6 +1810,8 @@ footer .text-gray-500 {
   
   /* 지역 그리드 대형 PC 최적화 */
   .regions-grid-responsive {
+    height: auto !important; /* 내용에 맞게 높이 조정 */
+    overflow-y: visible !important; /* 스크롤 허용 */
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
     gap: 3rem !important;
     max-width: 1600px !important; /* 충돌 방지를 위해 조정 */

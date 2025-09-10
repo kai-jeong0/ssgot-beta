@@ -6,6 +6,7 @@ import StoreCard from './components/StoreCard';
 import RouteModal from './components/RouteModal';
 import SplashScreen from './components/SplashScreen';
 import CoupangBanner from './components/CoupangBanner';
+import PlaceDetailView from './components/PlaceDetailView';
 import { buildKakaoDirectionsUrl, getUserLocOrFallback, uiModeToApi } from './utils/directionsLink';
 import useKakaoMap from './hooks/useKakaoMap';
 import { useStores } from './hooks/useStores';
@@ -25,6 +26,8 @@ export default function App() {
   const [showRouteModal, setShowRouteModal] = useState(false);
   const [selectedStore, setSelectedStore] = useState(null);
   const [isBottomListExpanded, setIsBottomListExpanded] = useState(true);
+  const [showPlaceDetail, setShowPlaceDetail] = useState(false);
+  const [detailStore, setDetailStore] = useState(null);
   
   // 새로운 상태들
   const [currentMapCenter, setCurrentMapCenter] = useState(null);
@@ -304,8 +307,49 @@ export default function App() {
     
     // 지도 상태 초기화 (새 지역 선택 시)
     if (resetMapState) {
+      console.log('🔄 지도 상태 초기화 시작');
       resetMapState();
+      console.log('✅ 지도 상태 초기화 완료');
     }
+    
+    // 지도가 제대로 초기화되었는지 확인 및 강제 리렌더링
+    setTimeout(() => {
+      if (map && kakaoObj) {
+        console.log('🗺️ 지도 초기화 확인:', {
+          mapExists: !!map,
+          kakaoObjExists: !!kakaoObj,
+          mapCenter: map.getCenter(),
+          mapLevel: map.getLevel()
+        });
+        
+        // 지도 강제 리렌더링 (하얀 화면 문제 해결)
+        try {
+          map.relayout();
+          console.log('🔄 지도 강제 리렌더링 완료');
+          
+          // 추가적인 지도 리렌더링 시도
+          setTimeout(() => {
+            if (mapRef.current) {
+              const mapElement = mapRef.current;
+              console.log('📏 지도 컨테이너 크기:', `${mapElement.offsetWidth}x${mapElement.offsetHeight}`);
+              
+              // 크기가 0이면 강제로 크기 설정 후 리렌더링
+              if (mapElement.offsetWidth === 0 || mapElement.offsetHeight === 0) {
+                console.warn('⚠️ 지도 컨테이너 크기가 0 - 강제 크기 설정');
+                mapElement.style.width = '100%';
+                mapElement.style.height = '100%';
+                map.relayout();
+              }
+            }
+          }, 100);
+          
+        } catch (error) {
+          console.warn('⚠️ 지도 리렌더링 실패:', error);
+        }
+      } else {
+        console.warn('⚠️ 지도 초기화 실패 - map 또는 kakaoObj가 없음');
+      }
+    }, 500);
     
     // 가게 정보 먼저 로드
     const loadedStores = await loadStoresByCity(city);
@@ -372,6 +416,14 @@ export default function App() {
   const onBack = () => {
     console.log('🔙 뒤로가기 시작 - 지도 상태 정리');
     
+    // 지도 상태 먼저 정리
+    if (resetMapState) {
+      console.log('🔄 지도 상태 초기화 시작');
+      resetMapState();
+      console.log('✅ 지도 상태 초기화 완료');
+    }
+    
+    // 앱 상태 정리
     setMode('region');
     setSelectedCity('');
     setSelectedMarkerId(null);
@@ -551,6 +603,19 @@ export default function App() {
     await handleDirections(store, transitMode);
   };
 
+  // 상세 보기 핸들러
+  const handleViewDetail = (store) => {
+    console.log('🔍 상세 보기:', store.name);
+    setDetailStore(store);
+    setShowPlaceDetail(true);
+  };
+
+  // 상세 보기 닫기
+  const handleCloseDetail = () => {
+    setShowPlaceDetail(false);
+    setDetailStore(null);
+  };
+
   // 경로 선택 처리 (딥링크 기반)
   const handleRouteSelect = async (routeType) => {
     if (!selectedStore) return;
@@ -595,9 +660,9 @@ export default function App() {
           ) : enableNaverStyleTest ? (
             <NaverStyleTest />
           ) : (
-            <div className="min-h-screen bg-white flex flex-col">
+            <div className="bg-white">
               {/* 메인 컨텐츠 */}
-              <div className="flex-1 px-4 main-content-responsive">
+              <div className="px-4 main-content-responsive">
                 <div className="text-center mb-2">
                   <p className="text-2xl font-bold text-gray-600">지역화폐를 쓸 곳을 선택해주세요.</p>
                 </div>
@@ -798,6 +863,7 @@ export default function App() {
               }
             }}
             onRoute={handleRoute}
+            onViewDetail={handleViewDetail}
           />
           
           {/* 업체 검색화면 푸터 */}
@@ -847,6 +913,13 @@ export default function App() {
         store={selectedStore}
         onClose={() => setShowRouteModal(false)}
         onRouteSelect={handleRouteSelect}
+      />
+
+      {/* Google Places 상세 보기 */}
+      <PlaceDetailView
+        store={detailStore}
+        isOpen={showPlaceDetail}
+        onClose={handleCloseDetail}
       />
     </div>
   );

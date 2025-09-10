@@ -130,7 +130,7 @@ const RegionGrid = ({ onCitySelect }) => {
   };
 
   return (
-    <div className="flex-1 bg-gray-50 region-grid-responsive">
+    <div className="bg-gray-50 region-grid-responsive">
       {/* 모바일용 이전 UI */}
       <div className="md:hidden">
         <div className="bg-white flex flex-col">
@@ -207,7 +207,7 @@ const RegionGrid = ({ onCitySelect }) => {
       {/* PC용 현재 UI */}
       <div className="hidden md:block">
         {/* 메인 컨텐츠 */}
-        <div className="flex-1 px-4 pb-4 main-content-responsive">
+        <div className="px-4 pb-4 main-content-responsive">
           {/* 내 위치 기반 추천 */}
           {nearestRegion && (
             <div className="mb-6">

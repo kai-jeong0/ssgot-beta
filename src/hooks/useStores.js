@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 
 const GG_KEY = import.meta.env.VITE_GG_KEY || "your_gg_api_key_here";
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "your_google_maps_api_key_here";
 
 export const useStores = () => {
   const [stores, setStores] = useState([]);
@@ -33,10 +34,88 @@ export const useStores = () => {
     return "etc";
   };
 
-  // Python FastAPI 백엔드를 통한 카카오맵 업체 이미지 조회
+  // 구글맵스 API를 통한 업체 이미지 조회
+  const fetchStoreImageFromGoogle = async (storeName, lat, lng) => {
+    try {
+      console.log(`🔍 구글맵스에서 ${storeName} 검색 중...`);
+      console.log(`🔑 구글맵스 API 키: ${GOOGLE_MAPS_API_KEY ? GOOGLE_MAPS_API_KEY.substring(0, 10) + '...' : '없음'}`);
+      
+      // API 키 확인
+      if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'your_google_maps_api_key_here') {
+        console.warn('⚠️ 구글맵스 API 키가 설정되지 않음');
+        return null;
+      }
+      
+      // 구글맵스 Places API로 업체 검색 (Google Maps API 가이드에 따른 표준 방식)
+      const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(storeName)}&location=${lat},${lng}&radius=1000&key=${GOOGLE_MAPS_API_KEY}`;
+      
+      console.log(`🌐 구글맵스 API 호출: ${searchUrl}`);
+      const searchResponse = await fetch(searchUrl);
+      console.log(`📡 구글맵스 API 응답 상태: ${searchResponse.status} ${searchResponse.statusText}`);
+      
+      if (!searchResponse.ok) {
+        throw new Error(`Google Places API search failed: ${searchResponse.status} ${searchResponse.statusText}`);
+      }
+      
+      const searchData = await searchResponse.json();
+      console.log(`📊 구글맵스 검색 결과: ${searchData.results ? searchData.results.length : 0}개`);
+      
+      // API 오류 확인
+      if (searchData.error_message) {
+        console.warn(`⚠️ 구글맵스 API 오류: ${searchData.error_message}`);
+        return null;
+      }
+      
+      if (searchData.results && searchData.results.length > 0) {
+        const place = searchData.results[0]; // 가장 관련성 높은 결과 선택
+        const placeId = place.place_id;
+        
+        console.log(`✅ 구글맵스에서 ${storeName} 발견: ${place.name}`);
+        
+        // Place Details API로 상세 정보 및 사진 가져오기 (Google Maps API 가이드에 따른 표준 방식)
+        const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=photos,name,rating,formatted_address&key=${GOOGLE_MAPS_API_KEY}`;
+        
+        console.log(`🌐 구글맵스 Details API 호출: ${detailsUrl}`);
+        const detailsResponse = await fetch(detailsUrl);
+        console.log(`📡 구글맵스 Details API 응답 상태: ${detailsResponse.status} ${detailsResponse.statusText}`);
+        
+        if (!detailsResponse.ok) {
+          throw new Error(`Google Places Details API failed: ${detailsResponse.status} ${detailsResponse.statusText}`);
+        }
+        
+        const detailsData = await detailsResponse.json();
+        
+        if (detailsData.result && detailsData.result.photos && detailsData.result.photos.length > 0) {
+          const photoReference = detailsData.result.photos[0].photo_reference;
+          
+          // 사진 URL 생성 (Google Maps API 가이드에 따른 표준 방식)
+          const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photoReference}&key=${GOOGLE_MAPS_API_KEY}`;
+          
+          console.log(`📸 ${storeName} 구글맵스 이미지 로드 성공`);
+          return photoUrl;
+        }
+      }
+      
+      console.log(`⚠️ ${storeName} 구글맵스에서 이미지를 찾을 수 없음`);
+      return null;
+      
+    } catch (error) {
+      console.warn(`❌ ${storeName} 구글맵스 이미지 로드 실패:`, error.message);
+      return null;
+    }
+  };
+
+  // 업체 이미지 조회 (구글맵스 우선, 실패 시 기본 이미지)
   const fetchStoreImage = async (storeName, lat, lng) => {
-    // Python 백엔드가 없으므로 바로 기본 이미지 사용
-    console.log(`🖼️ ${storeName}: 기본 이미지 사용 (Python 백엔드 비활성화)`);
+    // 구글맵스에서 이미지 시도
+    const googleImage = await fetchStoreImageFromGoogle(storeName, lat, lng);
+    
+    if (googleImage) {
+      return googleImage;
+    }
+    
+    // 구글맵스 실패 시 기본 이미지 사용
+    console.log(`🖼️ ${storeName}: 기본 이미지 사용 (구글맵스 실패)`);
     return `https://picsum.photos/seed/${encodeURIComponent(storeName)}/400/300`;
   };
 
@@ -84,25 +163,29 @@ export const useStores = () => {
       setTimeout(async () => {
         try {
           console.log(`🔄 ${city} 이미지 로딩 시작 (백그라운드)`);
+          console.log(`📊 총 ${basicStores.length}개 업체의 이미지 로딩 예정`);
           
-          // 이미지 로딩을 병렬로 처리 (최대 5개씩)
-          const batchSize = 5;
+          // 이미지 로딩을 병렬로 처리 (최대 3개씩으로 제한하여 API 제한 방지)
+          const batchSize = 3;
           for (let i = 0; i < basicStores.length; i += batchSize) {
             const batch = basicStores.slice(i, i + batchSize);
+            console.log(`📦 배치 ${Math.floor(i/batchSize) + 1}: ${batch.map(s => s.name).join(', ')}`);
+            
             await Promise.all(
               batch.map(async (store) => {
                 try {
+                  console.log(`🔄 ${store.name} 이미지 로딩 시작...`);
                   const photo = await fetchStoreImage(store.name, store.lat, store.lng);
                   store.photo = photo;
-                  console.log(`✅ ${store.name} 이미지 로딩 완료`);
+                  console.log(`✅ ${store.name} 이미지 로딩 완료: ${photo}`);
                 } catch (error) {
-                  console.warn(`⚠️ ${store.name} 이미지 로딩 실패, 기본 이미지 유지`);
+                  console.warn(`⚠️ ${store.name} 이미지 로딩 실패:`, error.message);
                 }
               })
             );
             
-            // 배치 처리 후 잠시 대기 (서버 부하 방지)
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // 배치 처리 후 잠시 대기 (API 제한 방지)
+            await new Promise(resolve => setTimeout(resolve, 500));
           }
           
           console.log(`✅ ${city} 모든 이미지 로딩 완료`);

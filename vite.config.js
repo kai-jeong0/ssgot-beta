@@ -17,7 +17,22 @@ export default defineConfig(({ command, mode }) => {
     plugins: [react()],
     server: {
       port: 5173,
-      host: true
+      host: true,
+      proxy: {
+        '/api/google': {
+          target: 'https://maps.googleapis.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/google/, ''),
+          configure: (proxy, options) => {
+            proxy.on('proxyReq', (proxyReq, req, res) => {
+              console.log('🔄 프록시 요청:', req.url);
+            });
+            proxy.on('proxyRes', (proxyRes, req, res) => {
+              console.log('✅ 프록시 응답:', proxyRes.statusCode);
+            });
+          }
+        }
+      }
     },
     define: {
       // 환경 변수를 클라이언트에서 사용할 수 있도록 정의

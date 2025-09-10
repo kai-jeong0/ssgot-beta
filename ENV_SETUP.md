@@ -1,13 +1,23 @@
 # 환경 변수 설정 가이드
 
-## 카카오맵 API 키 설정
+## API 키 설정
 
 ### 1. 로컬 개발 환경
 
 프로젝트 루트에 `.env.local` 파일을 생성하고 다음 내용을 추가하세요:
 
 ```bash
+# 카카오맵 API 키
 VITE_KAKAO_JS_KEY=cf29dccdc1b81db907bf3cab84679703
+
+# 구글맵스 API 키 (서버용)
+GOOGLE_MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY
+
+# 구글맵스 브라우저 키 (클라이언트용, 필요시)
+GOOGLE_MAPS_BROWSER_KEY=YOUR_GOOGLE_MAPS_BROWSER_KEY
+
+# Feature flags
+VITE_ENABLE_GOOGLE_PHOTOS=true
 ```
 
 ### 2. 프로덕션 환경 (Vercel)
@@ -15,9 +25,12 @@ VITE_KAKAO_JS_KEY=cf29dccdc1b81db907bf3cab84679703
 Vercel 대시보드에서 환경 변수를 설정하세요:
 
 1. 프로젝트 설정 → Environment Variables
-2. `VITE_KAKAO_JS_KEY` 추가
-3. 값: `cf29dccdc1b81db907bf3cab84679703`
-4. Production, Preview, Development 모두 체크
+2. 다음 변수들을 추가:
+   - `VITE_KAKAO_JS_KEY`: `cf29dccdc1b81db907bf3cab84679703`
+   - `GOOGLE_MAPS_API_KEY`: 구글맵스 서버 API 키
+   - `GOOGLE_MAPS_BROWSER_KEY`: 구글맵스 브라우저 API 키 (선택사항)
+   - `VITE_ENABLE_GOOGLE_PHOTOS`: `true` (Google Places 사진 기능 활성화)
+3. Production, Preview, Development 모두 체크
 
 ### 3. 보안 주의사항
 

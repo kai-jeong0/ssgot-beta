@@ -9,7 +9,8 @@ const BottomList = ({
   loading, 
   selectedCity, 
   onSelect, 
-  onRoute 
+  onRoute,
+  onViewDetail 
 }) => {
   return (
     <div className="bg-white border-t border-gray-200 h-80 flex-shrink-0 bottom-list-responsive">
@@ -70,25 +71,41 @@ const BottomList = ({
               </p>
             </div>
           ) : (
-            <div className="h-full overflow-x-auto">
-              <div className="flex gap-3 p-4 min-w-max store-list-responsive">
-                {stores.map(store => (
-                  <div key={store.id} className="w-40 flex-shrink-0 store-card-responsive">
-                    <StoreCard
-                      store={store}
-                      isSelected={selectedId === store.id}
-                      onSelect={onSelect}
-                      onRoute={onRoute}
-                    />
-                  </div>
-                ))}
-                
-                {/* 업체가 2개 이하일 때 가로 배너 표시 */}
-                {stores.length <= 2 && (
-                  <div className="flex-shrink-0">
-                    <CoupangHorizontalBanner />
-                  </div>
-                )}
+            <div className="h-full overflow-x-auto overflow-y-hidden">
+              <div className="flex gap-3 px-4 pt-4 pb-12 min-w-max store-list-responsive">
+                {(() => {
+                  const items = [];
+                  
+                  stores.forEach((store, index) => {
+                    // 업체 카드 추가
+                    items.push(
+                      <div key={store.id} className="w-40 flex-shrink-0 store-card-responsive">
+                        <StoreCard
+                          store={store}
+                          isSelected={selectedId === store.id}
+                          onSelect={onSelect}
+                          onRoute={onRoute}
+                          onViewDetail={onViewDetail}
+                        />
+                      </div>
+                    );
+                    
+                    // 배너 삽입 조건 확인
+                    const shouldInsertBanner = 
+                      (stores.length <= 5 && index === stores.length - 1) || // 5개 이하: 마지막에
+                      (stores.length > 5 && (index + 1) % 7 === 0); // 5개 초과: 7번째마다
+                    
+                    if (shouldInsertBanner) {
+                      items.push(
+                        <div key={`banner-${index}`} className="w-40 flex-shrink-0 store-card-responsive">
+                          <CoupangHorizontalBanner />
+                        </div>
+                      );
+                    }
+                  });
+                  
+                  return items;
+                })()}
               </div>
             </div>
           )}

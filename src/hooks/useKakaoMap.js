@@ -39,7 +39,7 @@ const validateApiKey = (key) => {
   return true;
 };
 
-export default function useKakaoMap(mode) {
+export default function useKakaoMap(mode, selectedCity) {
   console.log('🔄 useKakaoMap 훅 실행, mode:', mode);
   
   const [kakaoObj, setKakaoObj] = useState(null);
@@ -53,6 +53,12 @@ export default function useKakaoMap(mode) {
   // mode 변경 감지
   useEffect(() => {
     console.log('🔄 mode 변경 감지:', mode);
+    
+    // 지역 선택 화면으로 돌아갈 때 지도 상태 정리
+    if (mode === 'region' && map) {
+      console.log('🔙 지역 선택 화면으로 돌아감 - 지도 상태 정리');
+      resetMapState();
+    }
   }, [mode]);
 
   // 카카오맵 SDK 로드
@@ -213,9 +219,34 @@ export default function useKakaoMap(mode) {
       return;
     }
     
-    // 지도가 이미 있으면 초기화 건너뜀 (완전히 새로운 접근)
+    // 지도가 이미 있으면 상태만 초기화 (지역 변경 시 재초기화 허용)
     if (map) {
-      console.log('✅ 이미 지도가 존재함 - 초기화 건너뜀');
+      console.log('✅ 이미 지도가 존재함 - 상태 초기화만 수행');
+      console.log('🏙️ 선택된 도시:', selectedCity);
+      
+      // 지도 상태 초기화
+      resetMapState();
+      
+      // 지도가 제대로 렌더링되었는지 확인
+      setTimeout(() => {
+        if (map && mapRef.current) {
+          const mapElement = mapRef.current;
+          console.log('🗺️ 지도 상태 확인:', {
+            mapExists: !!map,
+            mapRefExists: !!mapRef.current,
+            mapElementSize: `${mapElement.offsetWidth}x${mapElement.offsetHeight}`,
+            mapCenter: map.getCenter(),
+            mapLevel: map.getLevel()
+          });
+          
+          // 지도가 하얗게 보이는 경우 강제로 리렌더링 시도
+          if (mapElement.offsetWidth === 0 || mapElement.offsetHeight === 0) {
+            console.warn('⚠️ 지도 크기가 0 - 강제 리렌더링 시도');
+            map.relayout();
+          }
+        }
+      }, 100);
+      
       return;
     }
     
