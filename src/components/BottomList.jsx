@@ -1,6 +1,7 @@
 import React from 'react';
 import { Store, MapPin, Loader2 } from 'lucide-react';
 import StoreCard from './StoreCard';
+import CoupangHorizontalBanner from './CoupangHorizontalBanner';
 
 const BottomList = ({ 
   stores, 
@@ -81,6 +82,13 @@ const BottomList = ({
                     />
                   </div>
                 ))}
+                
+                {/* 업체가 2개 이하일 때 가로 배너 표시 */}
+                {stores.length <= 2 && (
+                  <div className="flex-shrink-0">
+                    <CoupangHorizontalBanner />
+                  </div>
+                )}
               </div>
             </div>
           )}

@@ -5,6 +5,7 @@ import BottomList from './components/BottomList';
 import StoreCard from './components/StoreCard';
 import RouteModal from './components/RouteModal';
 import SplashScreen from './components/SplashScreen';
+import CoupangBanner from './components/CoupangBanner';
 import { buildKakaoDirectionsUrl, getUserLocOrFallback, uiModeToApi } from './utils/directionsLink';
 import useKakaoMap from './hooks/useKakaoMap';
 import { useStores } from './hooks/useStores';
@@ -35,6 +36,9 @@ export default function App() {
   // 이동수단 선택 상태
   const [transitMode, setTransitMode] = useState('자차');
   
+  // PC 환경 감지
+  const [isPC, setIsPC] = useState(false);
+  
   // Feature flags for region pickers (can be toggled via env or prop)
   const enableGyeonggiPicker = false; // 기존 그리드 스타일
   const enableNaverStylePicker = false; // 네이버 스타일 지도 기반 비활성화
@@ -43,6 +47,20 @@ export default function App() {
   
   const headerRef = useRef(null);
   const radius = 1000; // 1km로 수정
+
+  // PC 환경 감지
+  useEffect(() => {
+    const checkIsPC = () => {
+      setIsPC(window.innerWidth >= 768);
+    };
+    
+    checkIsPC();
+    window.addEventListener('resize', checkIsPC);
+    
+    return () => {
+      window.removeEventListener('resize', checkIsPC);
+    };
+  }, []);
 
   // 서비스 모드: 디버그 라우팅 비활성화
 
@@ -599,6 +617,11 @@ export default function App() {
       {mode === 'map' && (
         <>
           <div className="map-wrap flex-1 relative">
+            {/* PC 환경에서 쿠팡 배너 표시 (지도 컨테이너 내부) - 임시 숨김 */}
+            {/* {isPC && (
+              <CoupangBanner position="left" />
+            )} */}
+            
             <div ref={mapRef} className="map" />
             
             {/* 현 지도에서 검색 버튼 */}
