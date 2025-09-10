@@ -39,8 +39,8 @@ const validateApiKey = (key) => {
   return true;
 };
 
-export default function useKakaoMap(mode, key = 'default') {
-  console.log('🔄 useKakaoMap 훅 실행, mode:', mode, 'key:', key);
+export default function useKakaoMap(mode) {
+  console.log('🔄 useKakaoMap 훅 실행, mode:', mode);
   
   const [kakaoObj, setKakaoObj] = useState(null);
   const [map, setMap] = useState(null);
@@ -52,8 +52,8 @@ export default function useKakaoMap(mode, key = 'default') {
 
   // mode 변경 감지
   useEffect(() => {
-    console.log('🔄 mode 변경 감지:', mode, 'key:', key);
-  }, [mode, key]);
+    console.log('🔄 mode 변경 감지:', mode);
+  }, [mode]);
 
   // 카카오맵 SDK 로드
   const loadKakao = (key) => {
@@ -213,18 +213,27 @@ export default function useKakaoMap(mode, key = 'default') {
       return;
     }
     
-    // 이미 지도가 있으면 초기화 건너뜀
+    // 지도가 이미 있으면 초기화 건너뜀 (완전히 새로운 접근)
     if (map) {
       console.log('✅ 이미 지도가 존재함 - 초기화 건너뜀');
       return;
     }
     
-    console.log('✅ 지도 초기화 조건 충족, 지도 생성 시작...');
-    console.log('📍 mapRef 요소:', mapRef.current);
-    console.log('📍 mapRef 크기:', mapRef.current.offsetWidth, 'x', mapRef.current.offsetHeight);
-    
-    // DOM 마운트 완료를 보장하기 위해 약간의 지연
-    setTimeout(() => {
+    // 지도 초기화 함수 정의 (함수 호이스팅을 위해 먼저 정의)
+    const initializeNewMap = () => {
+      console.log('✅ 지도 초기화 조건 충족, 지도 생성 시작...');
+      console.log('📍 mapRef 요소:', mapRef.current);
+      console.log('📍 mapRef 크기:', mapRef.current.offsetWidth, 'x', mapRef.current.offsetHeight);
+      
+      // DOM 요소가 준비되지 않았으면 재시도
+      if (!mapRef.current || mapRef.current.offsetWidth === 0 || mapRef.current.offsetHeight === 0) {
+        console.warn('⚠️ DOM 요소가 준비되지 않음, 100ms 후 재시도');
+        setTimeout(() => {
+          initializeNewMap();
+        }, 100);
+        return;
+      }
+      
       try {
         // 현재 위치를 중심으로 설정 (실패 시 성남시 중심으로 대체)
         const defaultCenter = new kakaoObj.maps.LatLng(37.4201, 127.1267); // 성남시 중심 (더 정확한 좌표)
@@ -283,6 +292,12 @@ export default function useKakaoMap(mode, key = 'default') {
             
             console.log('🗺️ 지도 옵션 설정 완료:', mapOptions);
             
+            // 지도 생성 전 DOM 요소 최종 확인
+            if (!mapRef.current) {
+              console.error('❌ 지도 생성 실패: mapRef.current가 없음');
+              return;
+            }
+            
             const newMap = new kakaoObj.maps.Map(mapRef.current, mapOptions);
             console.log('✅ 지도 생성 완료:', newMap);
             
@@ -334,8 +349,11 @@ export default function useKakaoMap(mode, key = 'default') {
           mapRef: !!mapRef.current
         });
       }
-    }, 100); // 100ms 지연으로 DOM 마운트 완료 보장
-  }, [kakaoObj, mode, key]);
+    };
+    
+    // 새 지도 초기화 실행
+    initializeNewMap();
+  }, [kakaoObj, mode]);
 
   // 마커 이미지 생성 함수
   const createMarkerImage = (imagePath, size = 32) => {
@@ -572,9 +590,54 @@ export default function useKakaoMap(mode, key = 'default') {
     setSelectedMarkerId(null);
   };
 
+  // 지도 상태 초기화 (지역 변경 시 호출)
+  const resetMapState = () => {
+    if (!map || !kakaoObj) return;
+    
+    console.log('🔄 지도 상태 초기화 시작');
+    
+    // 기존 마커들 정리
+    Object.values(markerMap).forEach(mk => {
+      if (mk && mk.setMap) {
+        mk.setMap(null);
+        // 클릭 영역 오버레이도 제거
+        if (mk.__clickAreaOverlay && mk.__clickAreaOverlay.setMap) {
+          mk.__clickAreaOverlay.setMap(null);
+        }
+      }
+    });
+    setMarkerMap({});
+    
+    // 현재 위치 마커 정리 (원과 라벨은 비활성화됨)
+    if (window.currentLocationMarker && window.currentLocationMarker.setMap) {
+      window.currentLocationMarker.setMap(null);
+      window.currentLocationMarker = null;
+    }
+    // if (window.currentLocationCircle && window.currentLocationCircle.setMap) {
+    //   window.currentLocationCircle.setMap(null);
+    //   window.currentLocationCircle = null;
+    // }
+    
+    // 선택된 마커 초기화
+    setSelectedMarkerId(null);
+    
+    // 지도 중심을 기본 위치로 이동
+    const defaultCenter = new kakaoObj.maps.LatLng(37.4201, 127.1267);
+    map.setCenter(defaultCenter);
+    map.setLevel(8);
+    
+    console.log('✅ 지도 상태 초기화 완료');
+  };
+
   // 현재 위치 가져오기 및 표시
   const getCurrentLocation = () => {
     if (!map || !kakaoObj) return;
+    
+    // 이미 현재 위치가 표시되어 있으면 중복 실행 방지
+    if (window.currentLocationMarker) {
+      console.log('📍 현재 위치가 이미 표시됨 - 중복 실행 방지');
+      return;
+    }
     
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -595,31 +658,39 @@ export default function useKakaoMap(mode, key = 'default') {
               zIndex: 1000
             });
             
-            // 1km 반경 원 생성
-            const newCurrentLocationCircle = new kakaoObj.maps.Circle({
-              center: location,
-              radius: 1000,
-              strokeWeight: 2,
-              strokeColor: '#3B82F6',
-              strokeOpacity: 0.8,
-              strokeStyle: 'dashed',
-              fillColor: '#3B82F6',
-              fillOpacity: 0.1,
-              map: map,
-              zIndex: 999
-            });
+            // 현재 위치 원 생성 비활성화 (DOM 조작 오류 방지)
+            // let newCurrentLocationCircle = null;
+            // try {
+            //   newCurrentLocationCircle = new kakaoObj.maps.Circle({
+            //     center: location,
+            //     radius: 1000,
+            //     strokeWeight: 2,
+            //     strokeColor: '#3B82F6',
+            //     strokeOpacity: 0.8,
+            //     strokeStyle: 'dashed',
+            //     fillColor: '#3B82F6',
+            //     fillOpacity: 0.1,
+            //     map: map,
+            //     zIndex: 999
+            //   });
+            // } catch (error) {
+            //   console.error('❌ 현재 위치 원 생성 실패:', error);
+            // }
             
-            // 현재 위치 텍스트 라벨 추가
-            const currentLocationLabel = new kakaoObj.maps.InfoWindow({
-              content: '<div style="padding: 5px; background: #3B82F6; color: white; border-radius: 4px; font-size: 12px; font-weight: bold;">내 위치</div>',
-              position: location,
-              zIndex: 1001
-            });
+            // 현재 위치 텍스트 라벨 비활성화 (DOM 조작 오류 방지)
+            // const currentLocationLabel = new kakaoObj.maps.InfoWindow({
+            //   content: '<div style="padding: 5px; background: #3B82F6; color: white; border-radius: 4px; font-size: 12px; font-weight: bold;">내 위치</div>',
+            //   position: location,
+            //   zIndex: 1001
+            // });
             
-            currentLocationLabel.open(map, newCurrentLocationMarker);
+            // currentLocationLabel.open(map, newCurrentLocationMarker);
+            
+            // 전역 변수에 저장 (마커만)
+            window.currentLocationMarker = newCurrentLocationMarker;
             
             // 지도 중심은 이미 초기화 시 설정되었으므로 여기서는 마커만 추가
-            console.log('📍 현재 위치 마커 및 원 추가 완료');
+            console.log('📍 현재 위치 마커 추가 완료');
           }
         },
         (error) => {
@@ -863,6 +934,7 @@ export default function useKakaoMap(mode, key = 'default') {
     setSelectedMarkerId,
     updateMarkers,
     clearMarkerHighlight,
+    resetMapState,
     getCurrentLocation,
     showSearchButton,
     manualMarkerUpdate,

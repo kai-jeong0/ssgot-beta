@@ -66,7 +66,7 @@ export default function App() {
 
   // 커스텀 훅 사용
   const { stores, loading, loadStoresByCity } = useStores();
-  const { kakaoObj, map, mapRef, markers, markerMap, updateMarkers, clearMarkerHighlight, selectedMarkerId, setSelectedMarkerId, showSearchButton, manualMarkerUpdate, getVisibleStoresForList, getCurrentLocationName } = useKakaoMap(mode, mode === 'map' ? 'map-active' : 'map-active');
+  const { kakaoObj, map, mapRef, markers, markerMap, updateMarkers, clearMarkerHighlight, selectedMarkerId, setSelectedMarkerId, showSearchButton, manualMarkerUpdate, getVisibleStoresForList, getCurrentLocationName, getCurrentLocation, resetMapState } = useKakaoMap(mode);
 
   // mode 변경 감지 및 디버깅
   useEffect(() => {
@@ -302,6 +302,11 @@ export default function App() {
     setCategory('all');
     setSelectedMarkerId(null);
     
+    // 지도 상태 초기화 (새 지역 선택 시)
+    if (resetMapState) {
+      resetMapState();
+    }
+    
     // 가게 정보 먼저 로드
     const loadedStores = await loadStoresByCity(city);
     
@@ -324,7 +329,11 @@ export default function App() {
         // 현재 위치 표시 (stores 데이터가 로드된 후)
         if (getCurrentLocation) {
           setTimeout(() => {
-            getCurrentLocation(loadedStores);
+            try {
+              getCurrentLocation();
+            } catch (error) {
+              console.error('❌ 현재 위치 표시 실패:', error);
+            }
           }, 1000);
         }
       }
@@ -361,16 +370,22 @@ export default function App() {
 
   // 뒤로가기
   const onBack = () => {
+    console.log('🔙 뒤로가기 시작 - 지도 상태 정리');
+    
     setMode('region');
     setSelectedCity('');
     setSelectedMarkerId(null);
     setIsNearbyEnabled(false);
     setMyPos(null);
     setShowRouteInfo(false);
+    
+    // 원 정리
     if (circle) {
       circle.setMap(null);
       setCircle(null);
     }
+    
+    console.log('✅ 뒤로가기 완료 - 모든 상태 정리됨');
   };
 
   // 내주변 검색 비활성화
