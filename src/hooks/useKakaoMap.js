@@ -2,6 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 
 // 환경 변수에서 API 키 가져오기 (여러 방법으로 시도)
 const getKakaoApiKey = () => {
+  console.log('🔍 환경변수 디버깅:', {
+    'import.meta.env': import.meta.env,
+    'VITE_KAKAO_JS_KEY': import.meta.env.VITE_KAKAO_JS_KEY,
+    '__KAKAO_API_KEY__': typeof __KAKAO_API_KEY__ !== 'undefined' ? __KAKAO_API_KEY__ : 'undefined'
+  });
+  
   // 1. Vite 환경 변수 (우선)
   if (import.meta.env.VITE_KAKAO_JS_KEY) {
     console.log('🔑 Vite 환경 변수에서 API 키 로드됨');
