@@ -22,11 +22,19 @@ const PlaceDetailView = ({ store, onClose, isOpen }) => {
         // 환경에 따라 다른 API 사용
         const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1');
         
+        console.log('🔍 환경 감지:', {
+          hostname: window.location.hostname,
+          href: window.location.href,
+          isProduction: isProduction
+        });
+        
         if (isProduction) {
           // 프로덕션 환경: Vercel Functions 사용
           console.log('🚀 프로덕션 환경 - Vercel Functions 사용');
           
           // 1. 업체 매칭
+          console.log('📡 Vercel Functions 호출 시작:', '/api/places/match');
+          
           const matchResponse = await fetch('/api/places/match', {
             method: 'POST',
             headers: {
@@ -41,8 +49,17 @@ const PlaceDetailView = ({ store, onClose, isOpen }) => {
             })
           });
           
+          console.log('📡 매칭 API 응답:', {
+            status: matchResponse.status,
+            statusText: matchResponse.statusText,
+            ok: matchResponse.ok,
+            url: matchResponse.url
+          });
+          
           if (!matchResponse.ok) {
-            throw new Error(`매칭 API 실패: ${matchResponse.status}`);
+            const errorText = await matchResponse.text();
+            console.error('❌ 매칭 API 오류:', errorText);
+            throw new Error(`매칭 API 실패: ${matchResponse.status} - ${errorText}`);
           }
           
           const matchData = await matchResponse.json();
@@ -53,10 +70,21 @@ const PlaceDetailView = ({ store, onClose, isOpen }) => {
           }
           
           // 2. 사진 정보 가져오기
+          console.log('📡 사진 API 호출:', `/api/places/${matchData.place_id}/photos`);
+          
           const photosResponse = await fetch(`/api/places/${matchData.place_id}/photos`);
           
+          console.log('📡 사진 API 응답:', {
+            status: photosResponse.status,
+            statusText: photosResponse.statusText,
+            ok: photosResponse.ok,
+            url: photosResponse.url
+          });
+          
           if (!photosResponse.ok) {
-            throw new Error(`사진 API 실패: ${photosResponse.status}`);
+            const errorText = await photosResponse.text();
+            console.error('❌ 사진 API 오류:', errorText);
+            throw new Error(`사진 API 실패: ${photosResponse.status} - ${errorText}`);
           }
           
           const photosData = await photosResponse.json();
