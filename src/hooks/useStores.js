@@ -38,66 +38,120 @@ export const useStores = () => {
   const fetchStoreImageFromGoogle = async (storeName, lat, lng) => {
     try {
       console.log(`🔍 구글맵스에서 ${storeName} 검색 중...`);
-      console.log(`🔑 구글맵스 API 키: ${GOOGLE_MAPS_API_KEY ? GOOGLE_MAPS_API_KEY.substring(0, 10) + '...' : '없음'}`);
       
-      // API 키 확인
-      if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'your_google_maps_api_key_here') {
-        console.warn('⚠️ 구글맵스 API 키가 설정되지 않음');
-        return null;
-      }
+      // 환경에 따라 다른 API 사용
+      const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1');
       
-      // 구글맵스 Places API로 업체 검색 (Google Maps API 가이드에 따른 표준 방식)
-      const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(storeName)}&location=${lat},${lng}&radius=1000&key=${GOOGLE_MAPS_API_KEY}`;
-      
-      console.log(`🌐 구글맵스 API 호출: ${searchUrl}`);
-      const searchResponse = await fetch(searchUrl);
-      console.log(`📡 구글맵스 API 응답 상태: ${searchResponse.status} ${searchResponse.statusText}`);
-      
-      if (!searchResponse.ok) {
-        throw new Error(`Google Places API search failed: ${searchResponse.status} ${searchResponse.statusText}`);
-      }
-      
-      const searchData = await searchResponse.json();
-      console.log(`📊 구글맵스 검색 결과: ${searchData.results ? searchData.results.length : 0}개`);
-      
-      // API 오류 확인
-      if (searchData.error_message) {
-        console.warn(`⚠️ 구글맵스 API 오류: ${searchData.error_message}`);
-        return null;
-      }
-      
-      if (searchData.results && searchData.results.length > 0) {
-        const place = searchData.results[0]; // 가장 관련성 높은 결과 선택
-        const placeId = place.place_id;
+      if (isProduction) {
+        // 프로덕션 환경: Vercel Functions 사용
+        console.log('🚀 프로덕션 환경 - Vercel Functions 사용');
         
-        console.log(`✅ 구글맵스에서 ${storeName} 발견: ${place.name}`);
+        const matchResponse = await fetch('/api/places/match', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: storeName,
+            address: '',
+            phone: '',
+            lat: lat,
+            lng: lng
+          })
+        });
         
-        // Place Details API로 상세 정보 및 사진 가져오기 (Google Maps API 가이드에 따른 표준 방식)
-        const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=photos,name,rating,formatted_address&key=${GOOGLE_MAPS_API_KEY}`;
-        
-        console.log(`🌐 구글맵스 Details API 호출: ${detailsUrl}`);
-        const detailsResponse = await fetch(detailsUrl);
-        console.log(`📡 구글맵스 Details API 응답 상태: ${detailsResponse.status} ${detailsResponse.statusText}`);
-        
-        if (!detailsResponse.ok) {
-          throw new Error(`Google Places Details API failed: ${detailsResponse.status} ${detailsResponse.statusText}`);
+        if (!matchResponse.ok) {
+          console.warn('⚠️ 매칭 API 실패:', matchResponse.status);
+          return null;
         }
         
-        const detailsData = await detailsResponse.json();
+        const matchData = await matchResponse.json();
         
-        if (detailsData.result && detailsData.result.photos && detailsData.result.photos.length > 0) {
-          const photoReference = detailsData.result.photos[0].photo_reference;
-          
-          // 사진 URL 생성 (Google Maps API 가이드에 따른 표준 방식)
-          const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photoReference}&key=${GOOGLE_MAPS_API_KEY}`;
-          
-          console.log(`📸 ${storeName} 구글맵스 이미지 로드 성공`);
-          return photoUrl;
+        if (!matchData.place_id) {
+          console.warn('⚠️ Google Places에서 해당 업체를 찾을 수 없습니다');
+          return null;
         }
+        
+        // 사진 정보 가져오기
+        const photosResponse = await fetch(`/api/places/${matchData.place_id}/photos`);
+        
+        if (!photosResponse.ok) {
+          console.warn('⚠️ 사진 API 실패:', photosResponse.status);
+          return null;
+        }
+        
+        const photosData = await photosResponse.json();
+        
+        if (photosData.photos && photosData.photos.length > 0) {
+          return photosData.photos[0].url;
+        }
+        
+        return null;
+        
+      } else {
+        // 개발 환경: 직접 API 호출 (CORS 문제 발생 가능)
+        console.log('🔧 개발 환경 - 직접 API 호출');
+        console.log(`🔑 구글맵스 API 키: ${GOOGLE_MAPS_API_KEY ? GOOGLE_MAPS_API_KEY.substring(0, 10) + '...' : '없음'}`);
+        
+        // API 키 확인
+        if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'your_google_maps_api_key_here') {
+          console.warn('⚠️ 구글맵스 API 키가 설정되지 않음');
+          return null;
+        }
+        
+        // 구글맵스 Places API로 업체 검색 (Google Maps API 가이드에 따른 표준 방식)
+        const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(storeName)}&location=${lat},${lng}&radius=1000&key=${GOOGLE_MAPS_API_KEY}`;
+        
+        console.log(`🌐 구글맵스 API 호출: ${searchUrl}`);
+        const searchResponse = await fetch(searchUrl);
+        console.log(`📡 구글맵스 API 응답 상태: ${searchResponse.status} ${searchResponse.statusText}`);
+        
+        if (!searchResponse.ok) {
+          throw new Error(`Google Places API search failed: ${searchResponse.status} ${searchResponse.statusText}`);
+        }
+        
+        const searchData = await searchResponse.json();
+        console.log(`📊 구글맵스 검색 결과: ${searchData.results ? searchData.results.length : 0}개`);
+        
+        // API 오류 확인
+        if (searchData.error_message) {
+          console.warn(`⚠️ 구글맵스 API 오류: ${searchData.error_message}`);
+          return null;
+        }
+        
+        if (searchData.results && searchData.results.length > 0) {
+          const place = searchData.results[0]; // 가장 관련성 높은 결과 선택
+          const placeId = place.place_id;
+          
+          console.log(`✅ 구글맵스에서 ${storeName} 발견: ${place.name}`);
+          
+          // Place Details API로 상세 정보 및 사진 가져오기 (Google Maps API 가이드에 따른 표준 방식)
+          const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=photos,name,rating,formatted_address&key=${GOOGLE_MAPS_API_KEY}`;
+          
+          console.log(`🌐 구글맵스 Details API 호출: ${detailsUrl}`);
+          const detailsResponse = await fetch(detailsUrl);
+          console.log(`📡 구글맵스 Details API 응답 상태: ${detailsResponse.status} ${detailsResponse.statusText}`);
+          
+          if (!detailsResponse.ok) {
+            throw new Error(`Google Places Details API failed: ${detailsResponse.status} ${detailsResponse.statusText}`);
+          }
+          
+          const detailsData = await detailsResponse.json();
+          
+          if (detailsData.result && detailsData.result.photos && detailsData.result.photos.length > 0) {
+            const photoReference = detailsData.result.photos[0].photo_reference;
+            
+            // 사진 URL 생성 (Google Maps API 가이드에 따른 표준 방식)
+            const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photoReference}&key=${GOOGLE_MAPS_API_KEY}`;
+            
+            console.log(`📸 ${storeName} 구글맵스 이미지 로드 성공`);
+            return photoUrl;
+          }
+        }
+        
+        console.log(`⚠️ ${storeName} 구글맵스에서 이미지를 찾을 수 없음`);
+        return null;
       }
-      
-      console.log(`⚠️ ${storeName} 구글맵스에서 이미지를 찾을 수 없음`);
-      return null;
       
     } catch (error) {
       console.warn(`❌ ${storeName} 구글맵스 이미지 로드 실패:`, error.message);
