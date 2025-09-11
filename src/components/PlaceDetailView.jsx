@@ -19,90 +19,141 @@ const PlaceDetailView = ({ store, onClose, isOpen }) => {
       try {
         console.log('🔍 Google Places 사진 로딩 시작:', store.name);
         
-        // 실제 Google Places API 호출 시도
-        const GOOGLE_KEY = 'AIzaSyCUc8tN3LM7lSH4eqyn1xImxCdwF2n8kqk';
+        // 환경에 따라 다른 API 사용
+        const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1');
         
-        // 1. 업체 매칭 (Google Places에서 해당 업체 찾기)
-        const query = [store.name, store.address].filter(Boolean).join(' ');
-        const location = store.lat && store.lng ? `&location=${store.lat},${store.lng}&radius=1000` : '';
-        
-        const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}${location}&key=${GOOGLE_KEY}&region=KR&language=ko`;
-        
-        console.log('🌐 Google Places 검색:', searchUrl);
-        
-        // CORS 문제를 우회하기 위해 fetch 옵션 추가
-        const searchResponse = await fetch(searchUrl, {
-          mode: 'cors',
-          headers: {
-            'Accept': 'application/json',
+        if (isProduction) {
+          // 프로덕션 환경: Vercel Functions 사용
+          console.log('🚀 프로덕션 환경 - Vercel Functions 사용');
+          
+          // 1. 업체 매칭
+          const matchResponse = await fetch('/api/places/match', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              name: store.name,
+              address: store.address,
+              phone: store.phone,
+              lat: store.lat,
+              lng: store.lng
+            })
+          });
+          
+          if (!matchResponse.ok) {
+            throw new Error(`매칭 API 실패: ${matchResponse.status}`);
           }
-        });
-
-        console.log('📡 검색 API 응답:', {
-          status: searchResponse.status,
-          statusText: searchResponse.statusText,
-          ok: searchResponse.ok
-        });
-
-        if (!searchResponse.ok) {
-          throw new Error(`Google Places API 실패: ${searchResponse.status} ${searchResponse.statusText}`);
-        }
-
-        const searchData = await searchResponse.json();
-        console.log('📊 검색 결과:', searchData);
-        
-        if (searchData.status !== 'OK' || !searchData.results?.length) {
-          throw new Error('Google Places에서 해당 업체를 찾을 수 없습니다');
-        }
-
-        const bestMatch = searchData.results[0];
-        console.log('✅ 매칭된 업체:', bestMatch.name);
-
-        // 2. Place Details API로 사진 정보 가져오기
-        const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${bestMatch.place_id}&fields=photos,name,formatted_address&key=${GOOGLE_KEY}&language=ko`;
-        
-        console.log('🖼️ Place Details 호출:', detailsUrl);
-        const detailsResponse = await fetch(detailsUrl, {
-          mode: 'cors',
-          headers: {
-            'Accept': 'application/json',
+          
+          const matchData = await matchResponse.json();
+          console.log('✅ 매칭 결과:', matchData);
+          
+          if (!matchData.place_id) {
+            throw new Error('Google Places에서 해당 업체를 찾을 수 없습니다');
           }
-        });
-        
-        console.log('📡 Details API 응답:', {
-          status: detailsResponse.status,
-          statusText: detailsResponse.statusText,
-          ok: detailsResponse.ok
-        });
-        
-        if (!detailsResponse.ok) {
-          throw new Error(`Place Details API 실패: ${detailsResponse.status} ${detailsResponse.statusText}`);
+          
+          // 2. 사진 정보 가져오기
+          const photosResponse = await fetch(`/api/places/${matchData.place_id}/photos`);
+          
+          if (!photosResponse.ok) {
+            throw new Error(`사진 API 실패: ${photosResponse.status}`);
+          }
+          
+          const photosData = await photosResponse.json();
+          console.log('📸 사진 데이터:', photosData);
+          
+          setPhotos(photosData.photos || []);
+          setAttribution('© Google');
+          
+        } else {
+          // 개발 환경: 직접 API 호출 (CORS 문제 발생 가능)
+          console.log('🔧 개발 환경 - 직접 API 호출');
+          
+          // 실제 Google Places API 호출 시도
+          const GOOGLE_KEY = 'AIzaSyCUc8tN3LM7lSH4eqyn1xImxCdwF2n8kqk';
+          
+          // 1. 업체 매칭 (Google Places에서 해당 업체 찾기)
+          const query = [store.name, store.address].filter(Boolean).join(' ');
+          const location = store.lat && store.lng ? `&location=${store.lat},${store.lng}&radius=1000` : '';
+          
+          const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}${location}&key=${GOOGLE_KEY}&region=KR&language=ko`;
+          
+          console.log('🌐 Google Places 검색:', searchUrl);
+          
+          // CORS 문제를 우회하기 위해 fetch 옵션 추가
+          const searchResponse = await fetch(searchUrl, {
+            mode: 'cors',
+            headers: {
+              'Accept': 'application/json',
+            }
+          });
+
+          console.log('📡 검색 API 응답:', {
+            status: searchResponse.status,
+            statusText: searchResponse.statusText,
+            ok: searchResponse.ok
+          });
+
+          if (!searchResponse.ok) {
+            throw new Error(`Google Places API 실패: ${searchResponse.status} ${searchResponse.statusText}`);
+          }
+
+          const searchData = await searchResponse.json();
+          console.log('📊 검색 결과:', searchData);
+          
+          if (searchData.status !== 'OK' || !searchData.results?.length) {
+            throw new Error('Google Places에서 해당 업체를 찾을 수 없습니다');
+          }
+
+          const bestMatch = searchData.results[0];
+          console.log('✅ 매칭된 업체:', bestMatch.name);
+
+          // 2. Place Details API로 사진 정보 가져오기
+          const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${bestMatch.place_id}&fields=photos,name,formatted_address&key=${GOOGLE_KEY}&language=ko`;
+          
+          console.log('🖼️ Place Details 호출:', detailsUrl);
+          const detailsResponse = await fetch(detailsUrl, {
+            mode: 'cors',
+            headers: {
+              'Accept': 'application/json',
+            }
+          });
+          
+          console.log('📡 Details API 응답:', {
+            status: detailsResponse.status,
+            statusText: detailsResponse.statusText,
+            ok: detailsResponse.ok
+          });
+          
+          if (!detailsResponse.ok) {
+            throw new Error(`Place Details API 실패: ${detailsResponse.status} ${detailsResponse.statusText}`);
+          }
+
+          const detailsData = await detailsResponse.json();
+          console.log('📸 Details 데이터:', detailsData);
+          
+          if (detailsData.status !== 'OK' || !detailsData.result) {
+            throw new Error('Place Details API 오류');
+          }
+
+          // 3. 사진 URL 생성
+          const photos = (detailsData.result.photos || []).slice(0, 6).map((photo, index) => ({
+            index,
+            width: photo.width,
+            height: photo.height,
+            attributions: photo.html_attributions?.join(' ') || '',
+            url: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${photo.photo_reference}&key=${GOOGLE_KEY}`
+          }));
+
+          console.log('🖼️ 생성된 사진들:', photos);
+          
+          setPhotos(photos);
+          setAttributionVisible(true);
         }
-
-        const detailsData = await detailsResponse.json();
-        console.log('📸 Details 데이터:', detailsData);
-        
-        if (detailsData.status !== 'OK' || !detailsData.result) {
-          throw new Error('Place Details API 오류');
-        }
-
-        // 3. 사진 URL 생성
-        const photos = (detailsData.result.photos || []).slice(0, 6).map((photo, index) => ({
-          index,
-          width: photo.width,
-          height: photo.height,
-          attributions: photo.html_attributions?.join(' ') || '',
-          url: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${photo.photo_reference}&key=${GOOGLE_KEY}`
-        }));
-
-        console.log('🖼️ 생성된 사진들:', photos);
-        
-        setPhotos(photos);
-        setAttributionVisible(true);
 
       } catch (err) {
         console.error('❌ Google Places 사진 로딩 실패:', err);
-        console.log('⚠️ CORS 문제로 인해 더미 데이터 사용');
+        console.log('⚠️ API 실패로 인해 더미 데이터 사용');
         
         // CORS 실패 시 더미 데이터 사용
         const dummyPhotos = [
