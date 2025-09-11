@@ -98,12 +98,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).end();
   }
 
-  if (req.method !== 'GET') {
+  if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { name, address, phone, lat, lng } = req.query as Record<string, string>;
+    const { name, address, phone, lat, lng } = req.body;
 
     if (!name) {
       return res.status(400).json({ error: 'Name is required' });
